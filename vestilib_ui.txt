@@ -1,0 +1,501 @@
+﻿=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\app\layout.tsx ===
+import type { Metadata } from 'next'
+import './globals.css'
+
+export const metadata: Metadata = {
+  title: 'VESTILIB',
+  description: 'Pose. Profite. Reviens.',
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="fr">
+      <body className="bg-gray-50 min-h-screen font-sans antialiased">
+        {children}
+      </body>
+    </html>
+  )
+}
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\app\page.tsx ===
+'use client'
+// app/page.tsx â€” Page de dÃ©mo VESTILIB MVP
+// Montre les deux boutons : onboarding hÃ´te + paiement
+import { useState } from 'react'
+import OnboardButton from '@/components/OnboardButton'
+import PayButton     from '@/components/PayButton'
+
+// â”€â”€ HÃ´te de test (Ã  remplacer par un vrai hostId Firestore) â”€â”€
+const DEMO_HOST_ID = 'REMPLACER_PAR_VRAI_HOST_ID'
+
+export default function DemoPage() {
+  const [tab, setTab] = useState<'host' | 'pay'>('host')
+
+  // Champs formulaire hÃ´te
+  const [email,  setEmail]  = useState('')
+  const [prenom, setPrenom] = useState('')
+  const [nom,    setNom]    = useState('')
+  const [ville,  setVille]  = useState('')
+
+  // Champs formulaire paiement
+  const [hostId,      setHostId]      = useState(DEMO_HOST_ID)
+  const [amount,      setAmount]      = useState(10)
+  const [description, setDescription] = useState('Consigne VESTILIB')
+  const [custEmail,   setCustEmail]   = useState('')
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-start justify-center py-12 px-4">
+      <div className="w-full max-w-md">
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-[#1A3A6B] tracking-widest mb-1">VESTILIB</h1>
+          <p className="text-sm text-gray-400">MVP â€” Stripe Connect + Firebase</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 bg-white rounded-xl p-1.5 shadow-sm border border-gray-100">
+          <button
+            onClick={() => setTab('host')}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === 'host' ? 'bg-[#1A3A6B] text-[#F5C84A]' : 'text-gray-500 hover:bg-gray-50'
+            }`}
+          >
+            ðŸ  Onboarding hÃ´te
+          </button>
+          <button
+            onClick={() => setTab('pay')}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === 'pay' ? 'bg-[#635BFF] text-white' : 'text-gray-500 hover:bg-gray-50'
+            }`}
+          >
+            ðŸ’³ Paiement
+          </button>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+
+          {/* â”€â”€ ONBOARDING HÃ”TE â”€â”€ */}
+          {tab === 'host' && (
+            <div>
+              <h2 className="text-base font-semibold text-gray-900 mb-1">CrÃ©er un compte hÃ´te</h2>
+              <p className="text-xs text-gray-400 mb-5 leading-relaxed">
+                CrÃ©e un compte Stripe Connect Express et redirige l'hÃ´te vers le formulaire Stripe.
+                AprÃ¨s l'onboarding, le compte sera activÃ© automatiquement via webhook.
+              </p>
+
+              <div className="space-y-3 mb-5">
+                <Field label="Email *"  value={email}  onChange={setEmail}  placeholder="hote@email.com" type="email" />
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="PrÃ©nom *" value={prenom} onChange={setPrenom} placeholder="Jean" />
+                  <Field label="Nom *"    value={nom}    onChange={setNom}    placeholder="Dupont" />
+                </div>
+                <Field label="Ville *"  value={ville}  onChange={setVille}  placeholder="Montpellier" />
+              </div>
+
+              <OnboardButton
+                email={email}
+                prenom={prenom}
+                nom={nom}
+                ville={ville}
+              />
+
+              <div className="mt-5 bg-amber-50 rounded-xl p-4 border border-amber-100">
+                <p className="text-xs font-medium text-amber-800 mb-2">Ce qui se passe :</p>
+                <ol className="text-xs text-amber-700 space-y-1 list-decimal list-inside leading-relaxed">
+                  <li>POST <code className="bg-amber-100 px-1 rounded">/api/onboard-host</code></li>
+                  <li>CrÃ©ation compte Stripe Connect Express</li>
+                  <li>Enregistrement dans Firestore <code className="bg-amber-100 px-1 rounded">hosts/</code></li>
+                  <li>Redirection vers formulaire Stripe</li>
+                  <li>Webhook <code className="bg-amber-100 px-1 rounded">account.updated</code> â†’ compte activÃ©</li>
+                </ol>
+              </div>
+            </div>
+          )}
+
+          {/* â”€â”€ PAIEMENT â”€â”€ */}
+          {tab === 'pay' && (
+            <div>
+              <h2 className="text-base font-semibold text-gray-900 mb-1">CrÃ©er un paiement</h2>
+              <p className="text-xs text-gray-400 mb-5 leading-relaxed">
+                CrÃ©e une session Stripe Checkout avec split automatique 70/30.
+                Le client est redirigÃ© vers Stripe puis revient sur <code>/pay/success</code>.
+              </p>
+
+              <div className="space-y-3 mb-5">
+                <Field label="Host ID (Firestore)" value={hostId} onChange={setHostId} placeholder="abc123..." />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-gray-400 block mb-1">Montant (â‚¬) *</label>
+                    <input
+                      type="number" min={1} step={1}
+                      value={amount}
+                      onChange={e => setAmount(Number(e.target.value))}
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B]"
+                    />
+                  </div>
+                  <Field label="Email client" value={custEmail} onChange={setCustEmail} placeholder="client@email.com" type="email" />
+                </div>
+                <Field label="Description *" value={description} onChange={setDescription} placeholder="Consigne VESTILIB" />
+              </div>
+
+              {/* AperÃ§u du split */}
+              <div className="bg-gray-50 rounded-xl p-3 mb-5 flex gap-2">
+                <div className="flex-1 bg-blue-50 rounded-lg p-2.5 text-center">
+                  <p className="text-[10px] text-blue-500 mb-0.5">ðŸ  HÃ´te (70%)</p>
+                  <p className="text-sm font-semibold text-blue-700">{(amount * 0.7).toFixed(2)}â‚¬</p>
+                </div>
+                <div className="flex-1 bg-orange-50 rounded-lg p-2.5 text-center">
+                  <p className="text-[10px] text-orange-500 mb-0.5">ðŸ¢ VESTILIB (30%)</p>
+                  <p className="text-sm font-semibold text-orange-700">{(amount * 0.3).toFixed(2)}â‚¬</p>
+                </div>
+              </div>
+
+              <PayButton
+                hostId={hostId}
+                amountEuros={amount}
+                description={description}
+                customerEmail={custEmail || undefined}
+                label={`Payer ${amount}â‚¬`}
+              />
+
+              <div className="mt-5 bg-purple-50 rounded-xl p-4 border border-purple-100">
+                <p className="text-xs font-medium text-purple-800 mb-2">Ce qui se passe :</p>
+                <ol className="text-xs text-purple-700 space-y-1 list-decimal list-inside leading-relaxed">
+                  <li>POST <code className="bg-purple-100 px-1 rounded">/api/create-checkout</code></li>
+                  <li>VÃ©rification hÃ´te dans Firestore</li>
+                  <li>Session Stripe Checkout (<code className="bg-purple-100 px-1 rounded">application_fee_amount</code>)</li>
+                  <li>RÃ©servation <code className="bg-purple-100 px-1 rounded">pending</code> crÃ©Ã©e dans Firestore</li>
+                  <li>Redirection vers Stripe â†’ paiement</li>
+                  <li>Webhook <code className="bg-purple-100 px-1 rounded">checkout.session.completed</code> â†’ statut <code className="bg-purple-100 px-1 rounded">paid</code></li>
+                </ol>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Carte de test */}
+        <div className="mt-4 bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+          <p className="text-xs font-medium text-gray-600 mb-2">ðŸ’³ Carte Stripe de test :</p>
+          <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="bg-gray-50 rounded-lg p-2">
+              <p className="text-gray-400 mb-0.5">NumÃ©ro</p>
+              <p className="font-mono font-medium text-gray-800">4242 4242 4242 4242</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2">
+              <p className="text-gray-400 mb-0.5">Expiration</p>
+              <p className="font-mono font-medium text-gray-800">12/26</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2">
+              <p className="text-gray-400 mb-0.5">CVC</p>
+              <p className="font-mono font-medium text-gray-800">123</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Field({ label, value, onChange, placeholder, type = 'text' }: {
+  label: string; value: string; onChange: (v: string) => void
+  placeholder?: string; type?: string
+}) {
+  return (
+    <div>
+      <label className="text-xs text-gray-400 block mb-1">{label}</label>
+      <input
+        type={type} value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors"
+      />
+    </div>
+  )
+}
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\app\host\onboard\refresh\page.tsx ===
+'use client'
+import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
+function RefreshContent() {
+  const params = useSearchParams()
+  const accountId = params.get('accountId')
+  const [url, setUrl] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!accountId) return
+    fetch('/api/onboard-host/refresh-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accountId }),
+    })
+      .then(r => r.json())
+      .then(d => { setUrl(d.onboardingUrl); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [accountId])
+
+  if (loading) return <div>Chargement...</div>
+
+  return (
+    <div>
+      <h1>Lien expire</h1>
+      {url && <a href={url}>Continuer</a>}
+    </div>
+  )
+}
+
+export default function OnboardRefreshPage() {
+  return (
+    <Suspense fallback={<div>Chargement</div>}>
+      <RefreshContent />
+    </Suspense>
+  )
+}
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\app\host\onboard\success\page.tsx ===
+'use client'
+import Link from 'next/link'
+
+export default function OnboardSuccessPage() {
+  return (
+    <div style={{minHeight:'100vh',background:'#1A3A6B',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'0 32px',textAlign:'center'}}>
+      <div style={{width:80,height:80,background:'#F5C84A',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:40,marginBottom:24}}>âœ“</div>
+      <h1 style={{fontSize:24,fontWeight:600,color:'#F5C84A',marginBottom:8}}>Compte hÃ´te activÃ© !</h1>
+      <p style={{fontSize:14,color:'rgba(255,255,255,0.75)',marginBottom:32,lineHeight:1.7,maxWidth:320}}>
+        Votre compte Stripe Connect est configurÃ©. Vous allez apparaÃ®tre sur la carte VESTILIB dÃ¨s validation.
+      </p>
+      <Link href="/" style={{background:'#F5C84A',color:'#1A3A6B',borderRadius:50,padding:'14px 32px',fontSize:15,fontWeight:600,textDecoration:'none'}}>
+        Retour Ã  l'accueil
+      </Link>
+    </div>
+  )
+}
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\app\pay\cancel\page.tsx ===
+'use client'
+// app/pay/cancel/page.tsx
+import Link from 'next/link'
+
+export default function PayCancelPage() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-6 text-center">
+      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl mb-4">âœ•</div>
+      <h1 className="text-xl font-semibold text-gray-800 mb-2">Paiement annulÃ©</h1>
+      <p className="text-sm text-gray-400 mb-6">Votre carte n'a pas Ã©tÃ© dÃ©bitÃ©e.</p>
+      <Link href="/" className="bg-[#1A3A6B] text-[#F5C84A] rounded-full px-8 py-3 text-sm font-medium">
+        RÃ©essayer
+      </Link>
+    </div>
+  )
+}
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\app\pay\success\page.tsx ===
+'use client'
+import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+
+function SuccessContent() {
+  const params = useSearchParams()
+  return (
+    <div>
+      <h1>Paiement confirme</h1>
+      <a href="/">Retour</a>
+    </div>
+  )
+}
+
+export default function PaySuccessPage() {
+  return (
+    <Suspense fallback={<div>Chargement</div>}>
+      <SuccessContent />
+    </Suspense>
+  )
+}
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\components\OnboardButton.tsx ===
+'use client'
+// components/OnboardButton.tsx
+// Bouton d'onboarding hÃ´te â†’ redirige vers Stripe Connect
+import { useState } from 'react'
+
+interface OnboardButtonProps {
+  email: string
+  prenom: string
+  nom: string
+  ville: string
+  onSuccess?: (hostId: string, onboardingUrl: string) => void
+}
+
+export default function OnboardButton({
+  email, prenom, nom, ville, onSuccess,
+}: OnboardButtonProps) {
+  const [loading, setLoading] = useState(false)
+  const [error,   setError]   = useState('')
+
+  const handleOnboard = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/onboard-host', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email, prenom, nom, ville }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error ?? 'Erreur lors de la crÃ©ation du compte.')
+        return
+      }
+
+      // Appeler le callback si fourni
+      onSuccess?.(data.hostId, data.onboardingUrl)
+
+      // Rediriger vers le formulaire Stripe Connect
+      window.location.href = data.onboardingUrl
+
+    } catch {
+      setError('Erreur rÃ©seau. VÃ©rifiez votre connexion.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <button
+        onClick={handleOnboard}
+        disabled={loading}
+        className="
+          bg-[#1A3A6B] text-[#F5C84A] font-medium text-sm
+          px-6 py-3 rounded-xl
+          hover:bg-[#0C2447] active:scale-95
+          disabled:opacity-50 disabled:cursor-not-allowed
+          transition-all duration-150
+          flex items-center justify-center gap-2
+        "
+      >
+        {loading ? (
+          <>
+            <span className="animate-spin text-base">â³</span>
+            CrÃ©ation du compte...
+          </>
+        ) : (
+          <>
+            CrÃ©er mon compte hÃ´te â†’
+          </>
+        )}
+      </button>
+
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          âš  {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\components\PayButton.tsx ===
+'use client'
+// components/PayButton.tsx
+// Bouton de paiement â†’ crÃ©e une session Checkout Stripe
+// et redirige l'utilisateur vers la page de paiement Stripe
+import { useState } from 'react'
+
+interface PayButtonProps {
+  hostId: string
+  amountEuros: number
+  description: string
+  customerEmail?: string
+  label?: string
+}
+
+export default function PayButton({
+  hostId,
+  amountEuros,
+  description,
+  customerEmail,
+  label,
+}: PayButtonProps) {
+  const [loading, setLoading] = useState(false)
+  const [error,   setError]   = useState('')
+
+  const handlePay = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/create-checkout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hostId,
+          amountEuros,
+          description,
+          customerEmail,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error ?? 'Erreur lors de la crÃ©ation du paiement.')
+        return
+      }
+
+      // Rediriger vers la page Stripe Checkout
+      window.location.href = data.url
+
+    } catch {
+      setError('Erreur rÃ©seau. VÃ©rifiez votre connexion.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <button
+        onClick={handlePay}
+        disabled={loading}
+        className="
+          bg-[#635BFF] text-white font-medium text-sm
+          px-6 py-3 rounded-xl
+          hover:bg-[#4F46E5] active:scale-95
+          disabled:opacity-50 disabled:cursor-not-allowed
+          transition-all duration-150
+          flex items-center justify-center gap-2
+        "
+      >
+        {loading ? (
+          <>
+            <span className="animate-spin text-base">â³</span>
+            Redirection Stripe...
+          </>
+        ) : (
+          <>
+            ðŸ”’ {label ?? `Payer ${amountEuros}â‚¬`}
+          </>
+        )}
+      </button>
+
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          âš  {error}
+        </p>
+      )}
+
+      <p className="text-xs text-gray-400 text-center">
+        Paiement sÃ©curisÃ© Â· Stripe Â· PCI-DSS
+      </p>
+    </div>
+  )
+}
+
