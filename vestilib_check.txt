@@ -1,0 +1,484 @@
+﻿=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\app\api\onboard-host\route.ts ===
+// app/api/onboard-host/route.ts
+import { NextRequest, NextResponse } from 'next/server'
+import { createConnectAccount }      from '@/lib/stripe'
+import { adminDb }                   from '@/lib/firebase-admin'
+import type { OnboardHostInput }     from '@/types'
+
+export async function POST(req: NextRequest) {
+  try {
+    const body: OnboardHostInput = await req.json()
+    const {
+      email, prenom, nom, telephone,
+      adresse, codePostal, ville,
+      horaires, prestations,
+    } = body
+
+    // Validation
+    if (!email || !prenom || !nom || !telephone || !adresse || !codePostal || !ville) {
+      return NextResponse.json(
+        { error: 'Champs requis : email, prenom, nom, telephone, adresse, codePostal, ville' },
+        { status: 400 }
+      )
+    }
+    if (!horaires || !prestations || prestations.length === 0) {
+      return NextResponse.json(
+        { error: 'Horaires et au moins une prestation sont requis' },
+        { status: 400 }
+      )
+    }
+
+    // 1. CrÃ©er le compte Stripe Connect
+    const { accountId, onboardingUrl } = await createConnectAccount({
+      email, prenom, nom, ville,
+    })
+
+    // 2. Enregistrer l'hÃ´te dans Firestore avec tous les champs
+    const hostRef = await adminDb.collection('hosts').add({
+      email,
+      prenom,
+      nom,
+      telephone,
+      adresse,
+      codePostal,
+      ville,
+      horaires,
+      prestations,
+      stripeAccountId:          accountId,
+      stripeOnboardingComplete: false,
+      stripePayoutsEnabled:     false,
+      visible:                  false,
+      createdAt:                new Date(),
+    })
+
+    console.log(`[onboard-host] HÃ´te crÃ©Ã© : ${hostRef.id} (${email})`)
+
+    return NextResponse.json({
+      success:         true,
+      hostId:          hostRef.id,
+      stripeAccountId: accountId,
+      onboardingUrl,
+    })
+
+  } catch (err: any) {
+    console.error('[onboard-host]', err)
+    return NextResponse.json(
+      { error: err.message ?? 'Erreur serveur' },
+      { status: 500 }
+    )
+  }
+}
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\app\api\onboard-host\check\route.ts ===
+// app/api/onboard-host/check/route.ts
+// VÃ©rifie manuellement le statut d'un compte Connect
+// (en complÃ©ment du webhook account.updated)
+import { NextRequest, NextResponse } from 'next/server'
+import { stripe }                    from '@/lib/stripe'
+import { adminDb }                   from '@/lib/firebase-admin'
+
+export async function POST(req: NextRequest) {
+  try {
+    const { accountId } = await req.json()
+    if (!accountId) return NextResponse.json({ error: 'accountId requis' }, { status: 400 })
+
+    const account = await stripe.accounts.retrieve(accountId)
+
+    // Mettre Ã  jour Firestore
+    const snap = await adminDb
+      .collection('hosts')
+      .where('stripeAccountId', '==', accountId)
+      .limit(1)
+      .get()
+
+    if (!snap.empty) {
+      await snap.docs[0].ref.update({
+        stripeOnboardingComplete: account.details_submitted,
+        stripePayoutsEnabled:     account.payouts_enabled ?? false,
+        visible:                  account.payouts_enabled ?? false,
+      })
+    }
+
+    return NextResponse.json({
+      detailsSubmitted: account.details_submitted,
+      payoutsEnabled:   account.payouts_enabled,
+    })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
+}
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\app\api\onboard-host\refresh-link\route.ts ===
+// app/api/onboard-host/refresh-link/route.ts
+// GÃ©nÃ¨re un nouveau lien d'onboarding quand l'ancien a expirÃ©
+import { NextRequest, NextResponse } from 'next/server'
+import { stripe }                    from '@/lib/stripe'
+
+export async function POST(req: NextRequest) {
+  try {
+    const { accountId } = await req.json()
+    if (!accountId) return NextResponse.json({ error: 'accountId requis' }, { status: 400 })
+
+    const link = await stripe.accountLinks.create({
+      account:     accountId,
+      refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/host/onboard/refresh?accountId=${accountId}`,
+      return_url:  `${process.env.NEXT_PUBLIC_APP_URL}/host/onboard/success?accountId=${accountId}`,
+      type:        'account_onboarding',
+    })
+
+    return NextResponse.json({ onboardingUrl: link.url })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
+}
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\lib\firebase-admin.ts ===
+// lib/firebase-admin.ts
+// UtilisÃ© uniquement cÃ´tÃ© serveur (API routes)
+import { initializeApp, getApps, cert } from 'firebase-admin/app'
+import { getFirestore }                  from 'firebase-admin/firestore'
+import { getAuth }                       from 'firebase-admin/auth'
+
+if (!getApps().length) {
+  initializeApp({
+    credential: cert({
+      projectId:   process.env.FIREBASE_ADMIN_PROJECT_ID!,
+      clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL!,
+      privateKey:  process.env.FIREBASE_ADMIN_PRIVATE_KEY!.replace(/\\n/g, '\n'),
+    }),
+  })
+}
+
+export const adminDb   = getFirestore()
+export const adminAuth = getAuth()
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\lib\firebase.ts ===
+// lib/firebase.ts
+// UtilisÃ© cÃ´tÃ© client (composants React)
+import { initializeApp, getApps, getApp } from 'firebase/app'
+import { getFirestore }                    from 'firebase/firestore'
+import { getAuth }                         from 'firebase/auth'
+
+const firebaseConfig = {
+  apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain:        process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId:         process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket:     process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId:             process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+}
+
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
+
+export const db   = getFirestore(app)
+export const auth = getAuth(app)
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\lib\stripe.ts ===
+// lib/stripe.ts
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Toutes les interactions Stripe cÃ´tÃ© serveur
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+import Stripe from 'stripe'
+
+// Instance singleton Stripe
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2023-10-16',
+})
+
+const COMMISSION = parseFloat(process.env.STRIPE_COMMISSION_RATE ?? '0.30')
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 1. ONBOARDING HÃ”TE
+//    CrÃ©e un compte Stripe Connect Express pour l'hÃ´te
+//    et retourne l'URL d'onboarding Stripe
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export async function createConnectAccount(params: {
+  email: string
+  prenom: string
+  nom: string
+  ville: string
+}): Promise<{ accountId: string; onboardingUrl: string }> {
+  // CrÃ©er le compte Connect Express
+  const account = await stripe.accounts.create({
+    type: 'express',
+    country: 'FR',
+    email: params.email,
+    capabilities: {
+      card_payments: { requested: true },
+      transfers:     { requested: true },
+    },
+    business_type: 'individual',
+    individual: {
+      first_name: params.prenom,
+      last_name:  params.nom,
+      address:    { city: params.ville, country: 'FR' },
+    },
+    settings: {
+      payouts: {
+        // Virement automatique le 1er de chaque mois
+        schedule: { interval: 'monthly', monthly_anchor: 1 },
+      },
+    },
+    metadata: {
+      vestilib: 'true',
+      ville: params.ville,
+    },
+  })
+
+  // GÃ©nÃ©rer le lien d'onboarding (expire aprÃ¨s 24h)
+  const link = await stripe.accountLinks.create({
+    account:     account.id,
+    refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/host/onboard/refresh?accountId=${account.id}`,
+    return_url:  `${process.env.NEXT_PUBLIC_APP_URL}/host/onboard/success?accountId=${account.id}`,
+    type: 'account_onboarding',
+  })
+
+  return { accountId: account.id, onboardingUrl: link.url }
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 2. CRÃ‰ER UNE SESSION DE PAIEMENT (Checkout)
+//    Split automatique : 70% hÃ´te / 30% VESTILIB
+//    via application_fee_amount
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export async function createCheckoutSession(params: {
+  hostStripeAccountId: string
+  amountEuros: number
+  description: string
+  customerEmail?: string
+  metadata?: Record<string, string>
+}): Promise<{ sessionId: string; url: string }> {
+  const amountCents     = Math.round(params.amountEuros * 100)
+  const commissionCents = Math.round(amountCents * COMMISSION)
+
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    payment_method_types: ['card'],
+    line_items: [
+      {
+        price_data: {
+          currency:     'eur',
+          product_data: { name: params.description },
+          unit_amount:  amountCents,
+        },
+        quantity: 1,
+      },
+    ],
+    // â”€â”€ Split 70 / 30 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    payment_intent_data: {
+      application_fee_amount: commissionCents,      // 30% â†’ VESTILIB
+      transfer_data: {
+        destination: params.hostStripeAccountId,    // 70% â†’ hÃ´te
+      },
+      metadata: params.metadata ?? {},
+    },
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    customer_email: params.customerEmail,
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/pay/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url:  `${process.env.NEXT_PUBLIC_APP_URL}/pay/cancel`,
+    metadata:    params.metadata ?? {},
+  })
+
+  return { sessionId: session.id, url: session.url! }
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 3. VALIDER UN WEBHOOK STRIPE
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export function constructWebhookEvent(
+  payload: Buffer,
+  signature: string
+): Stripe.Event {
+  return stripe.webhooks.constructEvent(
+    payload,
+    signature,
+    process.env.STRIPE_WEBHOOK_SECRET!
+  )
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 4. RÃ‰CUPÃ‰RER LE SOLDE D'UN HÃ”TE
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export async function getHostBalance(stripeAccountId: string) {
+  const balance = await stripe.balance.retrieve({
+    stripeAccount: stripeAccountId,
+  })
+  const payouts = await stripe.payouts.list(
+    { limit: 5 },
+    { stripeAccount: stripeAccountId }
+  )
+
+  return {
+    available: balance.available.reduce((s, b) => s + b.amount, 0) / 100,
+    pending:   balance.pending.reduce((s, b) => s + b.amount, 0) / 100,
+    currency:  balance.available[0]?.currency ?? 'eur',
+    recentPayouts: payouts.data.map(p => ({
+      id:          p.id,
+      amount:      p.amount / 100,
+      status:      p.status,
+      arrivalDate: new Date(p.arrival_date * 1000).toLocaleDateString('fr-FR'),
+    })),
+  }
+}
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\lib\tarifs.ts ===
+// lib/tarifs.ts
+// Grille tarifaire VESTILIB â€” source de vÃ©ritÃ© unique
+// UtilisÃ©e cÃ´tÃ© client (formulaire hÃ´te) et cÃ´tÃ© serveur (crÃ©ation checkout)
+
+export interface Tarif {
+  id:          string
+  categorie:   string
+  label:       string
+  description: string
+  prix:        number   // en euros
+  unite:       string   // 'article' | 'personne' | 'vehicule'
+}
+
+export const TARIFS_VESTILIB: Tarif[] = [
+  // â”€â”€ DurÃ©e 4h â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  { id: '4h-casque',    categorie: '4 heures',   label: 'Casque',    description: 'Consigne casque â€” 4h',    prix: 4,  unite: 'article' },
+  { id: '4h-blouson',   categorie: '4 heures',   label: 'Blouson',   description: 'Consigne blouson â€” 4h',   prix: 4,  unite: 'article' },
+  { id: '4h-sac',       categorie: '4 heures',   label: 'Sac',       description: 'Consigne sac â€” 4h',       prix: 4,  unite: 'article' },
+  { id: '4h-remise',    categorie: '4 heures',   label: 'Remise 4e', description: 'Remise automatique 4e article â€” 4h', prix: -4, unite: 'article' },
+
+  // â”€â”€ DurÃ©e 8h â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  { id: '8h-casque',    categorie: '8 heures',   label: 'Casque',    description: 'Consigne casque â€” 8h',    prix: 6,  unite: 'article' },
+  { id: '8h-blouson',   categorie: '8 heures',   label: 'Blouson',   description: 'Consigne blouson â€” 8h',   prix: 6,  unite: 'article' },
+  { id: '8h-sac',       categorie: '8 heures',   label: 'Sac',       description: 'Consigne sac â€” 8h',       prix: 6,  unite: 'article' },
+  { id: '8h-remise',    categorie: '8 heures',   label: 'Remise 4e', description: 'Remise automatique 4e article â€” 8h', prix: -6, unite: 'article' },
+
+  // â”€â”€ Services â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  { id: 'douche',       categorie: 'Services',   label: 'Douche',    description: 'Douche',                  prix: 2,  unite: 'personne' },
+  { id: 'parking-moto', categorie: 'Parking',    label: 'Moto',      description: 'Parking moto',            prix: 5,  unite: 'vehicule' },
+  { id: 'parking-velo', categorie: 'Parking',    label: 'VÃ©lo',      description: 'Parking vÃ©lo',            prix: 4,  unite: 'vehicule' },
+
+  // â”€â”€ DÃ©pÃ´t longue durÃ©e â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  { id: 'depot-24h',    categorie: 'DÃ©pÃ´t',      label: '24h',       description: 'DÃ©pÃ´t 24h (max 15kg)',    prix: 10, unite: 'article' },
+  { id: 'depot-7j',     categorie: 'DÃ©pÃ´t',      label: '7 jours',   description: 'DÃ©pÃ´t 7 jours (max 15kg)', prix: 50, unite: 'article' },
+]
+
+// CatÃ©gories uniques dans l'ordre
+export const CATEGORIES = ['4 heures', '8 heures', 'Services', 'Parking', 'DÃ©pÃ´t']
+
+// Tarifs par catÃ©gorie
+export function getTarifsByCategorie(categorie: string): Tarif[] {
+  return TARIFS_VESTILIB.filter(t => t.categorie === categorie)
+}
+
+// Tarif par ID
+export function getTarifById(id: string): Tarif | undefined {
+  return TARIFS_VESTILIB.find(t => t.id === id)
+}
+
+=== C:\Users\PC\Documents\VESTILIB\vestilib-mvp\types\index.ts ===
+// types/index.ts
+
+// â”€â”€â”€ Horaires â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export interface JourHoraire {
+  ouvert:    boolean
+  ouverture: string   // ex: "09:00"
+  fermeture: string   // ex: "19:00"
+}
+
+export type Horaires = {
+  lundi:    JourHoraire
+  mardi:    JourHoraire
+  mercredi: JourHoraire
+  jeudi:    JourHoraire
+  vendredi: JourHoraire
+  samedi:   JourHoraire
+  dimanche: JourHoraire
+}
+
+// â”€â”€â”€ Onboarding hÃ´te â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export interface OnboardHostInput {
+  email:       string
+  prenom:      string
+  nom:         string
+  telephone:   string
+  adresse:     string
+  codePostal:  string
+  ville:       string
+  horaires:    Horaires
+  prestations: string[]
+}
+
+export interface OnboardHostResponse {
+  success:         boolean
+  hostId:          string
+  stripeAccountId: string
+  onboardingUrl:   string
+}
+
+// â”€â”€â”€ CrÃ©ation de checkout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export interface CreateCheckoutInput {
+  hostId:         string
+  amountEuros:    number
+  description:    string
+  customerEmail?: string
+  date?:          string
+  creneau?:       string
+  prestations?:   { tarifId: string; quantite: number }[]
+}
+
+export interface CreateCheckoutResponse {
+  success:   boolean
+  sessionId: string
+  url:       string
+  bookingId: string
+}
+
+// â”€â”€â”€ Booking (Firestore) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export interface Booking {
+  id:                      string
+  hostId:                  string
+  stripeCheckoutSessionId: string
+  stripePaymentIntentId?:  string
+  bookingCode?:            string
+  totalAmount:             number
+  hostEarns:               number
+  vestilibCommission:      number
+  status:                  'pending' | 'paid' | 'failed'
+  customerEmail?:          string | null
+  date?:                   string | null
+  creneau?:                string | null
+  prestations?:            { tarifId: string; quantite: number }[]
+  failureMessage?:         string | null
+  createdAt:               Date | string
+  confirmedAt?:            Date | string
+  failedAt?:               Date | string
+}
+
+// â”€â”€â”€ HÃ´te (Firestore) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export interface Host {
+  id:                       string
+  email:                    string
+  prenom:                   string
+  nom:                      string
+  telephone:                string
+  adresse:                  string
+  codePostal:               string
+  ville:                    string
+  horaires:                 Horaires
+  prestations:              string[]
+  stripeAccountId:          string
+  stripeOnboardingComplete: boolean
+  stripePayoutsEnabled:     boolean
+  visible:                  boolean
+  createdAt:                Date | string
+}
+
+// â”€â”€â”€ Solde hÃ´te â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export interface HostBalance {
+  available:     number
+  pending:       number
+  currency:      string
+  recentPayouts: {
+    id:          string
+    amount:      number
+    status:      string
+    arrivalDate: string
+  }[]
+}
+

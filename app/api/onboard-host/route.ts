@@ -1,11 +1,4 @@
 // app/api/onboard-host/route.ts
-// ─────────────────────────────────────────────────
-// POST /api/onboard-host
-//
-// Crée un compte Stripe Connect Express pour un hôte
-// et l'enregistre dans Firestore.
-// Retourne l'URL d'onboarding Stripe à afficher au front.
-// ─────────────────────────────────────────────────
 import { NextRequest, NextResponse } from 'next/server'
 import { createConnectAccount }      from '@/lib/stripe'
 import { adminDb }                   from '@/lib/firebase-admin'
@@ -14,39 +7,56 @@ import type { OnboardHostInput }     from '@/types'
 export async function POST(req: NextRequest) {
   try {
     const body: OnboardHostInput = await req.json()
-    const { email, prenom, nom, ville } = body
+    const {
+      email, prenom, nom, telephone,
+      adresse, codePostal, ville,
+      horaires, prestations,
+    } = body
 
-    // Validation minimale
-    if (!email || !prenom || !nom || !ville) {
+    // Validation
+    if (!email || !prenom || !nom || !telephone || !adresse || !codePostal || !ville) {
       return NextResponse.json(
-        { error: 'Champs requis : email, prenom, nom, ville' },
+        { error: 'Champs requis : email, prenom, nom, telephone, adresse, codePostal, ville' },
+        { status: 400 }
+      )
+    }
+    if (!horaires || !prestations || prestations.length === 0) {
+      return NextResponse.json(
+        { error: 'Horaires et au moins une prestation sont requis' },
         { status: 400 }
       )
     }
 
-    // 1. Créer le compte Stripe Connect + lien onboarding
+    // 1. Créer le compte Stripe Connect
     const { accountId, onboardingUrl } = await createConnectAccount({
       email, prenom, nom, ville,
     })
 
-    // 2. Enregistrer l'hôte dans Firestore
+    // 2. Enregistrer l'hôte dans Firestore avec tous les champs
     const hostRef = await adminDb.collection('hosts').add({
       email,
       prenom,
       nom,
+      telephone,
+      adresse,
+      codePostal,
       ville,
+      horaires,
+      prestations,
       stripeAccountId:          accountId,
-      stripeOnboardingComplete: false,  // → true après webhook account.updated
-      stripePayoutsEnabled:     false,  // → true quand Stripe valide le compte
-      visible:                  false,  // → true après onboarding complet
+      stripeOnboardingComplete: false,
+      stripePayoutsEnabled:     false,
+      visible:                  false,
       createdAt:                new Date(),
     })
 
+    console.log(`[onboard-host] Hôte créé : ${hostRef.id} (${email})`)
+
     return NextResponse.json({
-      success:       true,
-      hostId:        hostRef.id,
+      success:         true,
+      hostId:          hostRef.id,
       stripeAccountId: accountId,
-      onboardingUrl,           // ← rediriger l'hôte vers cette URL
+      onboardingUrl,
     })
 
   } catch (err: any) {
