@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { TARIFS_VESTILIB, CATEGORIES } from '@/lib/tarifs'
+import { TARIFS_VESTILIB, CATEGORIES, REMISE_INFO } from '@/lib/tarifs'
 
 interface JourHoraire { ouvert: boolean; ouverture: string; fermeture: string }
 interface Host {
@@ -309,6 +309,9 @@ export default function HostPage() {
                       )
                     })}
                   </div>
+                  {REMISE_INFO[cat] && (
+                    <p className="text-xs text-green-600 mt-2 bg-green-50 px-3 py-1.5 rounded-lg">{REMISE_INFO[cat]}</p>
+                  )}
                 </div>
               )
             })}
