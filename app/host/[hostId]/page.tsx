@@ -109,13 +109,52 @@ export default function HostPage() {
   // Tarifs disponibles chez cet hôte
   const tarifsDisponibles = TARIFS_VESTILIB.filter(t => host.prestations?.includes(t.id))
 
-  // Calcul total
-  const total = Object.entries(selectedTarifs).reduce((sum, [id, qty]) => {
-    const t = TARIFS_VESTILIB.find(t => t.id === id)
-    return sum + (t ? t.prix * qty : 0)
-  }, 0)
-
+  // Calcul total avec remise automatique au 4e article
   const nbArticles = Object.values(selectedTarifs).reduce((s, q) => s + q, 0)
+
+  const calcTotal = () => {
+    let sum = 0
+    // Articles 4h
+    const nb4h = (['4h-casque','4h-blouson','4h-sac'] as string[])
+      .reduce((s, id) => s + (selectedTarifs[id] ?? 0), 0)
+    // Articles 8h
+    const nb8h = (['8h-casque','8h-blouson','8h-sac'] as string[])
+      .reduce((s, id) => s + (selectedTarifs[id] ?? 0), 0)
+
+    // Prix articles 4h
+    ;(['4h-casque','4h-blouson','4h-sac'] as string[]).forEach(id => {
+      const qty = selectedTarifs[id] ?? 0
+      sum += qty * 4
+    })
+    // Remise 4h : −4€ par tranche de 4 articles
+    if (nb4h >= 4) sum -= Math.floor(nb4h / 4) * 4
+
+    // Prix articles 8h
+    ;(['8h-casque','8h-blouson','8h-sac'] as string[]).forEach(id => {
+      const qty = selectedTarifs[id] ?? 0
+      sum += qty * 6
+    })
+    // Remise 8h : −6€ par tranche de 4 articles
+    if (nb8h >= 4) sum -= Math.floor(nb8h / 4) * 6
+
+    // Autres prestations (douche, parking, dépôt)
+    ;['douche','parking-moto','parking-velo','depot-24h','depot-7j'].forEach(id => {
+      const t = TARIFS_VESTILIB.find(t => t.id === id)
+      const qty = selectedTarifs[id] ?? 0
+      if (t && qty > 0) sum += t.prix * qty
+    })
+
+    return Math.max(sum, 0)
+  }
+
+  const total = calcTotal()
+
+  // Remise appliquée
+  const nb4h = (['4h-casque','4h-blouson','4h-sac'] as string[]).reduce((s, id) => s + (selectedTarifs[id] ?? 0), 0)
+  const nb8h = (['8h-casque','8h-blouson','8h-sac'] as string[]).reduce((s, id) => s + (selectedTarifs[id] ?? 0), 0)
+  const remise4h = nb4h >= 4 ? Math.floor(nb4h / 4) * 4 : 0
+  const remise8h = nb8h >= 4 ? Math.floor(nb8h / 4) * 6 : 0
+  const remiseTotal = remise4h + remise8h
 
   const toggleTarif = (id: string) => {
     setSelectedTarifs(prev => {
@@ -275,9 +314,17 @@ export default function HostPage() {
             })}
 
             {total > 0 && (
-              <div className="bg-[#1A3A6B]/5 rounded-xl p-3 mb-4 flex justify-between items-center">
-                <span className="text-sm text-gray-600">{nbArticles} article{nbArticles > 1 ? 's' : ''}</span>
-                <span className="text-lg font-bold text-[#1A3A6B]">{total.toFixed(2)}€</span>
+              <div className="bg-[#1A3A6B]/5 rounded-xl p-3 mb-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">{nbArticles} article{nbArticles > 1 ? 's' : ''}</span>
+                  <span className="text-lg font-bold text-[#1A3A6B]">{total.toFixed(2)}€</span>
+                </div>
+                {remiseTotal > 0 && (
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-xs text-green-600">🎉 Remise 4e article appliquée</span>
+                    <span className="text-xs font-semibold text-green-600">−{remiseTotal.toFixed(2)}€</span>
+                  </div>
+                )}
               </div>
             )}
 
