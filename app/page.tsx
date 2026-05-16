@@ -1,8 +1,33 @@
 'use client'
-// app/page.tsx — Page d'accueil VESTILIB
+// app/page.tsx — Page d'accueil VESTILIB avec splash screen
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 export default function HomePage() {
+  const [splash, setSplash] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSplash(false), 2500)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // ── SPLASH SCREEN ──
+  if (splash) return (
+    <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center gap-6 animate-fade-in">
+      <svg width="80" height="80" viewBox="0 0 44 44" fill="none">
+        <path d="M6 8 L22 36 L38 8" stroke="#F5C84A" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+        <path d="M16 8 Q22 4 28 8" stroke="#F5C84A" strokeWidth="3" strokeLinecap="round" fill="none"/>
+        <circle cx="22" cy="4" r="2" fill="#F5C84A"/>
+      </svg>
+      <p className="text-[#F5C84A] font-black text-3xl tracking-widest">VESTILIB</p>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+      `}</style>
+    </div>
+  )
+
+  // ── PAGE D'ACCUEIL ──
   return (
     <div className="min-h-screen bg-[#F5C84A] font-sans overflow-x-hidden pb-24">
 
@@ -33,18 +58,11 @@ export default function HomePage() {
             Casque ? Sac ? Équipement ?<br/>
             Ne vous encombrez plus. Profitez.
           </p>
-
           <div className="flex flex-col sm:flex-row gap-3">
-            <Link
-              href="/map"
-              className="bg-[#1A3A6B] text-[#F5C84A] font-bold px-8 py-4 rounded-2xl text-base hover:bg-[#0C2447] transition-all hover:scale-105 text-center shadow-lg shadow-[#1A3A6B]/20"
-            >
+            <Link href="/map" className="bg-[#1A3A6B] text-[#F5C84A] font-bold px-8 py-4 rounded-2xl text-base hover:bg-[#0C2447] transition-all hover:scale-105 text-center shadow-lg shadow-[#1A3A6B]/20">
               Trouver un point de dépôt →
             </Link>
-            <Link
-              href="/host/onboard"
-              className="bg-white/40 text-[#1A3A6B] font-semibold px-8 py-4 rounded-2xl text-base hover:bg-white/60 transition-colors text-center border border-[#1A3A6B]/20"
-            >
+            <Link href="/host/onboard" className="bg-white/40 text-[#1A3A6B] font-semibold px-8 py-4 rounded-2xl text-base hover:bg-white/60 transition-colors text-center border border-[#1A3A6B]/20">
               Proposer un point de dépôt
             </Link>
           </div>
