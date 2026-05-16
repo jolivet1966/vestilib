@@ -29,7 +29,7 @@ export default function HomePage() {
 
   // ── PAGE D'ACCUEIL ──
   return (
-    <div className="min-h-screen bg-[#F5C84A] font-sans overflow-x-hidden pb-24">
+    <div className="min-h-screen bg-white font-sans overflow-x-hidden pb-24">
 
       {/* ── HEADER ── */}
       <header className="px-6 py-5 flex items-center justify-between max-w-5xl mx-auto">
