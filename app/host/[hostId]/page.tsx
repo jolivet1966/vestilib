@@ -12,6 +12,14 @@ interface Host {
   adresse: string; codePostal: string; ville: string
   horaires: Record<string, JourHoraire>
   prestations: string[]
+  capaciteMax?: number
+}
+
+interface Capacite {
+  capaciteMax:      number
+  articlesReserves: number
+  placesRestantes:  number
+  complet:          boolean
 }
 
 const JOURS_ORDER = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche']
@@ -79,6 +87,9 @@ export default function HostPage() {
   const [selectedCreneau, setSelectedCreneau] = useState('')
   const [customerEmail, setCustomerEmail] = useState('')
   const [paying,        setPaying]        = useState(false)
+  const [capacite,      setCapacite]      = useState<Capacite | null>(null)
+  const [checkingCap,   setCheckingCap]   = useState(false)
+  const [showCapAlert,  setShowCapAlert]  = useState(false)
   const [payError,      setPayError]      = useState('')
 
   useEffect(() => {
@@ -182,8 +193,23 @@ export default function HostPage() {
   const creneaux = selectedJour && host.horaires?.[selectedJour]
     ? getCreneaux(host.horaires[selectedJour], duree) : []
 
+  // Vérifier la capacité quand un créneau est sélectionné
+  const verifierCapacite = async (date: string, creneau: string) => {
+    if (!host) return
+    setCheckingCap(true)
+    try {
+      const res = await fetch(`/api/check-capacity?hostId=${host.id}&date=${date}&creneau=${encodeURIComponent(creneau)}`)
+      const data = await res.json()
+      setCapacite(data)
+      if (data.placesRestantes <= 4 && data.placesRestantes > 0) setShowCapAlert(true)
+      else setShowCapAlert(false)
+    } catch { setCapacite(null) }
+    finally { setCheckingCap(false) }
+  }
+
   const payer = async () => {
     if (!customerEmail) { setPayError('Email requis pour la confirmation.'); return }
+    if (capacite?.complet) { setPayError('Ce créneau est complet.'); return }
     setPaying(true); setPayError('')
 
     const description = Object.entries(selectedTarifs)
@@ -366,7 +392,10 @@ export default function HostPage() {
                   {creneaux.map(c => (
                     <button
                       key={c}
-                      onClick={() => setSelectedCreneau(c)}
+                      onClick={() => {
+                      setSelectedCreneau(c)
+                      verifierCapacite(selectedDate, c)
+                    }}
                       className={`py-2 px-3 rounded-xl border text-xs font-medium transition-colors ${selectedCreneau === c ? 'border-[#1A3A6B] bg-[#1A3A6B] text-[#F5C84A]' : 'border-gray-100 hover:border-gray-200 text-gray-700'}`}
                     >
                       {c}
@@ -376,13 +405,37 @@ export default function HostPage() {
               </>
             )}
 
+            {/* Alerte capacité */}
+            {selectedCreneau && checkingCap && (
+              <div className="bg-gray-50 rounded-xl p-3 mb-4 text-center">
+                <p className="text-xs text-gray-400">Vérification des disponibilités...</p>
+              </div>
+            )}
+            {selectedCreneau && !checkingCap && capacite && (
+              <div className={`rounded-xl p-3 mb-4 ${
+                capacite.complet ? 'bg-red-50 border border-red-200' :
+                showCapAlert ? 'bg-orange-50 border border-orange-200' :
+                'bg-green-50 border border-green-200'
+              }`}>
+                {capacite.complet ? (
+                  <p className="text-sm font-semibold text-red-600 text-center">🚫 Créneau complet</p>
+                ) : showCapAlert ? (
+                  <p className="text-sm font-semibold text-orange-600 text-center">
+                    ⚠️ Reste {capacite.placesRestantes} place{capacite.placesRestantes > 1 ? 's' : ''} !
+                  </p>
+                ) : (
+                  <p className="text-sm text-green-600 text-center">✓ {capacite.placesRestantes} places disponibles</p>
+                )}
+              </div>
+            )}
+
             <div className="flex gap-3">
               <button onClick={() => setEtape(1)} className="flex-1 border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors">
                 ← Retour
               </button>
               <button
-                onClick={() => { if (!selectedDate || !selectedCreneau) return; setEtape(3) }}
-                disabled={!selectedDate || !selectedCreneau}
+                onClick={() => { if (!selectedDate || !selectedCreneau || capacite?.complet) return; setEtape(3) }}
+                disabled={!selectedDate || !selectedCreneau || capacite?.complet === true}
                 className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 Continuer → Paiement

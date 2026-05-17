@@ -10,10 +10,12 @@ export async function POST(req: NextRequest) {
     const {
       email, prenom, nom, telephone,
       adresse, codePostal, ville,
-      horaires, prestations,
+      horaires, prestations, capaciteMax,
     } = body
 
     // Validation
+    const { capaciteMax = 20 } = body
+
     if (!email || !prenom || !nom || !telephone || !adresse || !codePostal || !ville) {
       return NextResponse.json(
         { error: 'Champs requis : email, prenom, nom, telephone, adresse, codePostal, ville' },
@@ -43,6 +45,7 @@ export async function POST(req: NextRequest) {
       ville,
       horaires,
       prestations,
+      capaciteMax,
       stripeAccountId:          accountId,
       stripeOnboardingComplete: false,
       stripePayoutsEnabled:     false,
