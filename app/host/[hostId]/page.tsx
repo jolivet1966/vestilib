@@ -193,6 +193,12 @@ export default function HostPage() {
   const creneaux = selectedJour && host.horaires?.[selectedJour]
     ? getCreneaux(host.horaires[selectedJour], duree) : []
 
+  // Nombre d'articles consigne sélectionnés
+  const articlesIds = ['4h-casque','4h-blouson','4h-sac','8h-casque','8h-blouson','8h-sac','depot-24h','depot-7j']
+  const nbArticlesSelectionnes = Object.entries(selectedTarifs)
+    .filter(([id]) => articlesIds.includes(id))
+    .reduce((s, [, qty]) => s + qty, 0)
+
   // Vérifier la capacité quand un créneau est sélectionné
   const verifierCapacite = async (date: string, creneau: string) => {
     if (!host) return
@@ -200,8 +206,14 @@ export default function HostPage() {
     try {
       const res = await fetch(`/api/check-capacity?hostId=${host.id}&date=${date}&creneau=${encodeURIComponent(creneau)}`)
       const data = await res.json()
-      setCapacite(data)
-      if (data.placesRestantes <= 4 && data.placesRestantes > 0) setShowCapAlert(true)
+      const placesApresSelection = data.placesRestantes - nbArticlesSelectionnes
+      const dataAjuste = {
+        ...data,
+        placesRestantes: Math.max(placesApresSelection, 0),
+        complet: placesApresSelection <= 0,
+      }
+      setCapacite(dataAjuste)
+      if (dataAjuste.placesRestantes <= 4 && dataAjuste.placesRestantes > 0) setShowCapAlert(true)
       else setShowCapAlert(false)
     } catch { setCapacite(null) }
     finally { setCheckingCap(false) }
@@ -357,9 +369,20 @@ export default function HostPage() {
               </div>
             )}
 
+            {host.capaciteMax && nbArticlesSelectionnes > host.capaciteMax && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
+                <p className="text-sm font-semibold text-red-600 text-center">
+                  🚫 Maximum {host.capaciteMax} articles par créneau — retirez {nbArticlesSelectionnes - host.capaciteMax} article{nbArticlesSelectionnes - host.capaciteMax > 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
             <button
-              onClick={() => { if (total <= 0) return; setEtape(2) }}
-              disabled={total <= 0}
+              onClick={() => {
+                if (total <= 0) return
+                if (host.capaciteMax && nbArticlesSelectionnes > host.capaciteMax) return
+                setEtape(2)
+              }}
+              disabled={total <= 0 || (!!host.capaciteMax && nbArticlesSelectionnes > host.capaciteMax)}
               className="w-full bg-[#1A3A6B] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               Continuer → Choisir la date
