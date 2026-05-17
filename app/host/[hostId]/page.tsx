@@ -206,14 +206,15 @@ export default function HostPage() {
     try {
       const res = await fetch(`/api/check-capacity?hostId=${host.id}&date=${date}&creneau=${encodeURIComponent(creneau)}`)
       const data = await res.json()
-      const placesApresSelection = data.placesRestantes - nbArticlesSelectionnes
+      // Places restantes APRES avoir inclus les articles sélectionnés
+      const placesRestantesReelles = data.capaciteMax - data.articlesReserves - nbArticlesSelectionnes
       const dataAjuste = {
         ...data,
-        placesRestantes: Math.max(placesApresSelection, 0),
-        complet: placesApresSelection <= 0,
+        placesRestantes: Math.max(placesRestantesReelles, 0),
+        complet: placesRestantesReelles < 0,
       }
       setCapacite(dataAjuste)
-      if (dataAjuste.placesRestantes <= 4 && dataAjuste.placesRestantes > 0) setShowCapAlert(true)
+      if (dataAjuste.placesRestantes <= 4 && dataAjuste.placesRestantes >= 0 && !dataAjuste.complet) setShowCapAlert(true)
       else setShowCapAlert(false)
     } catch { setCapacite(null) }
     finally { setCheckingCap(false) }
@@ -221,7 +222,7 @@ export default function HostPage() {
 
   const payer = async () => {
     if (!customerEmail) { setPayError('Email requis pour la confirmation.'); return }
-    if (capacite?.complet) { setPayError('Ce créneau est complet.'); return }
+    if (capacite?.complet) { setPayError('Trop d\'articles pour ce créneau — capacité dépassée.'); return }
     setPaying(true); setPayError('')
 
     const description = Object.entries(selectedTarifs)
@@ -372,7 +373,7 @@ export default function HostPage() {
             {host.capaciteMax && nbArticlesSelectionnes > host.capaciteMax && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
                 <p className="text-sm font-semibold text-red-600 text-center">
-                  🚫 Maximum {host.capaciteMax} articles par créneau — retirez {nbArticlesSelectionnes - host.capaciteMax} article{nbArticlesSelectionnes - host.capaciteMax > 1 ? 's' : ''}
+                  🚫 Maximum {host.capaciteMax} articles par créneau — retirez {nbArticlesSelectionnes - (host.capaciteMax ?? 0)} article{(nbArticlesSelectionnes - (host.capaciteMax ?? 0)) > 1 ? 's' : ''}
                 </p>
               </div>
             )}
