@@ -10,11 +10,9 @@ export async function POST(req: NextRequest) {
     const {
       email, prenom, nom, telephone,
       adresse, codePostal, ville,
-      horaires, prestations, capaciteMax,
+      horaires, prestations,
+      capaciteMax = 20,
     } = body
-
-    // Validation
-    const { capaciteMax = 20 } = body
 
     if (!email || !prenom || !nom || !telephone || !adresse || !codePostal || !ville) {
       return NextResponse.json(
