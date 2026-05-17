@@ -28,6 +28,7 @@ export interface OnboardHostInput {
   ville:       string
   horaires:    Horaires
   prestations: string[]
+  capaciteMax?: number
 }
 
 export interface OnboardHostResponse {
