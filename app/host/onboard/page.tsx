@@ -35,8 +35,11 @@ export default function OnboardHostPage() {
   const [horaires, setHoraires] = useState<Horaires>(horairesDefaut)
 
   // Étape 3 — Prestations
-  const [prestations,  setPrestations]  = useState<string[]>([])
-  const [capaciteMax,  setCapaciteMax]  = useState<number>(20)
+  const [prestations,      setPrestations]      = useState<string[]>([])
+  const [capaciteMax,      setCapaciteMax]      = useState<number>(20)
+  const [capaciteMaxMoto,  setCapaciteMaxMoto]  = useState<number>(5)
+  const [capaciteMaxVelo,  setCapaciteMaxVelo]  = useState<number>(5)
+  const [capaciteMaxDepot, setCapaciteMaxDepot] = useState<number>(10)
 
   const togglePrestation = (id: string) => {
     setPrestations(prev =>
@@ -259,30 +262,51 @@ export default function OnboardHostPage() {
                 </div>
               )}
 
-              {/* Capacité max */}
-              <div className="mt-5 border-t border-gray-100 pt-5">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-3">
-                  Capacité maximale
+              {/* Capacités max */}
+              <div className="mt-5 border-t border-gray-100 pt-5 space-y-4">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">
+                  Capacités maximales par créneau
                 </label>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-3">
-                    Nombre maximum d'articles acceptés simultanément par créneau.
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={() => setCapaciteMax(Math.max(1, capaciteMax - 1))}
-                      className="w-9 h-9 rounded-full bg-white border border-gray-200 text-gray-600 text-lg flex items-center justify-center hover:bg-gray-100"
-                    >−</button>
-                    <div className="flex-1 text-center">
-                      <p className="text-3xl font-black text-[#1A3A6B]">{capaciteMax}</p>
-                      <p className="text-xs text-gray-400">articles max / créneau</p>
-                    </div>
-                    <button
-                      onClick={() => setCapaciteMax(capaciteMax + 1)}
-                      className="w-9 h-9 rounded-full bg-[#1A3A6B] text-[#F5C84A] text-lg flex items-center justify-center hover:bg-[#0C2447]"
-                    >+</button>
-                  </div>
-                </div>
+
+                {/* Consigne */}
+                {prestations.some(p => p.startsWith('4h-') || p.startsWith('8h-')) && (
+                  <CapaciteSelector
+                    label="🎒 Consigne (casque / sac / blouson)"
+                    value={capaciteMax}
+                    onChange={setCapaciteMax}
+                    unite="articles"
+                  />
+                )}
+
+                {/* Parking moto */}
+                {prestations.includes('parking-moto') && (
+                  <CapaciteSelector
+                    label="🏍️ Parking moto"
+                    value={capaciteMaxMoto}
+                    onChange={setCapaciteMaxMoto}
+                    unite="motos"
+                  />
+                )}
+
+                {/* Parking vélo */}
+                {prestations.includes('parking-velo') && (
+                  <CapaciteSelector
+                    label="🚲 Parking vélo"
+                    value={capaciteMaxVelo}
+                    onChange={setCapaciteMaxVelo}
+                    unite="vélos"
+                  />
+                )}
+
+                {/* Dépôt longue durée */}
+                {prestations.some(p => p === 'depot-24h' || p === 'depot-7j') && (
+                  <CapaciteSelector
+                    label="📦 Dépôt longue durée"
+                    value={capaciteMaxDepot}
+                    onChange={setCapaciteMaxDepot}
+                    unite="articles"
+                  />
+                )}
               </div>
 
               {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
@@ -306,6 +330,30 @@ export default function OnboardHostPage() {
         <p className="text-center text-xs text-gray-400 mt-6">
           Après validation, vous serez redirigé vers Stripe pour configurer vos virements.
         </p>
+      </div>
+    </div>
+  )
+}
+
+function CapaciteSelector({ label, value, onChange, unite }: {
+  label: string; value: number; onChange: (v: number) => void; unite: string
+}) {
+  return (
+    <div className="bg-gray-50 rounded-xl p-4">
+      <p className="text-xs font-medium text-gray-600 mb-3">{label}</p>
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => onChange(Math.max(1, value - 1))}
+          className="w-9 h-9 rounded-full bg-white border border-gray-200 text-gray-600 text-lg flex items-center justify-center hover:bg-gray-100"
+        >−</button>
+        <div className="flex-1 text-center">
+          <p className="text-3xl font-black text-[#1A3A6B]">{value}</p>
+          <p className="text-xs text-gray-400">{unite} max / créneau</p>
+        </div>
+        <button
+          onClick={() => onChange(value + 1)}
+          className="w-9 h-9 rounded-full bg-[#1A3A6B] text-[#F5C84A] text-lg flex items-center justify-center hover:bg-[#0C2447]"
+        >+</button>
       </div>
     </div>
   )

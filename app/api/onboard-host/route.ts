@@ -11,7 +11,10 @@ export async function POST(req: NextRequest) {
       email, prenom, nom, telephone,
       adresse, codePostal, ville,
       horaires, prestations,
-      capaciteMax = 20,
+      capaciteMax      = 20,
+      capaciteMaxMoto  = 5,
+      capaciteMaxVelo  = 5,
+      capaciteMaxDepot = 10,
     } = body
 
     if (!email || !prenom || !nom || !telephone || !adresse || !codePostal || !ville) {
@@ -44,6 +47,9 @@ export async function POST(req: NextRequest) {
       horaires,
       prestations,
       capaciteMax,
+      capaciteMaxMoto,
+      capaciteMaxVelo,
+      capaciteMaxDepot,
       stripeAccountId:          accountId,
       stripeOnboardingComplete: false,
       stripePayoutsEnabled:     false,

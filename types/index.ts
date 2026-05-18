@@ -26,9 +26,12 @@ export interface OnboardHostInput {
   adresse:     string
   codePostal:  string
   ville:       string
-  horaires:    Horaires
-  prestations: string[]
-  capaciteMax?: number
+  horaires:         Horaires
+  prestations:      string[]
+  capaciteMax?:     number
+  capaciteMaxMoto?: number
+  capaciteMaxVelo?: number
+  capaciteMaxDepot?: number
 }
 
 export interface OnboardHostResponse {
@@ -89,6 +92,10 @@ export interface Host {
   ville:                    string
   horaires:                 Horaires
   prestations:              string[]
+  capaciteMax?:             number
+  capaciteMaxMoto?:         number
+  capaciteMaxVelo?:         number
+  capaciteMaxDepot?:        number
   stripeAccountId:          string
   stripeOnboardingComplete: boolean
   stripePayoutsEnabled:     boolean

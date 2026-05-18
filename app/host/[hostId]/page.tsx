@@ -12,14 +12,24 @@ interface Host {
   adresse: string; codePostal: string; ville: string
   horaires: Record<string, JourHoraire>
   prestations: string[]
-  capaciteMax?: number
+  capaciteMax?:      number
+  capaciteMaxMoto?:  number
+  capaciteMaxVelo?:  number
+  capaciteMaxDepot?: number
 }
 
 interface Capacite {
+  type:             string
   capaciteMax:      number
   articlesReserves: number
   placesRestantes:  number
   complet:          boolean
+}
+
+interface Capacites {
+  consigne?: Capacite
+  moto?:     Capacite
+  velo?:     Capacite
 }
 
 const JOURS_ORDER = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche']
@@ -87,9 +97,8 @@ export default function HostPage() {
   const [selectedCreneau, setSelectedCreneau] = useState('')
   const [customerEmail, setCustomerEmail] = useState('')
   const [paying,        setPaying]        = useState(false)
-  const [capacite,      setCapacite]      = useState<Capacite | null>(null)
+  const [capacites,     setCapacites]     = useState<Capacites>({})
   const [checkingCap,   setCheckingCap]   = useState(false)
-  const [showCapAlert,  setShowCapAlert]  = useState(false)
   const [payError,      setPayError]      = useState('')
 
   useEffect(() => {
@@ -194,10 +203,20 @@ export default function HostPage() {
     ? getCreneaux(host.horaires[selectedJour], duree) : []
 
   // Nombre d'articles consigne sélectionnés
-  const articlesIds = ['4h-casque','4h-blouson','4h-sac','8h-casque','8h-blouson','8h-sac','depot-24h','depot-7j']
-  const nbArticlesSelectionnes = Object.entries(selectedTarifs)
-    .filter(([id]) => articlesIds.includes(id))
+  const consigneIds = ['4h-casque','4h-blouson','4h-sac','8h-casque','8h-blouson','8h-sac']
+  const depotIds    = ['depot-24h','depot-7j']
+
+  const nbConsigneSelectionnes = Object.entries(selectedTarifs)
+    .filter(([id]) => consigneIds.includes(id))
     .reduce((s, [, qty]) => s + qty, 0)
+  const nbMotoSelectionnes = selectedTarifs['parking-moto'] ?? 0
+  const nbVeloSelectionnes = selectedTarifs['parking-velo'] ?? 0
+  const nbDepotSelectionnes = Object.entries(selectedTarifs)
+    .filter(([id]) => depotIds.includes(id))
+    .reduce((s, [, qty]) => s + qty, 0)
+  const nbArticlesSelectionnes = nbConsigneSelectionnes
+
+  const hasDepot = nbDepotSelectionnes > 0
 
   // Vérifier la capacité quand un créneau est sélectionné
   const verifierCapacite = async (date: string, creneau: string) => {
@@ -222,7 +241,7 @@ export default function HostPage() {
 
   const payer = async () => {
     if (!customerEmail) { setPayError('Email requis pour la confirmation.'); return }
-    if (capacite?.complet) { setPayError('Trop d\'articles pour ce créneau — capacité dépassée.'); return }
+    if (isAnyComplet) { setPayError('Trop d\'articles pour ce créneau — capacité dépassée.'); return }
     setPaying(true); setPayError('')
 
     const description = Object.entries(selectedTarifs)
@@ -435,21 +454,27 @@ export default function HostPage() {
                 <p className="text-xs text-gray-400">Vérification des disponibilités...</p>
               </div>
             )}
-            {selectedCreneau && !checkingCap && capacite && (
+            {selectedCreneau && !checkingCap && Object.keys(capacites).length > 0 && (
               <div className={`rounded-xl p-3 mb-4 ${
-                capacite.complet ? 'bg-red-50 border border-red-200' :
-                showCapAlert ? 'bg-orange-50 border border-orange-200' :
+                isAnyComplet ? 'bg-red-50 border border-red-200' :
+                getWarningPlaces() ? 'bg-orange-50 border border-orange-200' :
                 'bg-green-50 border border-green-200'
               }`}>
-                {capacite.complet ? (
-                  <p className="text-sm font-semibold text-red-600 text-center">🚫 Créneau complet</p>
-                ) : showCapAlert ? (
-                  <p className="text-sm font-semibold text-orange-600 text-center">
-                    ⚠️ Reste {capacite.placesRestantes} place{capacite.placesRestantes > 1 ? 's' : ''} !
-                  </p>
+                {isAnyComplet ? (
+                  <p className="text-sm font-semibold text-red-600 text-center">🚫 {getAlertMessage()}</p>
+                ) : getWarningPlaces() ? (
+                  <p className="text-sm font-semibold text-orange-600 text-center">⚠️ Reste {getWarningPlaces()} !</p>
                 ) : (
-                  <p className="text-sm text-green-600 text-center">✓ {capacite.placesRestantes} places disponibles</p>
+                  <p className="text-sm text-green-600 text-center">✓ Places disponibles</p>
                 )}
+              </div>
+            )}
+
+            {/* Dépôt longue durée → messagerie */}
+            {hasDepot && selectedCreneau && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                <p className="text-sm font-semibold text-blue-800 mb-2">📦 Dépôt longue durée</p>
+                <p className="text-xs text-blue-600 mb-3">Les dépôts 24h et 7 jours nécessitent une validation de l'hôte. Contactez-le via la messagerie.</p>
               </div>
             )}
 
@@ -458,8 +483,8 @@ export default function HostPage() {
                 ← Retour
               </button>
               <button
-                onClick={() => { if (!selectedDate || !selectedCreneau || capacite?.complet) return; setEtape(3) }}
-                disabled={!selectedDate || !selectedCreneau || capacite?.complet === true}
+                onClick={() => { if (!selectedDate || !selectedCreneau || isAnyComplet) return; setEtape(3) }}
+                disabled={!selectedDate || !selectedCreneau || isAnyComplet === true}
                 className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 Continuer → Paiement
