@@ -232,10 +232,10 @@ export default function HostPage() {
         placesRestantes: Math.max(placesRestantesReelles, 0),
         complet: placesRestantesReelles < 0,
       }
-      setCapacite(dataAjuste)
-      if (dataAjuste.placesRestantes <= 4 && dataAjuste.placesRestantes >= 0 && !dataAjuste.complet) setShowCapAlert(true)
-      else setShowCapAlert(false)
-    } catch { setCapacite(null) }
+      setCapacites({})
+      if (dataAjuste.placesRestantes <= 4 && dataAjuste.placesRestantes >= 0 && !dataAjuste.complet) 
+      else 
+    } catch { setCapacites({}) }
     finally { setCheckingCap(false) }
   }
 
