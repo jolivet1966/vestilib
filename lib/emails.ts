@@ -103,3 +103,74 @@ export async function sendNotificationHote(params: {
     `,
   })
 }
+
+
+// ─── Email message utilisateur → hôte ─────────────────
+export async function sendMessageToHote(params: {
+  toHote:        string
+  hostPrenom:    string
+  fromEmail:     string
+  fromNom:       string
+  sujet:         string
+  message:       string
+  hostId:        string
+}) {
+  await resend.emails.send({
+    from:     FROM,
+    to:       params.toHote,
+    reply_to: params.fromEmail,
+    subject:  `💬 Message de ${params.fromNom} — ${params.sujet}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
+        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
+          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
+          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Nouveau message</p>
+        </div>
+        <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
+          <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 4px;">Bonjour ${params.hostPrenom} 👋</h2>
+          <p style="color:#666;font-size:14px;margin:0 0 20px;">Vous avez reçu un message de <strong>${params.fromNom}</strong> (${params.fromEmail})</p>
+          <div style="background:#F5C84A20;border-left:4px solid #F5C84A;padding:16px;border-radius:0 8px 8px 0;margin-bottom:20px;">
+            <p style="font-weight:600;color:#1A3A6B;margin:0 0 8px;">Sujet : ${params.sujet}</p>
+            <p style="color:#333;margin:0;line-height:1.6;">${params.message}</p>
+          </div>
+          <p style="color:#999;font-size:12px;">Répondez directement à cet email pour contacter ${params.fromNom}.</p>
+        </div>
+        <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Messagerie</p>
+      </div>
+    `,
+  })
+}
+
+// ─── Email confirmation envoi message à l'utilisateur ──
+export async function sendConfirmationMessage(params: {
+  to:         string
+  nomUtilisateur: string
+  hostPrenom: string
+  hostNom:    string
+  sujet:      string
+  message:    string
+}) {
+  await resend.emails.send({
+    from:    FROM,
+    to:      params.to,
+    subject: `✅ Votre message a été envoyé à ${params.hostPrenom} ${params.hostNom}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
+        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
+          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
+          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Message envoyé</p>
+        </div>
+        <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
+          <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 16px;">Message envoyé !</h2>
+          <p style="color:#666;font-size:14px;margin:0 0 16px;">Votre message à <strong>${params.hostPrenom} ${params.hostNom}</strong> a bien été transmis.</p>
+          <div style="background:#f5f5f5;border-radius:12px;padding:16px;margin-bottom:16px;">
+            <p style="font-weight:600;color:#333;margin:0 0 8px;">Sujet : ${params.sujet}</p>
+            <p style="color:#666;margin:0;line-height:1.6;">${params.message}</p>
+          </div>
+          <p style="color:#999;font-size:12px;">L'hôte vous répondra directement par email.</p>
+        </div>
+        <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Messagerie</p>
+      </div>
+    `,
+  })
+}
