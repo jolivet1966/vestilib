@@ -3,6 +3,9 @@
 import { NextResponse } from 'next/server'
 import { adminDb }      from '@/lib/firebase-admin'
 
+export const dynamic    = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET() {
   try {
     const snap = await adminDb
@@ -16,7 +19,9 @@ export async function GET() {
       createdAt: doc.data().createdAt?.toDate?.()?.toISOString() ?? null,
     }))
 
-    return NextResponse.json({ hosts })
+    const response = NextResponse.json({ hosts })
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+    return response
   } catch (err: any) {
     console.error('[hosts]', err.message)
     return NextResponse.json({ error: err.message }, { status: 500 })
