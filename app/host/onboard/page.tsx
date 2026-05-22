@@ -30,6 +30,8 @@ export default function OnboardHostPage() {
   const [adresse,    setAdresse]    = useState('')
   const [codePostal, setCodePostal] = useState('')
   const [ville,      setVille]      = useState('')
+  const [password,   setPassword]   = useState('')
+  const [password2,  setPassword2]  = useState('')
 
   // Étape 2 — Horaires
   const [horaires, setHoraires] = useState<Horaires>(horairesDefaut)
@@ -61,6 +63,14 @@ export default function OnboardHostPage() {
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError('Email invalide.')
+      return
+    }
+    if (!password || password.length < 6) {
+      setError('Le mot de passe doit contenir au moins 6 caractères.')
+      return
+    }
+    if (password !== password2) {
+      setError('Les mots de passe ne correspondent pas.')
       return
     }
     setError('')
@@ -151,6 +161,8 @@ export default function OnboardHostPage() {
                 </div>
                 <Field label="Email *"       value={email}     onChange={setEmail}     placeholder="jean@email.com" type="email" />
                 <Field label="Téléphone *"   value={telephone} onChange={setTelephone} placeholder="06 12 34 56 78" type="tel" />
+                <Field label="Mot de passe *" value={password} onChange={setPassword} placeholder="Minimum 6 caractères" type="password" />
+                <Field label="Confirmer le mot de passe *" value={password2} onChange={setPassword2} placeholder="Répétez le mot de passe" type="password" />
                 <Field label="Adresse *"     value={adresse}   onChange={setAdresse}   placeholder="12 rue de la Paix" />
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Code postal *" value={codePostal} onChange={setCodePostal} placeholder="34000" />

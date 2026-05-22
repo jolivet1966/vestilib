@@ -2,9 +2,17 @@
 // app/page.tsx — Page d'accueil VESTILIB avec splash screen
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
 
 export default function HomePage() {
-  const [splash, setSplash] = useState(true)
+  const [splash,    setSplash]    = useState(true)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, user => setIsLoggedIn(!!user))
+    return () => unsub()
+  }, [])
 
   useEffect(() => {
     const timer = setTimeout(() => setSplash(false), 2500)
@@ -110,7 +118,7 @@ export default function HomePage() {
             </svg>
             <span className="text-[10px] font-medium">Messages</span>
           </Link>
-          <Link href="/profil" className="flex flex-col items-center justify-center py-3 gap-1 text-[#1A3A6B] hover:bg-gray-50 transition-colors">
+          <Link href={isLoggedIn ? "/profil" : "/host/login"} className="flex flex-col items-center justify-center py-3 gap-1 text-[#1A3A6B] hover:bg-gray-50 transition-colors">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
             </svg>
