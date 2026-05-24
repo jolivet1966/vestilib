@@ -1,26 +1,16 @@
-'use client'
-// app/page.tsx — Page d'accueil VESTILIB avec splash screen
+﻿'use client'
+// app/page.tsx â€” Page d'accueil VESTILIB avec splash screen
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
-import { auth, db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import { auth } from '@/lib/firebase'
 
 export default function HomePage() {
-  const [splash,     setSplash]     = useState(true)
-  const [profilHref, setProfilHref] = useState('/user/login')
+  const [splash,    setSplash]    = useState(true)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async user => {
-      if (!user) { setProfilHref('/user/login'); return }
-      // Vérifier si c'est un utilisateur ou un hôte
-      const userDoc = await getDoc(doc(db, 'users', user.uid))
-      if (userDoc.exists()) {
-        setProfilHref('/profil') // utilisateur
-      } else {
-        setProfilHref('/host/dashboard') // hôte
-      }
-    })
+    const unsub = onAuthStateChanged(auth, user => setIsLoggedIn(!!user))
     return () => unsub()
   }, [])
 
@@ -29,6 +19,7 @@ export default function HomePage() {
     return () => clearTimeout(timer)
   }, [])
 
+  // â”€â”€ SPLASH SCREEN â”€â”€
   if (splash) return (
     <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center gap-6 animate-fade-in">
       <svg width="80" height="80" viewBox="0 0 44 44" fill="none">
@@ -44,10 +35,11 @@ export default function HomePage() {
     </div>
   )
 
+  // â”€â”€ PAGE D'ACCUEIL â”€â”€
   return (
     <div className="min-h-screen bg-white font-sans overflow-x-hidden pb-24">
 
-      {/* HEADER */}
+      {/* â”€â”€ HEADER â”€â”€ */}
       <header className="px-6 py-5 flex items-center justify-between max-w-5xl mx-auto">
         <div className="flex items-center gap-3">
           <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
@@ -62,38 +54,38 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO */}
+      {/* â”€â”€ HERO â”€â”€ */}
       <section className="px-6 pt-8 pb-16 max-w-5xl mx-auto">
         <div className="max-w-xl">
           <h1 className="text-4xl md:text-5xl font-black text-[#1A3A6B] leading-tight mb-4">
             Profitez de la plage<br/>
             et de la ville<br/>
-            en toute liberté
+            en toute libertÃ©
           </h1>
           <p className="text-[#1A3A6B]/70 text-lg font-medium mb-8 leading-relaxed">
-            Casque ? Sac ? Équipement ?<br/>
+            Casque ? Sac ? Ã‰quipement ?<br/>
             Ne vous encombrez plus. Profitez.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link href="/map" className="bg-[#1A3A6B] text-[#F5C84A] font-bold px-8 py-4 rounded-2xl text-base hover:bg-[#0C2447] transition-all hover:scale-105 text-center shadow-lg shadow-[#1A3A6B]/20">
-              Trouver un point de dépôt →
+              Trouver un point de dÃ©pÃ´t â†’
             </Link>
-            <Link href="/host/onboard" className="bg-gray-100 text-[#1A3A6B] font-semibold px-8 py-4 rounded-2xl text-base hover:bg-gray-200 transition-colors text-center border border-gray-200">
-              Proposer un point de dépôt
+            <Link href="/host/onboard" className="bg-white/40 text-[#1A3A6B] font-semibold px-8 py-4 rounded-2xl text-base hover:bg-white/60 transition-colors text-center border border-[#1A3A6B]/20">
+              Proposer un point de dÃ©pÃ´t
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ARGUMENTS */}
+      {/* â”€â”€ ARGUMENTS â”€â”€ */}
       <section className="bg-[#1A3A6B] py-14 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { icon: '🎒', titre: 'Déposez', desc: 'Casque, sac ou équipement en toute sécurité' },
-              { icon: '📍', titre: 'À 2 min', desc: 'Des points de dépôt autour de vous' },
-              { icon: '🤝', titre: 'De confiance', desc: 'Commerçants & hôtes vérifiés' },
-              { icon: '⚡', titre: '30 secondes', desc: 'Simple, rapide, sécurisé' },
+              { icon: 'ðŸŽ’', titre: 'DÃ©posez', desc: 'Casque, sac ou Ã©quipement en toute sÃ©curitÃ©' },
+              { icon: 'ðŸ“', titre: 'Ã€ 2 min', desc: 'Des points de dÃ©pÃ´t autour de vous' },
+              { icon: 'ðŸ¤', titre: 'De confiance', desc: 'CommerÃ§ants & hÃ´tes vÃ©rifiÃ©s' },
+              { icon: 'âš¡', titre: '30 secondes', desc: 'Simple, rapide, sÃ©curisÃ©' },
             ].map((a, i) => (
               <div key={i} className="bg-white/10 rounded-2xl p-5 text-center hover:bg-white/15 transition-colors">
                 <div className="text-3xl mb-3">{a.icon}</div>
@@ -105,7 +97,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* BOTTOM NAV */}
+      {/* â”€â”€ BOTTOM NAV â”€â”€ */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50">
         <div className="max-w-lg mx-auto grid grid-cols-4">
           <Link href="/map" className="flex flex-col items-center justify-center py-3 gap-1 text-[#1A3A6B] hover:bg-gray-50 transition-colors">
@@ -118,7 +110,7 @@ export default function HomePage() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
-            <span className="text-[10px] font-medium">Espace hôte</span>
+            <span className="text-[10px] font-medium">Espace hÃ´te</span>
           </Link>
           <Link href="/messages" className="flex flex-col items-center justify-center py-3 gap-1 text-[#1A3A6B] hover:bg-gray-50 transition-colors">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -126,7 +118,7 @@ export default function HomePage() {
             </svg>
             <span className="text-[10px] font-medium">Messages</span>
           </Link>
-          <Link href={profilHref} className="flex flex-col items-center justify-center py-3 gap-1 text-[#1A3A6B] hover:bg-gray-50 transition-colors">
+          <Link href={isLoggedIn ? "/profil" : "/user/login"} className="flex flex-col items-center justify-center py-3 gap-1 text-[#1A3A6B] hover:bg-gray-50 transition-colors">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
             </svg>
@@ -135,9 +127,9 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* FOOTER */}
+      {/* â”€â”€ FOOTER â”€â”€ */}
       <footer className="py-4 text-center">
-        <p className="text-[#1A3A6B]/30 text-xs">© 2026 VESTILIB · Pose. Profite. Reviens.</p>
+        <p className="text-[#1A3A6B]/30 text-xs">Â© 2026 VESTILIB Â· Pose. Profite. Reviens.</p>
       </footer>
     </div>
   )
