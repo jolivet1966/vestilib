@@ -1,77 +1,53 @@
 'use client'
-// app/profil/page.tsx — Page profil hôte
+// app/profil/page.tsx — Page profil utilisateur
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
+import { auth, db } from '@/lib/firebase'
+import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import Link from 'next/link'
 
-interface Host {
-  id: string; prenom: string; nom: string; email: string; telephone: string
-  adresse: string; codePostal: string; ville: string
-  capaciteMax?: number; capaciteMaxMoto?: number; capaciteMaxVelo?: number
-  stripePayoutsEnabled: boolean
-}
-
-interface Balance {
-  available: number; pending: number
-  recentPayouts: { id: string; amount: number; status: string; arrivalDate: string }[]
+interface UserData {
+  id: string; prenom: string; nom: string; email: string; telephone: string; role: string
 }
 
 export default function ProfilPage() {
   const router = useRouter()
-  const [menu,    setMenu]    = useState<'apropos' | 'compte'>('apropos')
-  const [host,    setHost]    = useState<Host | null>(null)
-  const [hostId,  setHostId]  = useState<string | null>(null)
-  const [balance, setBalance] = useState<Balance | null>(null)
-  const [totalGagne, setTotalGagne] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [menu,     setMenu]     = useState<'apropos' | 'compte'>('apropos')
+  const [user,     setUser]     = useState<UserData | null>(null)
+  const [loading,  setLoading]  = useState(true)
+  const [editMode, setEditMode] = useState(false)
 
-  // Modif infos
-  const [editMode,   setEditMode]   = useState(false)
-  const [prenom,     setPrenom]     = useState('')
-  const [nom,        setNom]        = useState('')
-  const [telephone,  setTelephone]  = useState('')
-  const [adresse,    setAdresse]    = useState('')
-  const [codePostal, setCodePostal] = useState('')
-  const [ville,      setVille]      = useState('')
+  const [prenom,    setPrenom]    = useState('')
+  const [nom,       setNom]       = useState('')
+  const [telephone, setTelephone] = useState('')
   const [savingInfo, setSavingInfo] = useState(false)
-  const [infoMsg,    setInfoMsg]    = useState('')
+  const [infoMsg,   setInfoMsg]   = useState('')
 
-  // Mot de passe
   const [showPwd,   setShowPwd]   = useState(false)
   const [oldPwd,    setOldPwd]    = useState('')
   const [newPwd,    setNewPwd]    = useState('')
   const [pwdMsg,    setPwdMsg]    = useState('')
   const [savingPwd, setSavingPwd] = useState(false)
-
-  // Fermer compte
   const [showDelete, setShowDelete] = useState(false)
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async user => {
-      if (!user) { router.push('/host/login'); return }
+    const unsub = onAuthStateChanged(auth, async firebaseUser => {
+      if (!firebaseUser) { router.push('/user/login'); return }
       try {
-        const { collection, query, where, getDocs } = await import('firebase/firestore')
-        const { db } = await import('@/lib/firebase')
-        const snap = await getDocs(query(collection(db, 'hosts'), where('email', '==', user.email)))
-        if (snap.empty) { router.push('/host/login'); return }
-        const doc = snap.docs[0]
-        const data = doc.data() as Host
-        setHostId(doc.id)
-        setHost({ ...data, id: doc.id })
-        setPrenom(data.prenom ?? ''); setNom(data.nom ?? '')
-        setTelephone(data.telephone ?? ''); setAdresse(data.adresse ?? '')
-        setCodePostal(data.codePostal ?? ''); setVille(data.ville ?? '')
-
-        // Réservations
-        const bookSnap = await getDocs(query(collection(db, 'bookings'), where('hostId', '==', doc.id)))
-        const total = bookSnap.docs.filter(d => d.data().status === 'paid').reduce((s, d) => s + (d.data().hostEarns ?? 0), 0)
-        setTotalGagne(total)
-
-        // Solde Stripe
-        const balRes = await fetch(`/api/host-balance?hostId=${doc.id}`)
-        if (balRes.ok) setBalance(await balRes.json())
+        // Chercher dans users/
+        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
+        if (userDoc.exists()) {
+          const data = userDoc.data()
+          setUser({ id: firebaseUser.uid, ...data } as UserData)
+          setPrenom(data.prenom ?? '')
+          setNom(data.nom ?? '')
+          setTelephone(data.telephone ?? '')
+        } else {
+          // Pas un utilisateur → rediriger vers dashboard hôte
+          router.push('/host/dashboard')
+          return
+        }
       } catch (e) { console.error(e) }
       finally { setLoading(false) }
     })
@@ -79,13 +55,11 @@ export default function ProfilPage() {
   }, [router])
 
   const sauvegarderInfos = async () => {
-    if (!hostId) return
+    if (!user) return
     setSavingInfo(true); setInfoMsg('')
     try {
-      const { doc, updateDoc } = await import('firebase/firestore')
-      const { db } = await import('@/lib/firebase')
-      await updateDoc(doc(db, 'hosts', hostId), { prenom, nom, telephone, adresse, codePostal, ville })
-      setHost(prev => prev ? { ...prev, prenom, nom, telephone, adresse, codePostal, ville } : null)
+      await updateDoc(doc(db, 'users', user.id), { prenom, nom, telephone })
+      setUser(prev => prev ? { ...prev, prenom, nom, telephone } : null)
       setInfoMsg('✅ Informations mises à jour')
       setEditMode(false)
     } catch { setInfoMsg('❌ Erreur lors de la sauvegarde') }
@@ -93,13 +67,13 @@ export default function ProfilPage() {
   }
 
   const changerMotDePasse = async () => {
-    const user = auth.currentUser
-    if (!user || !user.email) return
+    const firebaseUser = auth.currentUser
+    if (!firebaseUser || !firebaseUser.email) return
     setSavingPwd(true); setPwdMsg('')
     try {
-      const credential = EmailAuthProvider.credential(user.email, oldPwd)
-      await reauthenticateWithCredential(user, credential)
-      await updatePassword(user, newPwd)
+      const credential = EmailAuthProvider.credential(firebaseUser.email, oldPwd)
+      await reauthenticateWithCredential(firebaseUser, credential)
+      await updatePassword(firebaseUser, newPwd)
       setPwdMsg('✅ Mot de passe mis à jour')
       setOldPwd(''); setNewPwd('')
     } catch (e: any) {
@@ -115,9 +89,9 @@ export default function ProfilPage() {
     </div>
   )
 
-  if (!host) return null
+  if (!user) return null
 
-  const initiales = `${host.prenom?.[0] ?? ''}${host.nom?.[0] ?? ''}`.toUpperCase()
+  const initiales = `${user.prenom?.[0] ?? ''}${user.nom?.[0] ?? ''}`.toUpperCase()
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -128,9 +102,9 @@ export default function ProfilPage() {
             {initiales}
           </div>
           <div>
-            <p className="text-white font-bold text-lg">{host.prenom} {host.nom}</p>
-            <p className="text-white/50 text-sm">{host.email}</p>
-            <p className="text-white/50 text-xs">{host.ville}</p>
+            <p className="text-white font-bold text-lg">{user.prenom} {user.nom}</p>
+            <p className="text-white/50 text-sm">{user.email}</p>
+            <span className="text-[10px] bg-[#F5C84A]/20 text-[#F5C84A] px-2 py-0.5 rounded-full">Utilisateur</span>
           </div>
         </div>
       </div>
@@ -154,25 +128,6 @@ export default function ProfilPage() {
         {/* ── MENU 1 : À PROPOS ── */}
         {menu === 'apropos' && (
           <>
-            {/* Gains */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Cumul des gains</p>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center bg-green-50 rounded-xl p-3">
-                  <p className="text-xl font-black text-green-600">{totalGagne.toFixed(0)}€</p>
-                  <p className="text-xs text-gray-400 mt-1">Total gagné</p>
-                </div>
-                <div className="text-center bg-[#1A3A6B]/5 rounded-xl p-3">
-                  <p className="text-xl font-black text-[#1A3A6B]">{balance?.available?.toFixed(0) ?? '—'}€</p>
-                  <p className="text-xs text-gray-400 mt-1">Disponible</p>
-                </div>
-                <div className="text-center bg-yellow-50 rounded-xl p-3">
-                  <p className="text-xl font-black text-yellow-600">{balance?.pending?.toFixed(0) ?? '—'}€</p>
-                  <p className="text-xs text-gray-400 mt-1">En attente</p>
-                </div>
-              </div>
-            </div>
-
             {/* Informations personnelles */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
               <div className="flex items-center justify-between mb-4">
@@ -189,11 +144,6 @@ export default function ProfilPage() {
                     <Field label="Nom" value={nom} onChange={setNom} />
                   </div>
                   <Field label="Téléphone" value={telephone} onChange={setTelephone} type="tel" />
-                  <Field label="Adresse" value={adresse} onChange={setAdresse} />
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Code postal" value={codePostal} onChange={setCodePostal} />
-                    <Field label="Ville" value={ville} onChange={setVille} />
-                  </div>
                   {infoMsg && <p className="text-sm text-center">{infoMsg}</p>}
                   <button onClick={sauvegarderInfos} disabled={savingInfo}
                     className="w-full bg-[#1A3A6B] text-[#F5C84A] font-medium py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
@@ -202,41 +152,30 @@ export default function ProfilPage() {
                 </div>
               ) : (
                 <div className="space-y-2 text-sm">
-                  <Row label="Nom" value={`${host.prenom} ${host.nom}`} />
-                  <Row label="Email" value={host.email} />
-                  <Row label="Téléphone" value={host.telephone || '—'} />
-                  <Row label="Adresse" value={`${host.adresse}, ${host.codePostal} ${host.ville}`} />
+                  <Row label="Nom" value={`${user.prenom} ${user.nom}`} />
+                  <Row label="Email" value={user.email} />
+                  <Row label="Téléphone" value={user.telephone || '—'} />
                 </div>
               )}
-            </div>
-
-            {/* Services et horaires */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Services & Horaires</p>
-                <Link href="/host/onboard" className="text-xs text-[#1A3A6B] font-medium hover:underline">Modifier</Link>
-              </div>
-              <p className="text-xs text-gray-400">Modifiez vos prestations et horaires via le formulaire d'inscription.</p>
             </div>
 
             {/* Validation profil */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Validation du profil</p>
               <div className="space-y-3">
-                <ValidationRow label="Pièce d'identité" status={host.stripePayoutsEnabled} info="Validée via Stripe" />
-                <ValidationRow label="Email validé" status={true} info={host.email} />
-                <ValidationRow label="Téléphone validé" status={!!host.telephone} info={host.telephone || 'Non renseigné'} />
+                <ValidationRow label="Email validé" status={true} info={user.email} />
+                <ValidationRow label="Téléphone validé" status={!!user.telephone} info={user.telephone || 'Non renseigné'} />
               </div>
             </div>
 
-            {/* Rappel capacités */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Capacités configurées</p>
-              <div className="space-y-2">
-                <Row label="🎒 Max articles consigne" value={host.capaciteMax ? `${host.capaciteMax} articles` : 'Non défini'} />
-                <Row label="🏍️ Max parking moto" value={host.capaciteMaxMoto ? `${host.capaciteMaxMoto} motos` : 'Non défini'} />
-                <Row label="🚲 Max parking vélo" value={host.capaciteMaxVelo ? `${host.capaciteMaxVelo} vélos` : 'Non défini'} />
-              </div>
+            {/* Devenir hôte */}
+            <div className="bg-[#1A3A6B]/5 border border-[#1A3A6B]/10 rounded-2xl p-5">
+              <p className="text-sm font-semibold text-[#1A3A6B] mb-2">🏠 Proposer un point de dépôt</p>
+              <p className="text-xs text-gray-500 mb-3">Rejoignez le réseau VESTILIB et générez des revenus supplémentaires.</p>
+              <Link href="/host/onboard"
+                className="block w-full text-center bg-[#1A3A6B] text-[#F5C84A] font-semibold py-2.5 rounded-xl hover:bg-[#0C2447] transition-colors text-sm">
+                Créer un compte hôte →
+              </Link>
             </div>
           </>
         )}
@@ -244,8 +183,11 @@ export default function ProfilPage() {
         {/* ── MENU 2 : COMPTE ── */}
         {menu === 'compte' && (
           <>
+            {/* Mes réservations */}
+            <MenuCard icon="📋" title="Mes réservations" subtitle="Historique de vos dépôts" onClick={() => router.push('/map')} />
+
             {/* Avis */}
-            <MenuCard icon="⭐" title="Avis" subtitle="Vos évaluations clients" onClick={() => {}} />
+            <MenuCard icon="⭐" title="Avis" subtitle="Vos évaluations" onClick={() => {}} />
 
             {/* Mot de passe */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -273,33 +215,8 @@ export default function ProfilPage() {
               )}
             </div>
 
-            {/* Modes de virement */}
-            <MenuCard icon="🏦" title="Modes de virement" subtitle="IBAN configuré via Stripe" onClick={() => {}} />
-
-            {/* Virements reçus */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Virements reçus</p>
-              {balance?.recentPayouts?.length ? (
-                <div className="space-y-2">
-                  {balance.recentPayouts.map(p => (
-                    <div key={p.id} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
-                      <div>
-                        <p className="text-sm font-medium text-gray-800">{p.amount.toFixed(2)}€</p>
-                        <p className="text-xs text-gray-400">{p.arrivalDate}</p>
-                      </div>
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                        {p.status === 'paid' ? 'Versé' : 'En cours'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-400">Aucun virement pour l'instant.</p>
-              )}
-            </div>
-
             {/* CGV */}
-            <MenuCard icon="📄" title="Conditions générales de vente" subtitle="CGV VESTILIB" onClick={() => {}} />
+            <MenuCard icon="📄" title="Conditions générales" subtitle="CGV VESTILIB" onClick={() => {}} />
 
             {/* Protection des données */}
             <MenuCard icon="🔒" title="Protection des données" subtitle="Politique de confidentialité" onClick={() => {}} />
@@ -320,7 +237,7 @@ export default function ProfilPage() {
               </button>
               {showDelete && (
                 <div className="px-5 pb-5 border-t border-red-50">
-                  <p className="text-xs text-gray-500 my-3">Cette action est irréversible. Toutes vos données seront supprimées.</p>
+                  <p className="text-xs text-gray-500 my-3">Cette action est irréversible.</p>
                   <button className="w-full bg-red-600 text-white font-medium py-2.5 rounded-xl hover:bg-red-700 transition-colors text-sm">
                     Confirmer la fermeture du compte
                   </button>

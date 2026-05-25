@@ -1,0 +1,382 @@
+﻿'use client'
+// app/profil/page.tsx â€” Page profil hÃ´te
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
+import Link from 'next/link'
+
+interface Host {
+  id: string; prenom: string; nom: string; email: string; telephone: string
+  adresse: string; codePostal: string; ville: string
+  capaciteMax?: number; capaciteMaxMoto?: number; capaciteMaxVelo?: number
+  stripePayoutsEnabled: boolean
+}
+
+interface Balance {
+  available: number; pending: number
+  recentPayouts: { id: string; amount: number; status: string; arrivalDate: string }[]
+}
+
+export default function ProfilPage() {
+  const router = useRouter()
+  const [menu,    setMenu]    = useState<'apropos' | 'compte'>('apropos')
+  const [host,    setHost]    = useState<Host | null>(null)
+  const [hostId,  setHostId]  = useState<string | null>(null)
+  const [balance, setBalance] = useState<Balance | null>(null)
+  const [totalGagne, setTotalGagne] = useState(0)
+  const [loading, setLoading] = useState(true)
+
+  // Modif infos
+  const [editMode,   setEditMode]   = useState(false)
+  const [prenom,     setPrenom]     = useState('')
+  const [nom,        setNom]        = useState('')
+  const [telephone,  setTelephone]  = useState('')
+  const [adresse,    setAdresse]    = useState('')
+  const [codePostal, setCodePostal] = useState('')
+  const [ville,      setVille]      = useState('')
+  const [savingInfo, setSavingInfo] = useState(false)
+  const [infoMsg,    setInfoMsg]    = useState('')
+
+  // Mot de passe
+  const [showPwd,   setShowPwd]   = useState(false)
+  const [oldPwd,    setOldPwd]    = useState('')
+  const [newPwd,    setNewPwd]    = useState('')
+  const [pwdMsg,    setPwdMsg]    = useState('')
+  const [savingPwd, setSavingPwd] = useState(false)
+
+  // Fermer compte
+  const [showDelete, setShowDelete] = useState(false)
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async user => {
+      if (!user) { router.push('/host/login'); return }
+      try {
+        const { collection, query, where, getDocs } = await import('firebase/firestore')
+        const { db } = await import('@/lib/firebase')
+        const snap = await getDocs(query(collection(db, 'hosts'), where('email', '==', user.email)))
+        if (snap.empty) { router.push('/host/login'); return }
+        const doc = snap.docs[0]
+        const data = doc.data() as Host
+        setHostId(doc.id)
+        setHost({ ...data, id: doc.id })
+        setPrenom(data.prenom ?? ''); setNom(data.nom ?? '')
+        setTelephone(data.telephone ?? ''); setAdresse(data.adresse ?? '')
+        setCodePostal(data.codePostal ?? ''); setVille(data.ville ?? '')
+
+        // RÃ©servations
+        const bookSnap = await getDocs(query(collection(db, 'bookings'), where('hostId', '==', doc.id)))
+        const total = bookSnap.docs.filter(d => d.data().status === 'paid').reduce((s, d) => s + (d.data().hostEarns ?? 0), 0)
+        setTotalGagne(total)
+
+        // Solde Stripe
+        const balRes = await fetch(`/api/host-balance?hostId=${doc.id}`)
+        if (balRes.ok) setBalance(await balRes.json())
+      } catch (e) { console.error(e) }
+      finally { setLoading(false) }
+    })
+    return () => unsub()
+  }, [router])
+
+  const sauvegarderInfos = async () => {
+    if (!hostId) return
+    setSavingInfo(true); setInfoMsg('')
+    try {
+      const { doc, updateDoc } = await import('firebase/firestore')
+      const { db } = await import('@/lib/firebase')
+      await updateDoc(doc(db, 'hosts', hostId), { prenom, nom, telephone, adresse, codePostal, ville })
+      setHost(prev => prev ? { ...prev, prenom, nom, telephone, adresse, codePostal, ville } : null)
+      setInfoMsg('âœ… Informations mises Ã  jour')
+      setEditMode(false)
+    } catch { setInfoMsg('âŒ Erreur lors de la sauvegarde') }
+    finally { setSavingInfo(false) }
+  }
+
+  const changerMotDePasse = async () => {
+    const user = auth.currentUser
+    if (!user || !user.email) return
+    setSavingPwd(true); setPwdMsg('')
+    try {
+      const credential = EmailAuthProvider.credential(user.email, oldPwd)
+      await reauthenticateWithCredential(user, credential)
+      await updatePassword(user, newPwd)
+      setPwdMsg('âœ… Mot de passe mis Ã  jour')
+      setOldPwd(''); setNewPwd('')
+    } catch (e: any) {
+      setPwdMsg(e.code === 'auth/wrong-password' ? 'âŒ Ancien mot de passe incorrect' : 'âŒ Erreur : ' + e.message)
+    } finally { setSavingPwd(false) }
+  }
+
+  const deconnecter = async () => { await signOut(auth); router.push('/') }
+
+  if (loading) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="w-10 h-10 border-4 border-[#1A3A6B] border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+
+  if (!host) return null
+
+  const initiales = `${host.prenom?.[0] ?? ''}${host.nom?.[0] ?? ''}`.toUpperCase()
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-24">
+      {/* Header */}
+      <div className="bg-[#1A3A6B] px-4 pt-10 pb-6">
+        <div className="max-w-lg mx-auto flex items-center gap-4">
+          <div className="w-16 h-16 bg-[#F5C84A] rounded-full flex items-center justify-center text-[#1A3A6B] text-xl font-black">
+            {initiales}
+          </div>
+          <div>
+            <p className="text-white font-bold text-lg">{host.prenom} {host.nom}</p>
+            <p className="text-white/50 text-sm">{host.email}</p>
+            <p className="text-white/50 text-xs">{host.ville}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+        <div className="max-w-lg mx-auto flex">
+          <button onClick={() => setMenu('apropos')}
+            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${menu === 'apropos' ? 'border-[#1A3A6B] text-[#1A3A6B]' : 'border-transparent text-gray-400'}`}>
+            Ã€ propos
+          </button>
+          <button onClick={() => setMenu('compte')}
+            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${menu === 'compte' ? 'border-[#1A3A6B] text-[#1A3A6B]' : 'border-transparent text-gray-400'}`}>
+            Compte
+          </button>
+        </div>
+      </div>
+
+      <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
+
+        {/* â”€â”€ MENU 1 : Ã€ PROPOS â”€â”€ */}
+        {menu === 'apropos' && (
+          <>
+            {/* Gains */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Cumul des gains</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center bg-green-50 rounded-xl p-3">
+                  <p className="text-xl font-black text-green-600">{totalGagne.toFixed(0)}â‚¬</p>
+                  <p className="text-xs text-gray-400 mt-1">Total gagnÃ©</p>
+                </div>
+                <div className="text-center bg-[#1A3A6B]/5 rounded-xl p-3">
+                  <p className="text-xl font-black text-[#1A3A6B]">{balance?.available?.toFixed(0) ?? 'â€”'}â‚¬</p>
+                  <p className="text-xs text-gray-400 mt-1">Disponible</p>
+                </div>
+                <div className="text-center bg-yellow-50 rounded-xl p-3">
+                  <p className="text-xl font-black text-yellow-600">{balance?.pending?.toFixed(0) ?? 'â€”'}â‚¬</p>
+                  <p className="text-xs text-gray-400 mt-1">En attente</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Informations personnelles */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Informations personnelles</p>
+                <button onClick={() => setEditMode(!editMode)}
+                  className="text-xs text-[#1A3A6B] font-medium hover:underline">
+                  {editMode ? 'Annuler' : 'Modifier'}
+                </button>
+              </div>
+              {editMode ? (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="PrÃ©nom" value={prenom} onChange={setPrenom} />
+                    <Field label="Nom" value={nom} onChange={setNom} />
+                  </div>
+                  <Field label="TÃ©lÃ©phone" value={telephone} onChange={setTelephone} type="tel" />
+                  <Field label="Adresse" value={adresse} onChange={setAdresse} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Code postal" value={codePostal} onChange={setCodePostal} />
+                    <Field label="Ville" value={ville} onChange={setVille} />
+                  </div>
+                  {infoMsg && <p className="text-sm text-center">{infoMsg}</p>}
+                  <button onClick={sauvegarderInfos} disabled={savingInfo}
+                    className="w-full bg-[#1A3A6B] text-[#F5C84A] font-medium py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
+                    {savingInfo ? 'Sauvegarde...' : 'Enregistrer'}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2 text-sm">
+                  <Row label="Nom" value={`${host.prenom} ${host.nom}`} />
+                  <Row label="Email" value={host.email} />
+                  <Row label="TÃ©lÃ©phone" value={host.telephone || 'â€”'} />
+                  <Row label="Adresse" value={`${host.adresse}, ${host.codePostal} ${host.ville}`} />
+                </div>
+              )}
+            </div>
+
+            {/* Services et horaires */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Services & Horaires</p>
+                <Link href="/host/onboard" className="text-xs text-[#1A3A6B] font-medium hover:underline">Modifier</Link>
+              </div>
+              <p className="text-xs text-gray-400">Modifiez vos prestations et horaires via le formulaire d'inscription.</p>
+            </div>
+
+            {/* Validation profil */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Validation du profil</p>
+              <div className="space-y-3">
+                <ValidationRow label="PiÃ¨ce d'identitÃ©" status={host.stripePayoutsEnabled} info="ValidÃ©e via Stripe" />
+                <ValidationRow label="Email validÃ©" status={true} info={host.email} />
+                <ValidationRow label="TÃ©lÃ©phone validÃ©" status={!!host.telephone} info={host.telephone || 'Non renseignÃ©'} />
+              </div>
+            </div>
+
+            {/* Rappel capacitÃ©s */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">CapacitÃ©s configurÃ©es</p>
+              <div className="space-y-2">
+                <Row label="ðŸŽ’ Max articles consigne" value={host.capaciteMax ? `${host.capaciteMax} articles` : 'Non dÃ©fini'} />
+                <Row label="ðŸï¸ Max parking moto" value={host.capaciteMaxMoto ? `${host.capaciteMaxMoto} motos` : 'Non dÃ©fini'} />
+                <Row label="ðŸš² Max parking vÃ©lo" value={host.capaciteMaxVelo ? `${host.capaciteMaxVelo} vÃ©los` : 'Non dÃ©fini'} />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* â”€â”€ MENU 2 : COMPTE â”€â”€ */}
+        {menu === 'compte' && (
+          <>
+            {/* Avis */}
+            <MenuCard icon="â­" title="Avis" subtitle="Vos Ã©valuations clients" onClick={() => {}} />
+
+            {/* Mot de passe */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <button onClick={() => setShowPwd(!showPwd)}
+                className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">ðŸ”‘</span>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-gray-800">Mot de passe</p>
+                    <p className="text-xs text-gray-400">Modifier votre mot de passe</p>
+                  </div>
+                </div>
+                <span className="text-gray-300">{showPwd ? 'â–²' : 'â–¼'}</span>
+              </button>
+              {showPwd && (
+                <div className="px-5 pb-5 space-y-3 border-t border-gray-50">
+                  <Field label="Ancien mot de passe" value={oldPwd} onChange={setOldPwd} type="password" />
+                  <Field label="Nouveau mot de passe" value={newPwd} onChange={setNewPwd} type="password" />
+                  {pwdMsg && <p className="text-sm text-center">{pwdMsg}</p>}
+                  <button onClick={changerMotDePasse} disabled={savingPwd || !oldPwd || !newPwd}
+                    className="w-full bg-[#1A3A6B] text-[#F5C84A] font-medium py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
+                    {savingPwd ? 'Mise Ã  jour...' : 'Changer le mot de passe'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Modes de virement */}
+            <MenuCard icon="ðŸ¦" title="Modes de virement" subtitle="IBAN configurÃ© via Stripe" onClick={() => {}} />
+
+            {/* Virements reÃ§us */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Virements reÃ§us</p>
+              {balance?.recentPayouts?.length ? (
+                <div className="space-y-2">
+                  {balance.recentPayouts.map(p => (
+                    <div key={p.id} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+                      <div>
+                        <p className="text-sm font-medium text-gray-800">{p.amount.toFixed(2)}â‚¬</p>
+                        <p className="text-xs text-gray-400">{p.arrivalDate}</p>
+                      </div>
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                        {p.status === 'paid' ? 'VersÃ©' : 'En cours'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400">Aucun virement pour l'instant.</p>
+              )}
+            </div>
+
+            {/* CGV */}
+            <MenuCard icon="ðŸ“„" title="Conditions gÃ©nÃ©rales de vente" subtitle="CGV VESTILIB" onClick={() => {}} />
+
+            {/* Protection des donnÃ©es */}
+            <MenuCard icon="ðŸ”’" title="Protection des donnÃ©es" subtitle="Politique de confidentialitÃ©" onClick={() => {}} />
+
+            {/* DÃ©connexion */}
+            <button onClick={deconnecter}
+              className="w-full bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-3 hover:bg-gray-50 transition-colors shadow-sm">
+              <span className="text-xl">ðŸšª</span>
+              <span className="text-sm font-medium text-gray-700">DÃ©connexion</span>
+            </button>
+
+            {/* Fermer mon compte */}
+            <div className="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
+              <button onClick={() => setShowDelete(!showDelete)}
+                className="w-full flex items-center gap-3 p-4 hover:bg-red-50 transition-colors">
+                <span className="text-xl">âŒ</span>
+                <span className="text-sm font-medium text-red-600">Fermer mon compte</span>
+              </button>
+              {showDelete && (
+                <div className="px-5 pb-5 border-t border-red-50">
+                  <p className="text-xs text-gray-500 my-3">Cette action est irrÃ©versible. Toutes vos donnÃ©es seront supprimÃ©es.</p>
+                  <button className="w-full bg-red-600 text-white font-medium py-2.5 rounded-xl hover:bg-red-700 transition-colors text-sm">
+                    Confirmer la fermeture du compte
+                  </button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Field({ label, value, onChange, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
+  return (
+    <div>
+      <label className="text-xs text-gray-500 block mb-1">{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)}
+        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
+    </div>
+  )
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between items-center py-1.5 border-b border-gray-50 last:border-0">
+      <span className="text-gray-400 text-xs">{label}</span>
+      <span className="text-gray-700 text-xs font-medium text-right max-w-[60%]">{value}</span>
+    </div>
+  )
+}
+
+function ValidationRow({ label, status, info }: { label: string; status: boolean; info: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${status ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+          {status ? 'âœ“' : 'â—‹'}
+        </span>
+        <span className="text-sm text-gray-700">{label}</span>
+      </div>
+      <span className="text-xs text-gray-400">{info}</span>
+    </div>
+  )
+}
+
+function MenuCard({ icon, title, subtitle, onClick }: { icon: string; title: string; subtitle: string; onClick: () => void }) {
+  return (
+    <button onClick={onClick}
+      className="w-full bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 hover:bg-gray-50 transition-colors shadow-sm text-left">
+      <span className="text-xl">{icon}</span>
+      <div>
+        <p className="text-sm font-medium text-gray-800">{title}</p>
+        <p className="text-xs text-gray-400">{subtitle}</p>
+      </div>
+      <span className="ml-auto text-gray-300">â€º</span>
+    </button>
+  )
+}
