@@ -18,7 +18,7 @@ export default function UserLoginPage() {
     setLoading(true); setError('')
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      router.push('/map')
+      router.push('/profil')
     } catch (err: any) {
       switch (err.code) {
         case 'auth/user-not-found':
