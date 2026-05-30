@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 // app/messages/page.tsx
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
