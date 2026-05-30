@@ -2,23 +2,9 @@
 // app/components/NavBar.tsx
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { onAuthStateChanged } from 'firebase/auth'
-import { auth, db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
 
 export default function NavBar() {
   const pathname = usePathname()
-  const [profilHref, setProfilHref] = useState('/user/login')
-
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async user => {
-      if (!user) { setProfilHref('/user/login'); return }
-      const userDoc = await getDoc(doc(db, 'users', user.uid))
-      setProfilHref(userDoc.exists() ? '/profil' : '/host/dashboard')
-    })
-    return () => unsub()
-  }, [])
 
   const actif = (href: string) =>
     pathname === href
@@ -37,12 +23,12 @@ export default function NavBar() {
           <span className="text-[10px] font-medium">Rechercher</span>
         </Link>
 
-        {/* Espace hôte */}
-        <Link href="/profil" className={`flex flex-col items-center justify-center py-3 gap-1 transition-colors rounded-none ${actif('/profil') || pathname === '/host/dashboard' ? 'text-[#F5C84A] bg-[#1A3A6B]' : 'text-[#1A3A6B] hover:bg-gray-50'}`}>
+        {/* Devenir hote */}
+        <Link href="/devenir-hote" className={`flex flex-col items-center justify-center py-3 gap-1 transition-colors rounded-none ${actif('/devenir-hote')}`}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
-          <span className="text-[10px] font-medium">Espace hôte</span>
+          <span className="text-[10px] font-medium">Devenir hote</span>
         </Link>
 
         {/* Messages */}
@@ -54,7 +40,7 @@ export default function NavBar() {
         </Link>
 
         {/* Profil */}
-        <Link href={profilHref} className={`flex flex-col items-center justify-center py-3 gap-1 transition-colors rounded-none ${pathname === '/profil' || pathname === '/user/login' ? 'text-[#F5C84A] bg-[#1A3A6B]' : 'text-[#1A3A6B] hover:bg-gray-50'}`}>
+        <Link href="/profil" className={`flex flex-col items-center justify-center py-3 gap-1 transition-colors rounded-none ${actif('/profil')}`}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
           </svg>
