@@ -62,4 +62,29 @@ export default function HomePage() {
       </section>
 
       <section className="bg-[#1A3A6B] py-14 px-6">
-        <div
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { icon: '🎒', titre: 'Deposez',      desc: 'Casque, sac ou equipement en toute securite' },
+              { icon: '📍', titre: 'A 2 min',      desc: 'Des points de depot autour de vous' },
+              { icon: '🤝', titre: 'De confiance', desc: 'Commercants et hotes verifies' },
+              { icon: '⚡', titre: '30 secondes',  desc: 'Simple, rapide, securise' },
+            ].map((a, i) => (
+              <div key={i} className="bg-white/10 rounded-2xl p-5 text-center hover:bg-white/15 transition-colors">
+                <div className="text-3xl mb-3">{a.icon}</div>
+                <p className="text-[#F5C84A] font-bold text-sm mb-1">{a.titre}</p>
+                <p className="text-white/60 text-xs leading-relaxed">{a.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer className="py-4 text-center">
+        <p className="text-[#1A3A6B]/30 text-xs">2026 VESTILIB - Pose. Profite. Reviens.</p>
+      </footer>
+
+      <NavBar />
+    </div>
+  )
+}
