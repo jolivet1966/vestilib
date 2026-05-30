@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 // app/messages/page.tsx
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
@@ -98,7 +98,7 @@ function MessagesContent() {
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors bg-white">
                 <option value="">Sélectionnez un hôte</option>
                 {hosts.map(h => (
-                  <option key={h.id} value={h.id}>{h.prenom} {h.nom} — {h.ville}</option>
+                  <option key={h.id} value={h.id}>{h.prenom} {h.nom} - {h.ville}</option>
                 ))}
               </select>
             </div>
