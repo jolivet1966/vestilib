@@ -6,11 +6,12 @@ import type { OnboardHostInput }     from '@/types'
 
 export async function POST(req: NextRequest) {
   try {
-    const body: OnboardHostInput = await req.json()
+    const body: OnboardHostInput & { existingUid?: string } = await req.json()
     const {
       email, prenom, nom, telephone,
       adresse, codePostal, ville,
       horaires, prestations,
+      existingUid,
       capaciteMax      = 20,
       capaciteMaxMoto  = 5,
       capaciteMaxVelo  = 5,
@@ -30,13 +31,27 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // 1. Créer le compte Stripe Connect
+    // 1. Vérifier si un hôte existe déjà avec cet email
+    const existingSnap = await adminDb
+      .collection('hosts')
+      .where('email', '==', email)
+      .limit(1)
+      .get()
+
+    if (!existingSnap.empty) {
+      return NextResponse.json(
+        { error: 'Un compte hôte existe déjà pour cet email.' },
+        { status: 409 }
+      )
+    }
+
+    // 2. Créer le compte Stripe Connect
     const { accountId, onboardingUrl } = await createConnectAccount({
       email, prenom, nom, ville,
     })
 
-    // 2. Enregistrer l'hôte dans Firestore avec tous les champs
-    const hostRef = await adminDb.collection('hosts').add({
+    // 3. Enregistrer l'hôte dans Firestore
+    const hostData = {
       email,
       prenom,
       nom,
@@ -55,13 +70,25 @@ export async function POST(req: NextRequest) {
       stripePayoutsEnabled:     false,
       visible:                  false,
       createdAt:                new Date(),
-    })
+      ...(existingUid ? { uid: existingUid } : {}),
+    }
 
-    console.log(`[onboard-host] Hôte créé : ${hostRef.id} (${email})`)
+    let hostId: string
+    if (existingUid) {
+      // Utilisateur déjà connecté → doc hôte avec son uid comme ID
+      await adminDb.collection('hosts').doc(existingUid).set(hostData)
+      hostId = existingUid
+      console.log(`[onboard-host] Hôte lié à user existant : ${existingUid} (${email})`)
+    } else {
+      // Nouveau visiteur → ID auto
+      const hostRef = await adminDb.collection('hosts').add(hostData)
+      hostId = hostRef.id
+      console.log(`[onboard-host] Nouvel hôte créé : ${hostId} (${email})`)
+    }
 
     return NextResponse.json({
       success:         true,
-      hostId:          hostRef.id,
+      hostId,
       stripeAccountId: accountId,
       onboardingUrl,
     })

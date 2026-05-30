@@ -1,28 +1,11 @@
 'use client'
-// app/page.tsx — Page d'accueil VESTILIB avec splash screen
+// app/page.tsx — Page d'accueil VESTILIB
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { onAuthStateChanged } from 'firebase/auth'
-import { auth, db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import NavBar from '@/app/components/NavBar'
 
 export default function HomePage() {
-  const [splash,     setSplash]     = useState(true)
-  const [profilHref, setProfilHref] = useState('/user/login')
-
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async user => {
-      if (!user) { setProfilHref('/user/login'); return }
-      // Vérifier si c'est un utilisateur ou un hôte
-      const userDoc = await getDoc(doc(db, 'users', user.uid))
-      if (userDoc.exists()) {
-        setProfilHref('/profil') // utilisateur
-      } else {
-        setProfilHref('/host/dashboard') // hôte
-      }
-    })
-    return () => unsub()
-  }, [])
+  const [splash, setSplash] = useState(true)
 
   useEffect(() => {
     const timer = setTimeout(() => setSplash(false), 2500)
@@ -75,10 +58,12 @@ export default function HomePage() {
             Ne vous encombrez plus. Profitez.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
-            <Link href="/map" className="bg-[#1A3A6B] text-[#F5C84A] font-bold px-8 py-4 rounded-2xl text-base hover:bg-[#0C2447] transition-all hover:scale-105 text-center shadow-lg shadow-[#1A3A6B]/20">
+            <Link href="/map"
+              className="bg-[#1A3A6B] text-[#F5C84A] font-bold px-8 py-4 rounded-2xl text-base hover:bg-[#0C2447] transition-all hover:scale-105 text-center shadow-lg shadow-[#1A3A6B]/20">
               Trouver un point de dépôt →
             </Link>
-            <Link href="/host/onboard" className="bg-gray-100 text-[#1A3A6B] font-semibold px-8 py-4 rounded-2xl text-base hover:bg-gray-200 transition-colors text-center border border-gray-200">
+            <Link href="/host/onboard"
+              className="bg-gray-100 text-[#1A3A6B] font-semibold px-8 py-4 rounded-2xl text-base hover:bg-gray-200 transition-colors text-center border border-gray-200">
               Proposer un point de dépôt
             </Link>
           </div>
@@ -90,8 +75,8 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { icon: '🎒', titre: 'Déposez', desc: 'Casque, sac ou équipement en toute sécurité' },
-              { icon: '📍', titre: 'À 2 min', desc: 'Des points de dépôt autour de vous' },
+              { icon: '🎒', titre: 'Déposez',     desc: 'Casque, sac ou équipement en toute sécurité' },
+              { icon: '📍', titre: 'À 2 min',     desc: 'Des points de dépôt autour de vous' },
               { icon: '🤝', titre: 'De confiance', desc: 'Commerçants & hôtes vérifiés' },
               { icon: '⚡', titre: '30 secondes', desc: 'Simple, rapide, sécurisé' },
             ].map((a, i) => (
@@ -105,40 +90,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* BOTTOM NAV */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50">
-        <div className="max-w-lg mx-auto grid grid-cols-4">
-          <Link href="/map" className="flex flex-col items-center justify-center py-3 gap-1 text-[#1A3A6B] hover:bg-gray-50 transition-colors">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-            <span className="text-[10px] font-medium">Rechercher</span>
-          </Link>
-          <Link href="/host/login" className="flex flex-col items-center justify-center py-3 gap-1 text-[#1A3A6B] hover:bg-gray-50 transition-colors">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            <span className="text-[10px] font-medium">Espace hôte</span>
-          </Link>
-          <Link href="/messages" className="flex flex-col items-center justify-center py-3 gap-1 text-[#1A3A6B] hover:bg-gray-50 transition-colors">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            <span className="text-[10px] font-medium">Messages</span>
-          </Link>
-          <Link href={profilHref} className="flex flex-col items-center justify-center py-3 gap-1 text-[#1A3A6B] hover:bg-gray-50 transition-colors">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-            </svg>
-            <span className="text-[10px] font-medium">Profil</span>
-          </Link>
-        </div>
-      </nav>
-
       {/* FOOTER */}
       <footer className="py-4 text-center">
         <p className="text-[#1A3A6B]/30 text-xs">© 2026 VESTILIB · Pose. Profite. Reviens.</p>
       </footer>
+
+      {/* NAV BAR */}
+      <NavBar />
     </div>
   )
 }
