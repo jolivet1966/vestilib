@@ -91,16 +91,5 @@ function MessagesContent() {
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
           <h2 className="text-base font-semibold text-gray-900 mb-5">Contacter un hôte</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs text-gray-500 block mb-1">Hôte *</label>
-              <select value={selectedHostId} onChange={e => setSelectedHostId(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors bg-white">
-                <option value="">Sélectionnez un hôte</option>
-                {hosts.map(h => (
-                  <option key={h.id} value={h.id}>{h.prenom} {h.nom} - {h.ville}</option>
-                ))}
-              </select>
-            </div>
-            {selectedHost && (
-              <div className="bg-[#1A3A6B]/5 rounded-xl p-3 flex items-center ga
+
+          <div className="
