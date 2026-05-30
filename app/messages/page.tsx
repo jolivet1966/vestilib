@@ -79,6 +79,7 @@ function MessagesContent() {
       <NavBar />
     </div>
   )
+  )
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
