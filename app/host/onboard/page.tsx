@@ -1,102 +1,377 @@
 'use client'
-// app/page.tsx — Page d'accueil VESTILIB
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import NavBar from '@/app/components/NavBar'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth, db } from '@/lib/firebase'
+import { doc, getDoc } from 'firebase/firestore'
+import { TARIFS_VESTILIB, CATEGORIES } from '@/lib/tarifs'
+import type { Horaires, JourHoraire } from '@/types'
 
-export default function HomePage() {
-  const [splash, setSplash] = useState(true)
+const JOURS = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'] as const
+const JOURS_LABELS: Record<string, string> = {
+  lundi: 'Lundi', mardi: 'Mardi', mercredi: 'Mercredi',
+  jeudi: 'Jeudi', vendredi: 'Vendredi', samedi: 'Samedi', dimanche: 'Dimanche',
+}
+
+const horairesDefaut: Horaires = Object.fromEntries(
+  JOURS.map(j => [j, { ouvert: j !== 'dimanche', ouverture: '09:00', fermeture: '19:00' }])
+) as Horaires
+
+export default function OnboardHostPage() {
+  const router = useRouter()
+  const [etape, setEtape] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const [checkingAuth, setCheckingAuth] = useState(true)
+  const [error, setError] = useState('')
+
+  const [existingUid, setExistingUid] = useState<string | null>(null)
+  const [dejaConnecte, setDejaConnecte] = useState(false)
+
+  const [prenom,     setPrenom]     = useState('')
+  const [nom,        setNom]        = useState('')
+  const [email,      setEmail]      = useState('')
+  const [telephone,  setTelephone]  = useState('')
+  const [adresse,    setAdresse]    = useState('')
+  const [codePostal, setCodePostal] = useState('')
+  const [ville,      setVille]      = useState('')
+  const [password,   setPassword]   = useState('')
+  const [password2,  setPassword2]  = useState('')
+
+  const [horaires, setHoraires] = useState<Horaires>(horairesDefaut)
+
+  const [prestations,      setPrestations]      = useState<string[]>([])
+  const [capaciteMax,      setCapaciteMax]      = useState<number>(20)
+  const [capaciteMaxMoto,  setCapaciteMaxMoto]  = useState<number>(5)
+  const [capaciteMaxVelo,  setCapaciteMaxVelo]  = useState<number>(5)
+  const [capaciteMaxDepot, setCapaciteMaxDepot] = useState<number>(10)
 
   useEffect(() => {
-    const timer = setTimeout(() => setSplash(false), 2500)
-    return () => clearTimeout(timer)
+    const unsub = onAuthStateChanged(auth, async firebaseUser => {
+      if (firebaseUser) {
+        setExistingUid(firebaseUser.uid)
+        setDejaConnecte(true)
+        setEmail(firebaseUser.email ?? '')
+        try {
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
+          if (userDoc.exists()) {
+            const data = userDoc.data()
+            setPrenom(data.prenom ?? '')
+            setNom(data.nom ?? '')
+            setTelephone(data.telephone ?? '')
+          }
+        } catch { }
+      }
+      setCheckingAuth(false)
+    })
+    return () => unsub()
   }, [])
 
-  if (splash) return (
-    <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center gap-6 animate-fade-in">
-      <svg width="80" height="80" viewBox="0 0 44 44" fill="none">
-        <path d="M6 8 L22 36 L38 8" stroke="#F5C84A" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-        <path d="M16 8 Q22 4 28 8" stroke="#F5C84A" strokeWidth="3" strokeLinecap="round" fill="none"/>
-        <circle cx="22" cy="4" r="2" fill="#F5C84A"/>
-      </svg>
-      <p className="text-[#F5C84A] font-black text-3xl tracking-widest">VESTILIB</p>
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
-      `}</style>
+  const togglePrestation = (id: string) => {
+    setPrestations(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+    )
+  }
+
+  const updateHoraire = (jour: string, field: keyof JourHoraire, value: string | boolean) => {
+    setHoraires(prev => ({
+      ...prev,
+      [jour]: { ...prev[jour as keyof Horaires], [field]: value },
+    }))
+  }
+
+  const validerEtape1 = () => {
+    if (!prenom || !nom || !email || !telephone || !adresse || !codePostal || !ville) {
+      setError('Veuillez remplir tous les champs.')
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('Email invalide.')
+      return
+    }
+    if (!dejaConnecte) {
+      if (!password || password.length < 6) {
+        setError('Le mot de passe doit contenir au moins 6 caracteres.')
+        return
+      }
+      if (password !== password2) {
+        setError('Les mots de passe ne correspondent pas.')
+        return
+      }
+    }
+    setError('')
+    setEtape(2)
+  }
+
+  const validerEtape2 = () => {
+    const jourOuvert = JOURS.some(j => horaires[j].ouvert)
+    if (!jourOuvert) {
+      setError("Selectionnez au moins un jour d ouverture.")
+      return
+    }
+    setError('')
+    setEtape(3)
+  }
+
+  const soumettre = async () => {
+    if (prestations.length === 0) {
+      setError('Selectionnez au moins une prestation.')
+      return
+    }
+    setError('')
+    setLoading(true)
+    try {
+      const res = await fetch('/api/onboard-host', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email, prenom, nom, telephone,
+          adresse, codePostal, ville,
+          horaires, prestations,
+          capaciteMax, capaciteMaxMoto, capaciteMaxVelo, capaciteMaxDepot,
+          existingUid: existingUid ?? undefined,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error ?? 'Erreur serveur.'); return }
+      window.location.href = data.onboardingUrl
+    } catch {
+      setError('Erreur reseau. Verifiez votre connexion.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (checkingAuth) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="w-10 h-10 border-4 border-[#1A3A6B] border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-white font-sans overflow-x-hidden pb-24">
+    <div className="min-h-screen bg-gray-50 flex items-start justify-center py-10 px-4">
+      <div className="w-full max-w-lg">
 
-      {/* HEADER */}
-      <header className="px-6 py-5 flex items-center justify-between max-w-5xl mx-auto">
-        <div className="flex items-center gap-3">
-          <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-            <path d="M6 8 L22 36 L38 8" stroke="#1A3A6B" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-            <path d="M16 8 Q22 4 28 8" stroke="#1A3A6B" strokeWidth="3" strokeLinecap="round" fill="none"/>
-            <circle cx="22" cy="4" r="2" fill="#1A3A6B"/>
-          </svg>
-          <div>
-            <p className="text-[#1A3A6B] font-black text-xl tracking-widest leading-none">VESTILIB</p>
-            <p className="text-[#1A3A6B]/60 text-[10px] tracking-wider">Pose. Profite. Reviens.</p>
-          </div>
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-[#1A3A6B] tracking-widest mb-1">VESTILIB</h1>
+          <p className="text-sm text-gray-400">Inscription hote</p>
+          {dejaConnecte && (
+            <p className="text-xs text-green-600 bg-green-50 rounded-full px-3 py-1 inline-block mt-2">
+              Connecte en tant que {email}
+            </p>
+          )}
         </div>
-      </header>
 
-      {/* HERO */}
-      <section className="px-6 pt-8 pb-16 max-w-5xl mx-auto">
-        <div className="max-w-xl">
-          <h1 className="text-4xl md:text-5xl font-black text-[#1A3A6B] leading-tight mb-4">
-            Profitez de la plage<br/>
-            et de la ville<br/>
-            en toute liberté
-          </h1>
-          <p className="text-[#1A3A6B]/70 text-lg font-medium mb-8 leading-relaxed">
-            Casque ? Sac ? Équipement ?<br/>
-            Ne vous encombrez plus. Profitez.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link href="/map"
-              className="bg-[#1A3A6B] text-[#F5C84A] font-bold px-8 py-4 rounded-2xl text-base hover:bg-[#0C2447] transition-all hover:scale-105 text-center shadow-lg shadow-[#1A3A6B]/20">
-              Trouver un point de dépôt →
-            </Link>
-            <Link href="/host/onboard"
-              className="bg-gray-100 text-[#1A3A6B] font-semibold px-8 py-4 rounded-2xl text-base hover:bg-gray-200 transition-colors text-center border border-gray-200">
-              Proposer un point de dépôt
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ARGUMENTS */}
-      <section className="bg-[#1A3A6B] py-14 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { icon: '🎒', titre: 'Déposez',     desc: 'Casque, sac ou équipement en toute sécurité' },
-              { icon: '📍', titre: 'À 2 min',     desc: 'Des points de dépôt autour de vous' },
-              { icon: '🤝', titre: 'De confiance', desc: 'Commerçants & hôtes vérifiés' },
-              { icon: '⚡', titre: '30 secondes', desc: 'Simple, rapide, sécurisé' },
-            ].map((a, i) => (
-              <div key={i} className="bg-white/10 rounded-2xl p-5 text-center hover:bg-white/15 transition-colors">
-                <div className="text-3xl mb-3">{a.icon}</div>
-                <p className="text-[#F5C84A] font-bold text-sm mb-1">{a.titre}</p>
-                <p className="text-white/60 text-xs leading-relaxed">{a.desc}</p>
+        <div className="flex items-center gap-2 mb-8">
+          {[1,2,3].map(n => (
+            <div key={n} className="flex items-center gap-2 flex-1">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 transition-colors ${
+                etape > n ? 'bg-green-500 text-white' :
+                etape === n ? 'bg-[#1A3A6B] text-[#F5C84A]' :
+                'bg-gray-200 text-gray-400'
+              }`}>
+                {etape > n ? 'ok' : n}
               </div>
-            ))}
-          </div>
+              <span className={`text-xs font-medium hidden sm:block ${etape === n ? 'text-[#1A3A6B]' : 'text-gray-400'}`}>
+                {n === 1 ? 'Identite' : n === 2 ? 'Horaires' : 'Prestations'}
+              </span>
+              {n < 3 && <div className={`flex-1 h-0.5 ${etape > n ? 'bg-green-500' : 'bg-gray-200'}`} />}
+            </div>
+          ))}
         </div>
-      </section>
 
-      {/* FOOTER */}
-      <footer className="py-4 text-center">
-        <p className="text-[#1A3A6B]/30 text-xs">© 2026 VESTILIB · Pose. Profite. Reviens.</p>
-      </footer>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
 
-      {/* NAV BAR */}
-      <NavBar />
+          {etape === 1 && (
+            <div>
+              <h2 className="text-base font-semibold text-gray-900 mb-5">Vos informations</h2>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Prenom" value={prenom} onChange={setPrenom} placeholder="Jean" />
+                  <Field label="Nom" value={nom} onChange={setNom} placeholder="Dupont" />
+                </div>
+                {dejaConnecte ? (
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1">Email</label>
+                    <div className="w-full border border-gray-100 bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-gray-500">
+                      {email}
+                    </div>
+                  </div>
+                ) : (
+                  <Field label="Email" value={email} onChange={setEmail} placeholder="jean@email.com" type="email" />
+                )}
+                <Field label="Telephone" value={telephone} onChange={setTelephone} placeholder="06 12 34 56 78" type="tel" />
+                {!dejaConnecte && (
+                  <>
+                    <Field label="Mot de passe" value={password} onChange={setPassword} placeholder="Minimum 6 caracteres" type="password" />
+                    <Field label="Confirmer mot de passe" value={password2} onChange={setPassword2} placeholder="Repetez le mot de passe" type="password" />
+                  </>
+                )}
+                <Field label="Adresse" value={adresse} onChange={setAdresse} placeholder="12 rue de la Paix" />
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Code postal" value={codePostal} onChange={setCodePostal} placeholder="34000" />
+                  <Field label="Ville" value={ville} onChange={setVille} placeholder="Montpellier" />
+                </div>
+              </div>
+              {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+              <button onClick={validerEtape1} className="mt-6 w-full bg-[#1A3A6B] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
+                Continuer
+              </button>
+            </div>
+          )}
+
+          {etape === 2 && (
+            <div>
+              <h2 className="text-base font-semibold text-gray-900 mb-5">Horaires d ouverture</h2>
+              <div className="space-y-3">
+                {JOURS.map(jour => (
+                  <div key={jour} className="flex items-center gap-3">
+                    <div className="w-24 flex items-center gap-2">
+                      <input type="checkbox" checked={horaires[jour].ouvert}
+                        onChange={e => updateHoraire(jour, 'ouvert', e.target.checked)}
+                        className="w-4 h-4 accent-[#1A3A6B]" />
+                      <span className="text-sm text-gray-700 font-medium">{JOURS_LABELS[jour]}</span>
+                    </div>
+                    {horaires[jour].ouvert ? (
+                      <div className="flex items-center gap-2 flex-1">
+                        <input type="time" value={horaires[jour].ouverture}
+                          onChange={e => updateHoraire(jour, 'ouverture', e.target.value)}
+                          className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                        <span className="text-gray-400 text-xs">-</span>
+                        <input type="time" value={horaires[jour].fermeture}
+                          onChange={e => updateHoraire(jour, 'fermeture', e.target.value)}
+                          className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400 italic">Ferme</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+              <div className="mt-6 flex gap-3">
+                <button onClick={() => setEtape(1)} className="flex-1 border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors">
+                  Retour
+                </button>
+                <button onClick={validerEtape2} className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
+                  Continuer
+                </button>
+              </div>
+            </div>
+          )}
+
+          {etape === 3 && (
+            <div>
+              <h2 className="text-base font-semibold text-gray-900 mb-1">Vos prestations</h2>
+              <p className="text-xs text-gray-400 mb-5">Selectionnez les services que vous proposez.</p>
+              <div className="space-y-5">
+                {CATEGORIES.map(cat => {
+                  const tarifs = TARIFS_VESTILIB.filter(t => t.categorie === cat)
+                  return (
+                    <div key={cat}>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{cat}</p>
+                      <div className="space-y-2">
+                        {tarifs.map(tarif => (
+                          <label key={tarif.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${
+                            prestations.includes(tarif.id) ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100 hover:border-gray-200'
+                          }`}>
+                            <div className="flex items-center gap-3">
+                              <input type="checkbox" checked={prestations.includes(tarif.id)}
+                                onChange={() => togglePrestation(tarif.id)}
+                                className="w-4 h-4 accent-[#1A3A6B]" />
+                              <div>
+                                <p className="text-sm font-medium text-gray-800">{tarif.label}</p>
+                                <p className="text-xs text-gray-400">{tarif.description}</p>
+                              </div>
+                            </div>
+                            <span className={`text-sm font-semibold ${tarif.prix < 0 ? 'text-green-600' : 'text-[#1A3A6B]'}`}>
+                              {tarif.prix < 0 ? `-${Math.abs(tarif.prix)}` : `${tarif.prix}`}EUR
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {prestations.length > 0 && (
+                <div className="mt-4 bg-[#1A3A6B]/5 rounded-xl p-3">
+                  <p className="text-xs text-[#1A3A6B] font-medium">
+                    {prestations.length} prestation{prestations.length > 1 ? 's' : ''} selectionnee{prestations.length > 1 ? 's' : ''}
+                  </p>
+                </div>
+              )}
+
+              <div className="mt-5 border-t border-gray-100 pt-5 space-y-4">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">
+                  Capacites maximales par creneau
+                </label>
+                {prestations.some(p => p.startsWith('4h-') || p.startsWith('8h-')) && (
+                  <CapaciteSelector label="Consigne articles" value={capaciteMax} onChange={setCapaciteMax} unite="articles" />
+                )}
+                {prestations.includes('parking-moto') && (
+                  <CapaciteSelector label="Parking moto" value={capaciteMaxMoto} onChange={setCapaciteMaxMoto} unite="motos" />
+                )}
+                {prestations.includes('parking-velo') && (
+                  <CapaciteSelector label="Parking velo" value={capaciteMaxVelo} onChange={setCapaciteMaxVelo} unite="velos" />
+                )}
+                {prestations.some(p => p === 'depot-24h' || p === 'depot-7j') && (
+                  <CapaciteSelector label="Depot longue duree" value={capaciteMaxDepot} onChange={setCapaciteMaxDepot} unite="articles" />
+                )}
+              </div>
+
+              {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+              <div className="mt-6 flex gap-3">
+                <button onClick={() => setEtape(2)} className="flex-1 border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors">
+                  Retour
+                </button>
+                <button onClick={soumettre} disabled={loading}
+                  className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+                  {loading ? 'Creation...' : 'Creer mon compte'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <p className="text-center text-xs text-gray-400 mt-6">
+          Apres validation, vous serez redirige vers Stripe pour configurer vos virements.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function CapaciteSelector({ label, value, onChange, unite }: {
+  label: string; value: number; onChange: (v: number) => void; unite: string
+}) {
+  return (
+    <div className="bg-gray-50 rounded-xl p-4">
+      <p className="text-xs font-medium text-gray-600 mb-3">{label}</p>
+      <div className="flex items-center gap-4">
+        <button onClick={() => onChange(Math.max(1, value - 1))}
+          className="w-9 h-9 rounded-full bg-white border border-gray-200 text-gray-600 text-lg flex items-center justify-center hover:bg-gray-100">-</button>
+        <div className="flex-1 text-center">
+          <p className="text-3xl font-black text-[#1A3A6B]">{value}</p>
+          <p className="text-xs text-gray-400">{unite} max / creneau</p>
+        </div>
+        <button onClick={() => onChange(value + 1)}
+          className="w-9 h-9 rounded-full bg-[#1A3A6B] text-[#F5C84A] text-lg flex items-center justify-center hover:bg-[#0C2447]">+</button>
+      </div>
+    </div>
+  )
+}
+
+function Field({ label, value, onChange, placeholder, type = 'text' }: {
+  label: string; value: string; onChange: (v: string) => void
+  placeholder?: string; type?: string
+}) {
+  return (
+    <div>
+      <label className="text-xs text-gray-500 block mb-1">{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
     </div>
   )
 }
