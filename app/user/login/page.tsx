@@ -1,5 +1,4 @@
 'use client'
-// app/user/login/page.tsx — Connexion utilisateur
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signInWithEmailAndPassword } from 'firebase/auth'
@@ -24,7 +23,7 @@ export default function UserLoginPage() {
         case 'auth/user-not-found':
         case 'auth/wrong-password':
         case 'auth/invalid-credential': setError('Email ou mot de passe incorrect.'); break
-        case 'auth/too-many-requests':  setError('Trop de tentatives. Réessayez plus tard.'); break
+        case 'auth/too-many-requests':  setError('Trop de tentatives. Reessayez plus tard.'); break
         default: setError('Erreur de connexion.')
       }
     } finally { setLoading(false) }
@@ -56,18 +55,14 @@ export default function UserLoginPage() {
           {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
           <button onClick={connecter} disabled={loading}
             className="mt-5 w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
-            {loading ? 'Connexion...' : 'Se connecter →'}
+            {loading ? 'Connexion...' : 'Se connecter'}
           </button>
           <p className="text-xs text-gray-400 text-center mt-4">
             Pas encore de compte ?{' '}
-            <Link href="/user/register" className="text-[#1A3A6B] font-medium hover:underline">S'inscrire</Link>
-          </p>
-          <p className="text-xs text-gray-400 text-center mt-2">
-            Vous êtes un hôte ?{' '}
-            <Link href="/host/login" className="text-[#1A3A6B] font-medium hover:underline">Espace hôte</Link>
+            <Link href="/user/register" className="text-[#1A3A6B] font-medium hover:underline">S inscrire</Link>
           </p>
         </div>
-        <p className="text-white/20 text-xs text-center mt-6">VESTILIB · Connexion sécurisée</p>
+        <p className="text-white/20 text-xs text-center mt-6">VESTILIB · Connexion securisee</p>
       </div>
     </div>
   )
