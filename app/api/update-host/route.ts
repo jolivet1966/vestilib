@@ -10,7 +10,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'hostId requis' }, { status: 400 })
     }
 
-    // Verifier si des reservations payees futures existent
     const now = new Date().toISOString().split('T')[0]
     const bookSnap = await adminDb
       .collection('bookings')
@@ -25,12 +24,11 @@ export async function POST(req: NextRequest) {
 
     if (reservationsFutures.length > 0) {
       return NextResponse.json({
-        error: `Modification impossible : ${reservationsFutures.length} reservation(s) confirmee(s) sur des creneaux futurs. Contactez vos clients avant de modifier vos services.`,
+        error: `Modification impossible : ${reservationsFutures.length} reservation(s) confirmee(s) sur des creneaux futurs.`,
         reservationsFutures: reservationsFutures.length,
       }, { status: 409 })
     }
 
-    // Mettre a jour le document hote
     await adminDb.collection('hosts').doc(hostId).update({
       horaires,
       prestations,
@@ -42,3 +40,9 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ success: true })
+
+  } catch (err: any) {
+    console.error('[update-host]', err)
+    return NextResponse.json({ error: err.message ?? 'Erreur serveur' }, { status: 500 })
+  }
+}
