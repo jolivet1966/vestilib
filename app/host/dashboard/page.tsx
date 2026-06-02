@@ -33,6 +33,17 @@ const horairesDefaut: Horaires = Object.fromEntries(
   JOURS.map(j => [j, { ouvert: j !== 'dimanche', ouverture: '09:00', fermeture: '19:00' }])
 ) as Horaires
 
+function getDatesInRange(start: string, end: string): string[] {
+  const dates: string[] = []
+  const current = new Date(start)
+  const endDate = new Date(end)
+  while (current <= endDate) {
+    dates.push(current.toISOString().split('T')[0])
+    current.setDate(current.getDate() + 1)
+  }
+  return dates
+}
+
 export default function HostDashboardPage() {
   const router = useRouter()
   const [hostId,   setHostId]   = useState<string | null>(null)
@@ -42,7 +53,6 @@ export default function HostDashboardPage() {
   const [loading,  setLoading]  = useState(true)
   const [tab,      setTab]      = useState<'reservations' | 'solde' | 'services' | 'disponibilite'>('reservations')
 
-  // Services
   const [horaires,         setHoraires]         = useState<Horaires>(horairesDefaut)
   const [prestations,      setPrestations]      = useState<string[]>([])
   const [capaciteMax,      setCapaciteMax]      = useState(20)
@@ -52,18 +62,17 @@ export default function HostDashboardPage() {
   const [saving,    setSaving]    = useState(false)
   const [saveMsg,   setSaveMsg]   = useState('')
 
-  // Disponibilite
-  const [ouvert,          setOuvert]          = useState(true)
-  const [datesFermeture,  setDatesFermeture]  = useState<string[]>([])
-  const [nouvelleDateFermeture, setNouvelleDateFermeture] = useState('')
-  const [savingDispo,     setSavingDispo]     = useState(false)
-  const [dispoMsg,        setDispoMsg]        = useState('')
+  const [ouvert,         setOuvert]         = useState(true)
+  const [datesFermeture, setDatesFermeture] = useState<string[]>([])
+  const [dateDebut,      setDateDebut]      = useState('')
+  const [dateFin,        setDateFin]        = useState('')
+  const [savingDispo,    setSavingDispo]    = useState(false)
+  const [dispoMsg,       setDispoMsg]       = useState('')
 
-  // Refus
-  const [refusBookingId,  setRefusBookingId]  = useState<string | null>(null)
-  const [motifRefus,      setMotifRefus]      = useState('')
-  const [responding,      setResponding]      = useState(false)
-  const [respondMsg,      setRespondMsg]      = useState('')
+  const [refusBookingId, setRefusBookingId] = useState<string | null>(null)
+  const [motifRefus,     setMotifRefus]     = useState('')
+  const [responding,     setResponding]     = useState(false)
+  const [respondMsg,     setRespondMsg]     = useState('')
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async user => {
@@ -80,11 +89,11 @@ export default function HostDashboardPage() {
         setHostId(hostDoc.id)
         setHost(hostData)
 
-        if (hostData.horaires)   setHoraires(hostData.horaires)
-        if (hostData.prestations) setPrestations(hostData.prestations)
-        if (hostData.capaciteMax) setCapaciteMax(hostData.capaciteMax)
-        if (hostData.capaciteMaxMoto) setCapaciteMaxMoto(hostData.capaciteMaxMoto)
-        if (hostData.capaciteMaxVelo) setCapaciteMaxVelo(hostData.capaciteMaxVelo)
+        if (hostData.horaires)       setHoraires(hostData.horaires)
+        if (hostData.prestations)    setPrestations(hostData.prestations)
+        if (hostData.capaciteMax)    setCapaciteMax(hostData.capaciteMax)
+        if (hostData.capaciteMaxMoto)  setCapaciteMaxMoto(hostData.capaciteMaxMoto)
+        if (hostData.capaciteMaxVelo)  setCapaciteMaxVelo(hostData.capaciteMaxVelo)
         if (hostData.capaciteMaxDepot) setCapaciteMaxDepot(hostData.capaciteMaxDepot)
         setOuvert(hostData.ouvert !== false)
         setDatesFermeture(hostData.datesFermeture ?? [])
@@ -131,27 +140,35 @@ export default function HostDashboardPage() {
     finally { setSaving(false) }
   }
 
-  const sauvegarderDispo = async () => {
-    if (!hostId) return
-    setSavingDispo(true); setDispoMsg('')
-    try {
-      const { doc, updateDoc } = await import('firebase/firestore')
-      const { db: firedb } = await import('@/lib/firebase')
-      await updateDoc(doc(firedb, 'hosts', hostId), { ouvert, datesFermeture })
-      setDispoMsg('Disponibilite mise a jour !')
-      setHost(prev => prev ? { ...prev, ouvert, datesFermeture } : null)
-    } catch { setDispoMsg('Erreur reseau.') }
-    finally { setSavingDispo(false) }
-  }
-
-  const ajouterDateFermeture = () => {
-    if (!nouvelleDateFermeture || datesFermeture.includes(nouvelleDateFermeture)) return
-    setDatesFermeture(prev => [...prev, nouvelleDateFermeture].sort())
-    setNouvelleDateFermeture('')
+  const ajouterPeriodeFermeture = () => {
+    if (!dateDebut) return
+    const fin = dateFin || dateDebut
+    const nouvelles = getDatesInRange(dateDebut, fin).filter(d => !datesFermeture.includes(d))
+    if (nouvelles.length === 0) return
+    setDatesFermeture(prev => [...prev, ...nouvelles].sort())
+    setDateDebut('')
+    setDateFin('')
   }
 
   const supprimerDateFermeture = (date: string) => {
     setDatesFermeture(prev => prev.filter(d => d !== date))
+  }
+
+  const sauvegarderDispo = async () => {
+    if (!hostId) return
+    setSavingDispo(true); setDispoMsg('')
+    try {
+      const res = await fetch('/api/update-disponibilite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hostId, ouvert, datesFermeture }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setDispoMsg(data.error ?? 'Erreur serveur'); return }
+      setDispoMsg('Disponibilite mise a jour !')
+      setHost(prev => prev ? { ...prev, ouvert, datesFermeture } : null)
+    } catch { setDispoMsg('Erreur reseau.') }
+    finally { setSavingDispo(false) }
   }
 
   const repondreReservation = async (bookingId: string, action: 'accept' | 'refuse') => {
@@ -233,9 +250,9 @@ export default function HostDashboardPage() {
 
         <div className="grid grid-cols-2 gap-2 mb-5">
           {[
-            { key: 'reservations', label: 'Reservations' },
-            { key: 'solde',        label: 'Solde' },
-            { key: 'services',     label: 'Mes services' },
+            { key: 'reservations',  label: 'Reservations' },
+            { key: 'solde',         label: 'Solde' },
+            { key: 'services',      label: 'Mes services' },
             { key: 'disponibilite', label: 'Disponibilite' },
           ].map(t => (
             <button key={t.key} onClick={() => setTab(t.key as any)}
@@ -245,7 +262,7 @@ export default function HostDashboardPage() {
           ))}
         </div>
 
-        {/* ── RESERVATIONS ── */}
+        {/* RESERVATIONS */}
         {tab === 'reservations' && (
           <div className="space-y-3">
             {respondMsg && (
@@ -282,7 +299,6 @@ export default function HostDashboardPage() {
                     <p className="text-sm font-semibold text-[#1A3A6B]">Vous : {booking.hostEarns}EUR</p>
                   </div>
                 </div>
-
                 {booking.status === 'awaiting_approval' && (
                   <div className="mt-3 pt-3 border-t border-gray-50">
                     {refusBookingId === booking.id ? (
@@ -320,7 +336,7 @@ export default function HostDashboardPage() {
           </div>
         )}
 
-        {/* ── SOLDE ── */}
+        {/* SOLDE */}
         {tab === 'solde' && (
           <div className="space-y-4">
             {balance ? (
@@ -365,7 +381,7 @@ export default function HostDashboardPage() {
           </div>
         )}
 
-        {/* ── SERVICES ── */}
+        {/* SERVICES */}
         {tab === 'services' && (
           <div className="space-y-5">
             <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
@@ -464,7 +480,7 @@ export default function HostDashboardPage() {
           </div>
         )}
 
-        {/* ── DISPONIBILITE ── */}
+        {/* DISPONIBILITE */}
         {tab === 'disponibilite' && (
           <div className="space-y-4">
 
@@ -482,31 +498,41 @@ export default function HostDashboardPage() {
               </div>
               {!ouvert && (
                 <div className="bg-red-50 rounded-lg p-3 mt-3">
-                  <p className="text-xs text-red-600 font-medium">Votre offre est actuellement fermee. Les clients ne peuvent pas faire de nouvelles reservations.</p>
+                  <p className="text-xs text-red-600 font-medium">Votre offre est actuellement fermee.</p>
                 </div>
               )}
             </div>
 
             <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Dates de fermeture exceptionnelle</p>
-              <div className="flex gap-2 mb-4">
-                <input type="date" value={nouvelleDateFermeture}
-                  onChange={e => setNouvelleDateFermeture(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1A3A6B]" />
-                <button onClick={ajouterDateFermeture}
-                  className="bg-[#1A3A6B] text-[#F5C84A] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0C2447] transition-colors">
-                  Ajouter
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Periode de fermeture exceptionnelle</p>
+              <div className="space-y-3 mb-4">
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">Date de debut</label>
+                  <input type="date" value={dateDebut} onChange={e => setDateDebut(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">Date de fin (optionnelle — laisser vide pour une seule journee)</label>
+                  <input type="date" value={dateFin} onChange={e => setDateFin(e.target.value)}
+                    min={dateDebut || new Date().toISOString().split('T')[0]}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                </div>
+                <button onClick={ajouterPeriodeFermeture} disabled={!dateDebut}
+                  className="w-full bg-[#1A3A6B] text-[#F5C84A] px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
+                  Ajouter la periode
                 </button>
               </div>
+
               {datesFermeture.length === 0 ? (
                 <p className="text-xs text-gray-400 text-center py-3">Aucune date de fermeture planifiee</p>
               ) : (
                 <div className="space-y-2">
+                  <p className="text-xs text-gray-500 font-medium">{datesFermeture.length} jour(s) ferme(s) :</p>
                   {datesFermeture.map(date => (
                     <div key={date} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
                       <p className="text-sm text-gray-700">
-                        {new Date(date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        {new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' })}
                       </p>
                       <button onClick={() => supprimerDateFermeture(date)}
                         className="text-red-400 hover:text-red-600 text-xs transition-colors">
