@@ -44,6 +44,31 @@ function getDatesInRange(start: string, end: string): string[] {
   return dates
 }
 
+function grouperPeriodes(dates: string[]): string[] {
+  if (dates.length === 0) return []
+  const sorted = [...dates].sort()
+  const periodes: string[] = []
+  let debut = sorted[0]
+  let fin = sorted[0]
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = new Date(fin + 'T12:00:00')
+    prev.setDate(prev.getDate() + 1)
+    if (prev.toISOString().split('T')[0] === sorted[i]) {
+      fin = sorted[i]
+    } else {
+      periodes.push(debut === fin
+        ? `Le ${new Date(debut + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`
+        : `Du ${new Date(debut + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} au ${new Date(fin + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`)
+      debut = sorted[i]
+      fin = sorted[i]
+    }
+  }
+  periodes.push(debut === fin
+    ? `Le ${new Date(debut + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`
+    : `Du ${new Date(debut + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} au ${new Date(fin + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`)
+  return periodes
+}
+
 export default function HostDashboardPage() {
   const router = useRouter()
   const [hostId,   setHostId]   = useState<string | null>(null)
@@ -148,10 +173,6 @@ export default function HostDashboardPage() {
     setDatesFermeture(prev => [...prev, ...nouvelles].sort())
     setDateDebut('')
     setDateFin('')
-  }
-
-  const supprimerDateFermeture = (date: string) => {
-    setDatesFermeture(prev => prev.filter(d => d !== date))
   }
 
   const sauvegarderDispo = async () => {
@@ -483,7 +504,6 @@ export default function HostDashboardPage() {
         {/* DISPONIBILITE */}
         {tab === 'disponibilite' && (
           <div className="space-y-4">
-
             <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Statut de mon offre</p>
               <div className="flex items-center justify-between mb-2">
@@ -513,7 +533,7 @@ export default function HostDashboardPage() {
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1A3A6B]" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 block mb-1">Date de fin (optionnelle — laisser vide pour une seule journee)</label>
+                  <label className="text-xs text-gray-500 block mb-1">Date de fin (optionnelle)</label>
                   <input type="date" value={dateFin} onChange={e => setDateFin(e.target.value)}
                     min={dateDebut || new Date().toISOString().split('T')[0]}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1A3A6B]" />
@@ -525,21 +545,19 @@ export default function HostDashboardPage() {
               </div>
 
               {datesFermeture.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-3">Aucune date de fermeture planifiee</p>
+                <p className="text-xs text-gray-400 text-center py-3">Aucune periode de fermeture planifiee</p>
               ) : (
                 <div className="space-y-2">
                   <p className="text-xs text-gray-500 font-medium">{datesFermeture.length} jour(s) ferme(s) :</p>
-                  {datesFermeture.map(date => (
-                    <div key={date} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-                      <p className="text-sm text-gray-700">
-                        {new Date(date + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'long' })}
-                      </p>
-                      <button onClick={() => supprimerDateFermeture(date)}
-                        className="text-red-400 hover:text-red-600 text-xs transition-colors">
-                        Supprimer
-                      </button>
+                  {grouperPeriodes(datesFermeture).map((periode, i) => (
+                    <div key={i} className="bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                      <p className="text-sm text-red-600 font-medium">{periode}</p>
                     </div>
                   ))}
+                  <button onClick={() => setDatesFermeture([])}
+                    className="w-full text-xs text-red-400 hover:text-red-600 py-2 transition-colors">
+                    Effacer toutes les dates
+                  </button>
                 </div>
               )}
             </div>
