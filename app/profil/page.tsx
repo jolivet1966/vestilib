@@ -1,5 +1,4 @@
 'use client'
-// app/profil/page.tsx — Page profil unifiée utilisateur + hôte
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
@@ -48,7 +47,6 @@ export default function ProfilPage() {
     const unsub = onAuthStateChanged(auth, async firebaseUser => {
       if (!firebaseUser) { router.push('/user/login'); return }
       try {
-        // 1. Chercher dans users/ par UID
         const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
         if (userDoc.exists()) {
           const data = userDoc.data()
@@ -70,7 +68,6 @@ export default function ProfilPage() {
           setNom(newUser.nom)
         }
 
-        // 2. Chercher dans hosts/ — d'abord par uid (doc ID), puis par email en fallback
         let hostDocData: any = null
         let hostDocId: string | null = null
 
@@ -79,7 +76,6 @@ export default function ProfilPage() {
           hostDocData = hostByUid.data()
           hostDocId = hostByUid.id
         } else {
-          // Fallback : anciens hôtes créés avant la liaison uid
           const hostSnap = await getDocs(query(
             collection(db, 'hosts'),
             where('email', '==', firebaseUser.email)
@@ -94,7 +90,6 @@ export default function ProfilPage() {
           setHostData({ id: hostDocId, ...hostDocData } as HostData)
           setHostId(hostDocId)
 
-          // Réservations hôte
           const bookSnap = await getDocs(query(
             collection(db, 'bookings'),
             where('hostId', '==', hostDocId)
@@ -104,7 +99,6 @@ export default function ProfilPage() {
             .reduce((s, d) => s + (d.data().hostEarns ?? 0), 0)
           setTotalGagne(total)
 
-          // Solde Stripe
           const balRes = await fetch(`/api/host-balance?hostId=${hostDocId}`)
           if (balRes.ok) setBalance(await balRes.json())
         }
@@ -121,9 +115,9 @@ export default function ProfilPage() {
     try {
       await updateDoc(doc(db, 'users', userData.id), { prenom, nom, telephone })
       setUserData(prev => prev ? { ...prev, prenom, nom, telephone } : null)
-      setInfoMsg('✅ Informations mises à jour')
+      setInfoMsg('Informations mises a jour')
       setEditMode(false)
-    } catch { setInfoMsg('❌ Erreur lors de la sauvegarde') }
+    } catch { setInfoMsg('Erreur lors de la sauvegarde') }
     finally { setSavingInfo(false) }
   }
 
@@ -135,10 +129,10 @@ export default function ProfilPage() {
       const credential = EmailAuthProvider.credential(firebaseUser.email, oldPwd)
       await reauthenticateWithCredential(firebaseUser, credential)
       await updatePassword(firebaseUser, newPwd)
-      setPwdMsg('✅ Mot de passe mis à jour')
+      setPwdMsg('Mot de passe mis a jour')
       setOldPwd(''); setNewPwd('')
     } catch (e: any) {
-      setPwdMsg(e.code === 'auth/wrong-password' ? '❌ Ancien mot de passe incorrect' : '❌ Erreur')
+      setPwdMsg(e.code === 'auth/wrong-password' ? 'Ancien mot de passe incorrect' : 'Erreur')
     } finally { setSavingPwd(false) }
   }
 
@@ -157,7 +151,6 @@ export default function ProfilPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header */}
       <div className="bg-[#1A3A6B] px-4 pt-10 pb-6">
         <div className="max-w-lg mx-auto flex items-center gap-4">
           <div className="w-16 h-16 bg-[#F5C84A] rounded-full flex items-center justify-center text-[#1A3A6B] text-xl font-black">
@@ -168,23 +161,22 @@ export default function ProfilPage() {
             <p className="text-white/50 text-sm">{userData.email}</p>
             <div className="flex gap-2 mt-1">
               <span className="text-[10px] bg-[#F5C84A]/20 text-[#F5C84A] px-2 py-0.5 rounded-full">Utilisateur</span>
-              {isHote && <span className="text-[10px] bg-green-400/20 text-green-300 px-2 py-0.5 rounded-full">Hôte</span>}
+              {isHote && <span className="text-[10px] bg-green-400/20 text-green-300 px-2 py-0.5 rounded-full">Hote</span>}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-lg mx-auto flex">
           <button onClick={() => setMenu('utilisateur')}
             className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${menu === 'utilisateur' ? 'border-[#1A3A6B] text-[#1A3A6B]' : 'border-transparent text-gray-400'}`}>
-            👤 Mon profil
+            Mon profil
           </button>
           {isHote && (
             <button onClick={() => setMenu('hote')}
               className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${menu === 'hote' ? 'border-[#1A3A6B] text-[#1A3A6B]' : 'border-transparent text-gray-400'}`}>
-              🏠 Espace hôte
+              Mon espace hote
             </button>
           )}
         </div>
@@ -192,7 +184,6 @@ export default function ProfilPage() {
 
       <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
 
-        {/* ── ESPACE UTILISATEUR ── */}
         {menu === 'utilisateur' && (
           <>
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
@@ -205,10 +196,10 @@ export default function ProfilPage() {
               {editMode ? (
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
-                    <Field label="Prénom" value={prenom} onChange={setPrenom} />
+                    <Field label="Prenom" value={prenom} onChange={setPrenom} />
                     <Field label="Nom" value={nom} onChange={setNom} />
                   </div>
-                  <Field label="Téléphone" value={telephone} onChange={setTelephone} type="tel" />
+                  <Field label="Telephone" value={telephone} onChange={setTelephone} type="tel" />
                   {infoMsg && <p className="text-sm text-center">{infoMsg}</p>}
                   <button onClick={sauvegarderInfos} disabled={savingInfo}
                     className="w-full bg-[#1A3A6B] text-[#F5C84A] font-medium py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
@@ -219,7 +210,7 @@ export default function ProfilPage() {
                 <div className="space-y-2">
                   <Row label="Nom" value={`${userData.prenom} ${userData.nom}`} />
                   <Row label="Email" value={userData.email} />
-                  <Row label="Téléphone" value={userData.telephone || '—'} />
+                  <Row label="Telephone" value={userData.telephone || '—'} />
                 </div>
               )}
             </div>
@@ -227,31 +218,29 @@ export default function ProfilPage() {
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Validation du profil</p>
               <div className="space-y-3">
-                <ValidationRow label="Email validé" status={true} info={userData.email} />
-                <ValidationRow label="Téléphone validé" status={!!userData.telephone} info={userData.telephone || 'Non renseigné'} />
+                <ValidationRow label="Email valide" status={true} info={userData.email} />
+                <ValidationRow label="Telephone valide" status={!!userData.telephone} info={userData.telephone || 'Non renseigne'} />
               </div>
             </div>
 
-            {/* Devenir hôte si pas encore hôte */}
             {!isHote && (
               <div className="bg-[#1A3A6B]/5 border border-[#1A3A6B]/10 rounded-2xl p-5">
-                <p className="text-sm font-semibold text-[#1A3A6B] mb-2">🏠 Proposer un point de dépôt</p>
-                <p className="text-xs text-gray-500 mb-3">Rejoignez le réseau VESTILIB et générez des revenus.</p>
+                <p className="text-sm font-semibold text-[#1A3A6B] mb-2">Proposer un point de depot</p>
+                <p className="text-xs text-gray-500 mb-3">Rejoignez le reseau VESTILIB et generez des revenus.</p>
                 <Link href="/host/onboard"
                   className="block w-full text-center bg-[#1A3A6B] text-[#F5C84A] font-semibold py-2.5 rounded-xl hover:bg-[#0C2447] transition-colors text-sm">
-                  Créer un compte hôte →
+                  Devenir hote
                 </Link>
               </div>
             )}
 
-            {/* Accès rapide espace hôte si déjà hôte */}
             {isHote && (
               <div className="bg-green-50 border border-green-100 rounded-2xl p-5">
-                <p className="text-sm font-semibold text-green-800 mb-1">🏠 Vous êtes hôte VESTILIB</p>
-                <p className="text-xs text-green-600 mb-3">Accédez à votre espace depuis l'onglet ci-dessus ou directement ici.</p>
+                <p className="text-sm font-semibold text-green-800 mb-1">Vous etes hote VESTILIB</p>
+                <p className="text-xs text-green-600 mb-3">Accedez a votre espace depuis l onglet ci-dessus ou directement ici.</p>
                 <button onClick={() => setMenu('hote')}
                   className="w-full text-center bg-green-700 text-white font-semibold py-2.5 rounded-xl hover:bg-green-800 transition-colors text-sm">
-                  Voir mon espace hôte →
+                  Voir mon espace hote
                 </button>
               </div>
             )}
@@ -275,19 +264,19 @@ export default function ProfilPage() {
                   {pwdMsg && <p className="text-sm text-center">{pwdMsg}</p>}
                   <button onClick={changerMotDePasse} disabled={savingPwd || !oldPwd || !newPwd}
                     className="w-full bg-[#1A3A6B] text-[#F5C84A] font-medium py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
-                    {savingPwd ? 'Mise à jour...' : 'Changer le mot de passe'}
+                    {savingPwd ? 'Mise a jour...' : 'Changer le mot de passe'}
                   </button>
                 </div>
               )}
             </div>
 
-            <MenuCard icon="📄" title="Conditions générales" subtitle="CGV VESTILIB" onClick={() => {}} />
-            <MenuCard icon="🔒" title="Protection des données" subtitle="Politique de confidentialité" onClick={() => {}} />
+            <MenuCard icon="📄" title="Conditions generales" subtitle="CGV VESTILIB" onClick={() => {}} />
+            <MenuCard icon="🔒" title="Protection des donnees" subtitle="Politique de confidentialite" onClick={() => {}} />
 
             <button onClick={deconnecter}
               className="w-full bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-3 hover:bg-gray-50 transition-colors shadow-sm">
               <span className="text-xl">🚪</span>
-              <span className="text-sm font-medium text-gray-700">Déconnexion</span>
+              <span className="text-sm font-medium text-gray-700">Deconnexion</span>
             </button>
 
             <div className="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
@@ -298,7 +287,7 @@ export default function ProfilPage() {
               </button>
               {showDelete && (
                 <div className="px-5 pb-5 border-t border-red-50">
-                  <p className="text-xs text-gray-500 my-3">Cette action est irréversible.</p>
+                  <p className="text-xs text-gray-500 my-3">Cette action est irreversible.</p>
                   <button className="w-full bg-red-600 text-white font-medium py-2.5 rounded-xl hover:bg-red-700 transition-colors text-sm">
                     Confirmer la fermeture du compte
                   </button>
@@ -308,46 +297,45 @@ export default function ProfilPage() {
           </>
         )}
 
-        {/* ── ESPACE HÔTE ── */}
         {menu === 'hote' && hostData && (
           <>
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Cumul des gains</p>
               <div className="grid grid-cols-3 gap-3">
                 <div className="text-center bg-green-50 rounded-xl p-3">
-                  <p className="text-xl font-black text-green-600">{totalGagne.toFixed(0)}€</p>
-                  <p className="text-xs text-gray-400 mt-1">Total gagné</p>
+                  <p className="text-xl font-black text-green-600">{totalGagne.toFixed(0)}EUR</p>
+                  <p className="text-xs text-gray-400 mt-1">Total gagne</p>
                 </div>
                 <div className="text-center bg-[#1A3A6B]/5 rounded-xl p-3">
-                  <p className="text-xl font-black text-[#1A3A6B]">{balance?.available?.toFixed(0) ?? '—'}€</p>
+                  <p className="text-xl font-black text-[#1A3A6B]">{balance?.available?.toFixed(0) ?? '—'}EUR</p>
                   <p className="text-xs text-gray-400 mt-1">Disponible</p>
                 </div>
                 <div className="text-center bg-yellow-50 rounded-xl p-3">
-                  <p className="text-xl font-black text-yellow-600">{balance?.pending?.toFixed(0) ?? '—'}€</p>
+                  <p className="text-xl font-black text-yellow-600">{balance?.pending?.toFixed(0) ?? '—'}EUR</p>
                   <p className="text-xs text-gray-400 mt-1">En attente</p>
                 </div>
               </div>
             </div>
 
-            <MenuCard icon="📋" title="Mes réservations" subtitle="Voir toutes les réservations" onClick={() => router.push('/host/dashboard')} />
-            <MenuCard icon="🏦" title="Solde & Virements" subtitle="Historique des paiements" onClick={() => router.push('/host/dashboard')} />
+            <MenuCard icon="📋" title="Mes reservations" subtitle="Voir toutes les reservations" onClick={() => router.push('/host/dashboard')} />
+            <MenuCard icon="🏦" title="Solde et Virements" subtitle="Historique des paiements" onClick={() => router.push('/host/dashboard')} />
 
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Mon point de dépôt</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Mon point de depot</p>
               <div className="space-y-2">
                 <Row label="Ville" value={hostData.ville} />
-                <Row label="Virements activés" value={hostData.stripePayoutsEnabled ? 'Oui ✓' : 'En attente'} />
+                <Row label="Virements actives" value={hostData.stripePayoutsEnabled ? 'Oui' : 'En attente'} />
                 {hostData.capaciteMax && <Row label="Max articles" value={`${hostData.capaciteMax} articles`} />}
                 {hostData.capaciteMaxMoto && <Row label="Max motos" value={`${hostData.capaciteMaxMoto} motos`} />}
-                {hostData.capaciteMaxVelo && <Row label="Max vélos" value={`${hostData.capaciteMaxVelo} vélos`} />}
+                {hostData.capaciteMaxVelo && <Row label="Max velos" value={`${hostData.capaciteMaxVelo} velos`} />}
               </div>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Statut du compte hôte</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Statut du compte hote</p>
               <div className="space-y-3">
-                <ValidationRow label="Pièce d'identité" status={hostData.stripePayoutsEnabled} info="Via Stripe Connect" />
-                <ValidationRow label="Virements activés" status={hostData.stripePayoutsEnabled} info={hostData.stripePayoutsEnabled ? 'Actif' : 'En attente'} />
+                <ValidationRow label="Piece d identite" status={hostData.stripePayoutsEnabled} info="Via Stripe Connect" />
+                <ValidationRow label="Virements actives" status={hostData.stripePayoutsEnabled} info={hostData.stripePayoutsEnabled ? 'Actif' : 'En attente'} />
               </div>
             </div>
           </>
@@ -381,7 +369,7 @@ function ValidationRow({ label, status, info }: { label: string; status: boolean
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${status ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
-          {status ? '✓' : '○'}
+          {status ? 'ok' : 'o'}
         </span>
         <span className="text-sm text-gray-700">{label}</span>
       </div>
