@@ -234,16 +234,7 @@ export default function ProfilPage() {
               </div>
             )}
 
-            {isHote && (
-              <div className="bg-green-50 border border-green-100 rounded-2xl p-5">
-                <p className="text-sm font-semibold text-green-800 mb-1">Vous etes hote VESTILIB</p>
-                <p className="text-xs text-green-600 mb-3">Accedez a votre espace depuis l onglet ci-dessus ou directement ici.</p>
-                <button onClick={() => setMenu('hote')}
-                  className="w-full text-center bg-green-700 text-white font-semibold py-2.5 rounded-xl hover:bg-green-800 transition-colors text-sm">
-                  Voir mon espace hote
-                </button>
-              </div>
-            )}
+            
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <button onClick={() => setShowPwd(!showPwd)}
