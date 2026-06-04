@@ -1,5 +1,4 @@
 'use client'
-// app/map/page.tsx — version sans @types/google.maps
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
@@ -41,7 +40,7 @@ export default function MapPage() {
   useEffect(() => {
     if (!mapsReady || !mapRef.current || mapInstance.current) return
     mapInstance.current = new window.google.maps.Map(mapRef.current, {
-      center: { lat: 46.603354, lng: 1.888334 }, zoom: 6,
+      center: { lat: 43.6, lng: 3.9 }, zoom: 9,
       styles: [{ featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] }],
       mapTypeControl: false, streetViewControl: false, fullscreenControl: false,
     })
@@ -86,12 +85,14 @@ export default function MapPage() {
   const aujourdHui = () => ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'][new Date().getDay()]
   const statutOuverture = (host: Host) => {
     const h = host.horaires?.[aujourdHui()]
-    if (!h?.ouvert) return { ouvert: false, label: "Fermé aujourd'hui" }
-    return { ouvert: true, label: `Ouvert · ${h.ouverture} – ${h.fermeture}` }
+    if (!h?.ouvert) return { ouvert: false, label: "Ferme aujourd hui" }
+    return { ouvert: true, label: `Ouvert · ${h.ouverture} - ${h.fermeture}` }
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="flex flex-col bg-gray-50" style={{ height: '100dvh' }}>
+
+      {/* Header */}
       <div className="bg-[#1A3A6B] px-4 py-3 flex items-center gap-4 flex-shrink-0">
         <Link href="/" className="text-[#F5C84A] font-bold tracking-widest text-lg">VESTILIB</Link>
         <div className="flex-1 relative">
@@ -100,48 +101,12 @@ export default function MapPage() {
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">🔍</span>
         </div>
       </div>
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-80 flex-shrink-0 overflow-y-auto border-r border-gray-200 bg-white">
-          {loading ? (
-            <div className="flex items-center justify-center h-32 text-gray-400 text-sm">Chargement...</div>
-          ) : hosts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2"><span className="text-2xl">📍</span>Aucun hôte disponible</div>
-          ) : (
-            <div className="p-3 space-y-2">
-              <p className="text-xs text-gray-400 px-1 mb-3">{hosts.length} hôte{hosts.length > 1 ? 's' : ''} disponible{hosts.length > 1 ? 's' : ''}</p>
-              {hosts.map(host => {
-                const statut = statutOuverture(host)
-                const isSelected = selectedHost?.id === host.id
-                return (
-                  <div key={host.id} onClick={() => setSelectedHost(isSelected ? null : host)}
-                    className={`p-3 rounded-xl border cursor-pointer transition-all ${isSelected ? 'border-[#1A3A6B] bg-[#1A3A6B]/5 shadow-sm' : 'border-gray-100 hover:border-gray-200 hover:shadow-sm'}`}>
-                    <div className="flex items-start justify-between mb-1">
-                      <p className="text-sm font-semibold text-gray-900">{host.prenom} {host.nom}</p>
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ml-2 flex-shrink-0 ${statut.ouvert ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-500'}`}>
-                        {statut.ouvert ? 'Ouvert' : 'Fermé'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-400 mb-1">📍 {host.adresse}, {host.ville}</p>
-                    <p className="text-xs text-gray-500 mb-2">{statut.label}</p>
-                    <div className="flex flex-wrap gap-1">
-                      {host.prestations?.slice(0, 3).map(pid => {
-                        const t = TARIFS_VESTILIB.find(t => t.id === pid)
-                        return t ? <span key={pid} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{t.label}</span> : null
-                      })}
-                      {(host.prestations?.length ?? 0) > 3 && <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">+{host.prestations.length - 3}</span>}
-                    </div>
-                    {isSelected && (
-                      <Link href={`/host/${host.id}`} className="mt-3 block w-full text-center bg-[#1A3A6B] text-[#F5C84A] text-xs font-semibold py-2 rounded-lg hover:bg-[#0C2447] transition-colors">
-                        Voir et réserver →
-                      </Link>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-        <div className="flex-1 relative">
+
+      {/* Layout mobile : carte en haut, liste en bas — desktop : cote a cote */}
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+
+        {/* CARTE — haut sur mobile, droite sur desktop */}
+        <div className="h-56 md:h-auto md:flex-1 relative order-first md:order-last flex-shrink-0">
           <div ref={mapRef} className="w-full h-full" />
           {!mapsReady && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
@@ -152,6 +117,53 @@ export default function MapPage() {
             </div>
           )}
         </div>
+
+        {/* LISTE — bas sur mobile, gauche sur desktop */}
+        <div className="flex-1 md:flex-none md:w-80 overflow-y-auto border-t md:border-t-0 md:border-r border-gray-200 bg-white order-last md:order-first">
+          {loading ? (
+            <div className="flex items-center justify-center h-32 text-gray-400 text-sm">Chargement...</div>
+          ) : hosts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
+              <span className="text-2xl">📍</span>Aucun hote disponible
+            </div>
+          ) : (
+            <div className="p-3 space-y-2">
+              <p className="text-xs text-gray-400 px-1 mb-3">{hosts.length} hote{hosts.length > 1 ? 's' : ''} disponible{hosts.length > 1 ? 's' : ''}</p>
+              {hosts.map(host => {
+                const statut = statutOuverture(host)
+                const isSelected = selectedHost?.id === host.id
+                return (
+                  <div key={host.id} onClick={() => setSelectedHost(isSelected ? null : host)}
+                    className={`p-3 rounded-xl border cursor-pointer transition-all ${isSelected ? 'border-[#1A3A6B] bg-[#1A3A6B]/5 shadow-sm' : 'border-gray-100 hover:border-gray-200 hover:shadow-sm'}`}>
+                    <div className="flex items-start justify-between mb-1">
+                      <p className="text-sm font-semibold text-gray-900">{host.prenom} {host.nom}</p>
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ml-2 flex-shrink-0 ${statut.ouvert ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-500'}`}>
+                        {statut.ouvert ? 'Ouvert' : 'Ferme'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 mb-1">📍 {host.adresse}, {host.ville}</p>
+                    <p className="text-xs text-gray-500 mb-2">{statut.label}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {host.prestations?.slice(0, 3).map(pid => {
+                        const t = TARIFS_VESTILIB.find(t => t.id === pid)
+                        return t ? <span key={pid} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{t.label}</span> : null
+                      })}
+                      {(host.prestations?.length ?? 0) > 3 && (
+                        <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">+{host.prestations.length - 3}</span>
+                      )}
+                    </div>
+                    {isSelected && (
+                      <Link href={`/host/${host.id}`} className="mt-3 block w-full text-center bg-[#1A3A6B] text-[#F5C84A] text-xs font-semibold py-2 rounded-lg hover:bg-[#0C2447] transition-colors">
+                        Voir et reserver
+                      </Link>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   )
