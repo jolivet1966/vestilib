@@ -57,11 +57,13 @@ export default function HomePage() {
 
       <header className="px-6 py-5 flex items-center justify-between max-w-5xl mx-auto">
         <div className="flex items-center gap-3">
-          <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-            <path d="M6 8 L22 36 L38 8" stroke="#1A3A6B" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-            <path d="M16 8 Q22 4 28 8" stroke="#1A3A6B" strokeWidth="3" strokeLinecap="round" fill="none"/>
-            <circle cx="22" cy="4" r="2" fill="#1A3A6B"/>
-          </svg>
+          <div className="w-11 h-11 bg-[#1A3A6B] rounded-xl flex items-center justify-center">
+            <svg width="32" height="32" viewBox="0 0 44 44" fill="none">
+              <path d="M6 8 L22 36 L38 8" stroke="#F5C84A" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+              <path d="M16 8 Q22 4 28 8" stroke="#F5C84A" strokeWidth="3" strokeLinecap="round" fill="none"/>
+              <circle cx="22" cy="4" r="2" fill="#F5C84A"/>
+            </svg>
+          </div>
           <div>
             <p className="text-[#1A3A6B] font-black text-xl tracking-widest leading-none">VESTILIB</p>
             <p className="text-[#1A3A6B]/60 text-[10px] tracking-wider">Pose. Profite. Reviens.</p>
