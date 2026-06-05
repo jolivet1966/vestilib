@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
 import { TARIFS_VESTILIB, CATEGORIES, REMISE_INFO } from '@/lib/tarifs'
 
 interface JourHoraire { ouvert: boolean; ouverture: string; fermeture: string }
@@ -60,10 +62,12 @@ export default function HostPage() {
   const { hostId } = useParams<{ hostId: string }>()
   const router = useRouter()
 
-  const [host,    setHost]    = useState<Host | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error,   setError]   = useState('')
-  const [etape,   setEtape]   = useState<1|2|3>(1)
+  const [authChecked,  setAuthChecked]  = useState(false)
+  const [isConnected,  setIsConnected]  = useState(false)
+  const [host,         setHost]         = useState<Host | null>(null)
+  const [loading,      setLoading]      = useState(true)
+  const [error,        setError]        = useState('')
+  const [etape,        setEtape]        = useState<1|2|3>(1)
 
   const [selectedTarifs,  setSelectedTarifs]  = useState<Record<string, number>>({})
   const [selectedDate,    setSelectedDate]    = useState('')
@@ -77,6 +81,16 @@ export default function HostPage() {
   const [capacites,   setCapacites]   = useState<Record<string, Capacite>>({})
   const [checkingCap, setCheckingCap] = useState(false)
 
+  // Verification auth
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, user => {
+      setIsConnected(!!user)
+      setAuthChecked(true)
+    })
+    return () => unsub()
+  }, [])
+
+  // Chargement hote
   useEffect(() => {
     fetch(`/api/hosts/${hostId}`)
       .then(r => r.json())
@@ -85,7 +99,33 @@ export default function HostPage() {
       .finally(() => setLoading(false))
   }, [hostId])
 
-  if (loading) return (
+  // Redirect si non connecte
+  if (authChecked && !isConnected) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <div className="text-5xl mb-2">🔐</div>
+        <h1 className="text-xl font-bold text-gray-900">Connexion requise</h1>
+        <p className="text-sm text-gray-400 max-w-xs">
+          Pour reserver un point de depot, vous devez avoir un compte VESTILIB.
+        </p>
+        <div className="flex flex-col gap-3 w-full max-w-xs mt-2">
+          <Link href="/user/login"
+            className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors text-center">
+            Se connecter
+          </Link>
+          <Link href="/user/register"
+            className="w-full bg-white border border-gray-200 text-[#1A3A6B] font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors text-center">
+            Creer un compte
+          </Link>
+          <Link href="/map" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+            Retour a la carte
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading || !authChecked) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="w-10 h-10 border-4 border-[#1A3A6B] border-t-transparent rounded-full animate-spin" />
     </div>
@@ -98,7 +138,6 @@ export default function HostPage() {
     </div>
   )
 
-  // Hote ferme
   if (host.ouvert === false) return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4 px-6 text-center">
       <div className="text-5xl mb-2">🔒</div>
@@ -230,7 +269,6 @@ export default function HostPage() {
       return
     }
 
-    // Paiement immediat
     try {
       const res = await fetch('/api/create-checkout', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -283,7 +321,7 @@ export default function HostPage() {
         </div>
 
         <div className="flex gap-2 mb-6">
-          {[{n:1,label:'Prestations'},{n:2,label:'Date & Heure'},{n:3,label:'Paiement'}].map(s => (
+          {[{n:1,label:'Prestations'},{n:2,label:'Date et Heure'},{n:3,label:'Paiement'}].map(s => (
             <div key={s.n} className={`flex-1 text-center py-2 rounded-xl text-xs font-medium border transition-colors ${
               etape === s.n ? 'bg-[#1A3A6B] text-[#F5C84A] border-[#1A3A6B]' :
               etape > s.n  ? 'bg-green-500 text-white border-green-500' :
@@ -292,7 +330,6 @@ export default function HostPage() {
           ))}
         </div>
 
-        {/* ETAPE 1 */}
         {etape === 1 && (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-gray-900 mb-4">Choisissez vos prestations</h2>
@@ -377,7 +414,6 @@ export default function HostPage() {
           </div>
         )}
 
-        {/* ETAPE 2 */}
         {etape === 2 && (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-gray-900 mb-4">Choisissez la date</h2>
@@ -433,7 +469,6 @@ export default function HostPage() {
           </div>
         )}
 
-        {/* ETAPE 3 */}
         {etape === 3 && (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
             <h2 className="text-sm font-semibold text-gray-900 mb-4">Recapitulatif</h2>
@@ -452,7 +487,7 @@ export default function HostPage() {
             <div className="border-t border-gray-100 pt-3 mb-4">
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-500">Date</span>
-                <span className="font-medium text-gray-800">{new Date(selectedDate).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                <span className="font-medium text-gray-800">{new Date(selectedDate + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
               </div>
               <div className="flex justify-between text-sm mb-3">
                 <span className="text-gray-500">Creneau</span>
