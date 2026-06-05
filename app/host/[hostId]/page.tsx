@@ -113,7 +113,7 @@ export default function HostPage() {
             className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors text-center">
             Se connecter
           </Link>
-          <Link href="/user/register"
+          <Link href={`/user/register?redirect=/host/${hostId}`}
             className="w-full bg-white border border-gray-200 text-[#1A3A6B] font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors text-center">
             Creer un compte
           </Link>

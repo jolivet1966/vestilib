@@ -30,7 +30,10 @@ export default function UserRegisterPage() {
         role: 'user',
         createdAt: new Date(),
       })
-      router.push('/profil')
+      
+      const searchParams = new URLSearchParams(window.location.search)
+const redirect = searchParams.get('redirect') ?? '/profil'
+router.push(redirect)
     } catch (err: any) {
       switch (err.code) {
         case 'auth/email-already-in-use': setError('Un compte existe deja avec cet email.'); break
