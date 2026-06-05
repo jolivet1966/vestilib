@@ -17,7 +17,9 @@ export default function UserLoginPage() {
     setLoading(true); setError('')
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      router.push('/profil')
+      const searchParams = new URLSearchParams(window.location.search)
+const redirect = searchParams.get('redirect') ?? '/profil'
+router.push(redirect)
     } catch (err: any) {
       switch (err.code) {
         case 'auth/user-not-found':

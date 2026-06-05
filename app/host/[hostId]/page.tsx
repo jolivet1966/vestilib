@@ -109,7 +109,7 @@ export default function HostPage() {
           Pour reserver un point de depot, vous devez avoir un compte VESTILIB.
         </p>
         <div className="flex flex-col gap-3 w-full max-w-xs mt-2">
-          <Link href="/user/login"
+          <Link href={`/user/login?redirect=/host/${hostId}`}
             className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors text-center">
             Se connecter
           </Link>
