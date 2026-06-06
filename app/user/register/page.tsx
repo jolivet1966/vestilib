@@ -33,7 +33,7 @@ export default function UserRegisterPage() {
         role: 'user',
         createdAt: new Date(),
       })
-    setSucces(true)
+      setSucces(true)
       setTimeout(() => {
         router.push('/map')
       }, 2000)
@@ -46,7 +46,15 @@ export default function UserRegisterPage() {
       }
     } finally { setLoading(false) }
   }
-const [succes,    setSucces]    = useState(false)
+
+  if (succes) return (
+    <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center gap-4">
+      <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center text-white text-3xl font-bold">ok</div>
+      <p className="text-[#F5C84A] font-bold text-xl">Vous etes inscrit !</p>
+      <p className="text-white/50 text-sm">Redirection vers la carte...</p>
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-[#1A3A6B] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
