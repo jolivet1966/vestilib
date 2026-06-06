@@ -18,6 +18,7 @@ export default function UserRegisterPage() {
   const [showPwd2,  setShowPwd2]  = useState(false)
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState('')
+  const [succes,    setSucces]    = useState(false)
 
   const inscrire = async () => {
     if (!prenom || !nom || !email || !password) { setError('Tous les champs sont requis.'); return }
@@ -32,9 +33,10 @@ export default function UserRegisterPage() {
         role: 'user',
         createdAt: new Date(),
       })
-      const searchParams = new URLSearchParams(window.location.search)
-      const redirect = searchParams.get('redirect') ?? '/profil'
-      router.push(redirect)
+    setSucces(true)
+      setTimeout(() => {
+        router.push('/map')
+      }, 2000)
     } catch (err: any) {
       switch (err.code) {
         case 'auth/email-already-in-use': setError('Un compte existe deja avec cet email.'); break
@@ -44,7 +46,7 @@ export default function UserRegisterPage() {
       }
     } finally { setLoading(false) }
   }
-
+const [succes,    setSucces]    = useState(false)
   return (
     <div className="min-h-screen bg-[#1A3A6B] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
