@@ -36,6 +36,7 @@ export default function OnboardHostPage() {
   const [ville,      setVille]      = useState('')
   const [password,   setPassword]   = useState('')
   const [password2,  setPassword2]  = useState('')
+  const [typeCompte, setTypeCompte] = useState<'individual' | 'company'>('individual')
 
   const [horaires, setHoraires] = useState<Horaires>(horairesDefaut)
 
@@ -129,6 +130,7 @@ export default function OnboardHostPage() {
           horaires, prestations,
           capaciteMax, capaciteMaxMoto, capaciteMaxVelo, capaciteMaxDepot,
           existingUid: existingUid ?? undefined,
+          typeCompte,
         }),
       })
       const data = await res.json()
@@ -185,6 +187,21 @@ export default function OnboardHostPage() {
             <div>
               <h2 className="text-base font-semibold text-gray-900 mb-5">Vos informations</h2>
               <div className="space-y-4">
+                <div className="mb-2">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Vous etes</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={() => setTypeCompte('individual')}
+                    className={`p-3 rounded-xl border text-left transition-colors ${typeCompte === 'individual' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
+                    <p className="text-sm font-semibold text-gray-800">Particulier</p>
+                    <p className="text-xs text-gray-400">Personne physique</p>
+                  </button>
+                  <button type="button" onClick={() => setTypeCompte('company')}
+                    className={`p-3 rounded-xl border text-left transition-colors ${typeCompte === 'company' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
+                    <p className="text-sm font-semibold text-gray-800">Entreprise</p>
+                    <p className="text-xs text-gray-400">Personne morale</p>
+                  </button>
+                </div>
+              </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Prenom" value={prenom} onChange={setPrenom} placeholder="Jean" />
                   <Field label="Nom" value={nom} onChange={setNom} placeholder="Dupont" />

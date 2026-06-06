@@ -5,13 +5,14 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 })
 
 const COMMISSION = parseFloat(process.env.STRIPE_COMMISSION_RATE ?? '0.30')
-
 export async function createConnectAccount(params: {
   email: string
   prenom: string
   nom: string
   ville: string
+  typeCompte?: string
 }): Promise<{ accountId: string; onboardingUrl: string }> {
+  const isCompany = params.typeCompte === 'company'
   const account = await stripe.accounts.create({
     type: 'express',
     country: 'FR',
@@ -20,16 +21,18 @@ export async function createConnectAccount(params: {
       card_payments: { requested: true },
       transfers:     { requested: true },
     },
-    business_type: 'individual',
-    individual: {
-      first_name: params.prenom,
-      last_name:  params.nom,
-      address:    { city: params.ville, country: 'FR' },
-    },
+    business_type: isCompany ? 'company' : 'individual',
+    ...(!isCompany && {
+      individual: {
+        first_name: params.prenom,
+        last_name:  params.nom,
+        address:    { city: params.ville, country: 'FR' },
+      },
+    }),
     business_profile: {
       mcc: '7011',
       url: 'https://vestilib-z8oc.vercel.app',
-      product_description: 'Point de depot VESTILIB',
+      product_description: 'Service de consigne et depot bagages',
     },
     settings: {
       payouts: {

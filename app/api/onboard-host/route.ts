@@ -8,17 +8,18 @@ export async function POST(req: NextRequest) {
   try {
     const body: OnboardHostInput & { existingUid?: string } = await req.json()
     const {
-      email, prenom, nom, telephone,
-      adresse, codePostal, ville,
-      horaires, prestations,
-      existingUid,
-      capaciteMax      = 20,
-      capaciteMaxMoto  = 5,
-      capaciteMaxVelo  = 5,
-      capaciteMaxDepot = 10,
-    } = body
+  email, prenom, nom, telephone,
+  adresse, codePostal, ville,
+  horaires, prestations,
+  existingUid,
+  typeCompte = 'individual',
+  capaciteMax      = 20,
+  capaciteMaxMoto  = 5,
+  capaciteMaxVelo  = 5,
+  capaciteMaxDepot = 10,
+} = body
 
-    if (!email || !prenom || !nom || !telephone || !adresse || !codePostal || !ville) {
+if (!email || !prenom || !nom || !telephone || !adresse || !codePostal || !ville) {
       return NextResponse.json(
         { error: 'Champs requis : email, prenom, nom, telephone, adresse, codePostal, ville' },
         { status: 400 }
@@ -47,8 +48,9 @@ export async function POST(req: NextRequest) {
 
     // 2. Créer le compte Stripe Connect
     const { accountId, onboardingUrl } = await createConnectAccount({
-      email, prenom, nom, ville,
-    })
+  email, prenom, nom, ville, typeCompte,
+})
+   
 
     // 3. Enregistrer l'hôte dans Firestore
     const hostData = {
