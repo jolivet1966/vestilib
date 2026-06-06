@@ -1,11 +1,13 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
 import { doc, getDoc } from 'firebase/firestore'
 import { TARIFS_VESTILIB, CATEGORIES } from '@/lib/tarifs'
 import type { Horaires, JourHoraire } from '@/types'
+
+declare global { interface Window { google: any } }
 
 const JOURS = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'] as const
 const JOURS_LABELS: Record<string, string> = {
@@ -26,6 +28,7 @@ export default function OnboardHostPage() {
 
   const [existingUid, setExistingUid] = useState<string | null>(null)
   const [dejaConnecte, setDejaConnecte] = useState(false)
+  const [typeCompte, setTypeCompte] = useState<'individual' | 'company'>('individual')
 
   const [prenom,     setPrenom]     = useState('')
   const [nom,        setNom]        = useState('')
@@ -36,7 +39,9 @@ export default function OnboardHostPage() {
   const [ville,      setVille]      = useState('')
   const [password,   setPassword]   = useState('')
   const [password2,  setPassword2]  = useState('')
-  const [typeCompte, setTypeCompte] = useState<'individual' | 'company'>('individual')
+
+  const adresseRef = useRef<HTMLInputElement>(null)
+  const autocompleteRef = useRef<any>(null)
 
   const [horaires, setHoraires] = useState<Horaires>(horairesDefaut)
 
@@ -66,6 +71,49 @@ export default function OnboardHostPage() {
     })
     return () => unsub()
   }, [])
+
+  // Charger Google Maps et initialiser autocomplete
+  useEffect(() => {
+    if (etape !== 1) return
+    const initAutocomplete = () => {
+      if (!adresseRef.current || !window.google?.maps?.places) return
+      autocompleteRef.current = new window.google.maps.places.Autocomplete(adresseRef.current, {
+        types: ['address'],
+        componentRestrictions: { country: 'fr' },
+        fields: ['address_components', 'formatted_address'],
+      })
+      autocompleteRef.current.addListener('place_changed', () => {
+        const place = autocompleteRef.current.getPlace()
+        if (!place?.address_components) return
+        let rue = ''; let numero = ''; let cp = ''; let vil = ''
+        for (const comp of place.address_components) {
+          if (comp.types.includes('street_number')) numero = comp.long_name
+          if (comp.types.includes('route')) rue = comp.long_name
+          if (comp.types.includes('postal_code')) cp = comp.long_name
+          if (comp.types.includes('locality')) vil = comp.long_name
+        }
+        setAdresse(`${numero} ${rue}`.trim())
+        setCodePostal(cp)
+        setVille(vil)
+      })
+    }
+
+    if (window.google?.maps?.places) {
+      initAutocomplete()
+    } else {
+      const existing = document.querySelector('script[data-gmaps]')
+      if (!existing) {
+        const script = document.createElement('script')
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`
+        script.async = true
+        script.dataset.gmaps = 'true'
+        script.onload = initAutocomplete
+        document.head.appendChild(script)
+      } else {
+        existing.addEventListener('load', initAutocomplete)
+      }
+    }
+  }, [etape])
 
   const togglePrestation = (id: string) => {
     setPrestations(prev =>
@@ -187,25 +235,28 @@ export default function OnboardHostPage() {
             <div>
               <h2 className="text-base font-semibold text-gray-900 mb-5">Vos informations</h2>
               <div className="space-y-4">
+
                 <div className="mb-2">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Vous etes</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button type="button" onClick={() => setTypeCompte('individual')}
-                    className={`p-3 rounded-xl border text-left transition-colors ${typeCompte === 'individual' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
-                    <p className="text-sm font-semibold text-gray-800">Particulier</p>
-                    <p className="text-xs text-gray-400">Personne physique</p>
-                  </button>
-                  <button type="button" onClick={() => setTypeCompte('company')}
-                    className={`p-3 rounded-xl border text-left transition-colors ${typeCompte === 'company' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
-                    <p className="text-sm font-semibold text-gray-800">Entreprise</p>
-                    <p className="text-xs text-gray-400">Personne morale</p>
-                  </button>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Vous etes</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => setTypeCompte('individual')}
+                      className={`p-3 rounded-xl border text-left transition-colors ${typeCompte === 'individual' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
+                      <p className="text-sm font-semibold text-gray-800">Particulier</p>
+                      <p className="text-xs text-gray-400">Personne physique</p>
+                    </button>
+                    <button type="button" onClick={() => setTypeCompte('company')}
+                      className={`p-3 rounded-xl border text-left transition-colors ${typeCompte === 'company' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
+                      <p className="text-sm font-semibold text-gray-800">Entreprise</p>
+                      <p className="text-xs text-gray-400">Personne morale</p>
+                    </button>
+                  </div>
                 </div>
-              </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Prenom" value={prenom} onChange={setPrenom} placeholder="Jean" />
                   <Field label="Nom" value={nom} onChange={setNom} placeholder="Dupont" />
                 </div>
+
                 {dejaConnecte ? (
                   <div>
                     <label className="text-xs text-gray-500 block mb-1">Email</label>
@@ -216,18 +267,43 @@ export default function OnboardHostPage() {
                 ) : (
                   <Field label="Email" value={email} onChange={setEmail} placeholder="jean@email.com" type="email" />
                 )}
+
                 <Field label="Telephone" value={telephone} onChange={setTelephone} placeholder="06 12 34 56 78" type="tel" />
+
                 {!dejaConnecte && (
                   <>
                     <Field label="Mot de passe" value={password} onChange={setPassword} placeholder="Minimum 6 caracteres" type="password" />
                     <Field label="Confirmer mot de passe" value={password2} onChange={setPassword2} placeholder="Repetez le mot de passe" type="password" />
                   </>
                 )}
-                <Field label="Adresse" value={adresse} onChange={setAdresse} placeholder="12 rue de la Paix" />
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Code postal" value={codePostal} onChange={setCodePostal} placeholder="34000" />
-                  <Field label="Ville" value={ville} onChange={setVille} placeholder="Montpellier" />
+
+                <div>
+                  <label className="text-xs text-gray-500 block mb-1">Adresse (saisir pour autocompletion)</label>
+                  <input
+                    ref={adresseRef}
+                    type="text"
+                    value={adresse}
+                    onChange={e => setAdresse(e.target.value)}
+                    placeholder="12 rue de la Paix, Montpellier..."
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors"
+                  />
                 </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1">Code postal</label>
+                    <input type="text" value={codePostal} onChange={e => setCodePostal(e.target.value)}
+                      placeholder="34000"
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 block mb-1">Ville</label>
+                    <input type="text" value={ville} onChange={e => setVille(e.target.value)}
+                      placeholder="Montpellier"
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
+                  </div>
+                </div>
+
               </div>
               {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
               <button onClick={validerEtape1} className="mt-6 w-full bg-[#1A3A6B] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
