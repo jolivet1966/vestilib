@@ -28,6 +28,7 @@ export interface OnboardHostInput {
   ville:       string
   horaires:         Horaires
   prestations:      string[]
+  typeCompte?:      string
   capaciteMax?:     number
   capaciteMaxMoto?: number
   capaciteMaxVelo?: number
