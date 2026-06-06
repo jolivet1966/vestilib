@@ -30,7 +30,6 @@ export default function UserRegisterPage() {
         role: 'user',
         createdAt: new Date(),
       })
-      
       const searchParams = new URLSearchParams(window.location.search)
 const redirect = searchParams.get('redirect') ?? '/profil'
 router.push(redirect)
