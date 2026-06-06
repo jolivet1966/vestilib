@@ -14,6 +14,8 @@ export default function UserRegisterPage() {
   const [telephone, setTelephone] = useState('')
   const [password,  setPassword]  = useState('')
   const [password2, setPassword2] = useState('')
+  const [showPwd,   setShowPwd]   = useState(false)
+  const [showPwd2,  setShowPwd2]  = useState(false)
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState('')
 
@@ -31,8 +33,8 @@ export default function UserRegisterPage() {
         createdAt: new Date(),
       })
       const searchParams = new URLSearchParams(window.location.search)
-const redirect = searchParams.get('redirect') ?? '/profil'
-router.push(redirect)
+      const redirect = searchParams.get('redirect') ?? '/profil'
+      router.push(redirect)
     } catch (err: any) {
       switch (err.code) {
         case 'auth/email-already-in-use': setError('Un compte existe deja avec cet email.'); break
@@ -59,8 +61,30 @@ router.push(redirect)
             </div>
             <Field label="Email" value={email} onChange={setEmail} placeholder="jean@email.com" type="email" />
             <Field label="Telephone" value={telephone} onChange={setTelephone} placeholder="06 12 34 56 78" type="tel" />
-            <Field label="Mot de passe" value={password} onChange={setPassword} placeholder="Min. 6 caracteres" type="password" />
-            <Field label="Confirmer" value={password2} onChange={setPassword2} placeholder="Repetez le mot de passe" type="password" />
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">Mot de passe</label>
+              <div className="relative">
+                <input type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                  placeholder="Min. 6 caracteres"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors pr-20" />
+                <button type="button" onClick={() => setShowPwd(!showPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
+                  {showPwd ? 'Masquer' : 'Afficher'}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">Confirmer</label>
+              <div className="relative">
+                <input type={showPwd2 ? 'text' : 'password'} value={password2} onChange={e => setPassword2(e.target.value)}
+                  placeholder="Repetez le mot de passe"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors pr-20" />
+                <button type="button" onClick={() => setShowPwd2(!showPwd2)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
+                  {showPwd2 ? 'Masquer' : 'Afficher'}
+                </button>
+              </div>
+            </div>
           </div>
           {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
           <button onClick={inscrire} disabled={loading}
