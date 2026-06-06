@@ -1,126 +1,78 @@
-import Stripe from 'stripe'
+'use client'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
+import Link from 'next/link'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-})
+export default function UserLoginPage() {
+  const router = useRouter()
+  const [email,    setEmail]    = useState('')
+  const [password, setPassword] = useState('')
+  const [showPwd,  setShowPwd]  = useState(false)
+  const [loading,  setLoading]  = useState(false)
+  const [error,    setError]    = useState('')
 
-const COMMISSION = parseFloat(process.env.STRIPE_COMMISSION_RATE ?? '0.30')
-
-export async function createConnectAccount(params: {
-  email: string
-  prenom: string
-  nom: string
-  ville: string
-}): Promise<{ accountId: string; onboardingUrl: string }> {
-
-  const account = await stripe.accounts.create({
-    type: 'express',
-    country: 'FR',
-    email: params.email,
-    capabilities: {
-      card_payments: { requested: true },
-      transfers:     { requested: true },
-    },
-    business_type: 'individual',
-    individual: {
-      first_name: params.prenom,
-      last_name:  params.nom,
-      address:    { city: params.ville, country: 'FR' },
-    },
-    business_profile: {
-      mcc: '7011',
-      url: 'https://vestilib-z8oc.vercel.app',
-      product_description: 'Point de depot VESTILIB',
-    },
-    settings: {
-      payouts: {
-        schedule: { interval: 'monthly', monthly_anchor: 1 },
-      },
-    },
-    metadata: {
-      vestilib: 'true',
-      ville: params.ville,
-    },
-  })
-
-  const link = await stripe.accountLinks.create({
-    account:     account.id,
-    refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/host/onboard/refresh?accountId=${account.id}`,
-    return_url:  `${process.env.NEXT_PUBLIC_APP_URL}/host/onboard/success?accountId=${account.id}`,
-    type: 'account_onboarding',
-  })
-
-  return { accountId: account.id, onboardingUrl: link.url }
-}
-
-export async function createCheckoutSession(params: {
-  hostStripeAccountId: string
-  amountEuros: number
-  description: string
-  customerEmail?: string
-  metadata?: Record<string, string>
-}): Promise<{ sessionId: string; url: string }> {
-  const amountCents     = Math.round(params.amountEuros * 100)
-  const commissionCents = Math.round(amountCents * COMMISSION)
-
-  const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    payment_method_types: ['card'],
-    line_items: [
-      {
-        price_data: {
-          currency:     'eur',
-          product_data: { name: params.description },
-          unit_amount:  amountCents,
-        },
-        quantity: 1,
-      },
-    ],
-    payment_intent_data: {
-      application_fee_amount: commissionCents,
-      transfer_data: {
-        destination: params.hostStripeAccountId,
-      },
-      metadata: params.metadata ?? {},
-    },
-    customer_email: params.customerEmail,
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/pay/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url:  `${process.env.NEXT_PUBLIC_APP_URL}/pay/cancel`,
-    metadata:    params.metadata ?? {},
-  })
-
-  return { sessionId: session.id, url: session.url! }
-}
-
-export function constructWebhookEvent(
-  payload: Buffer,
-  signature: string
-): Stripe.Event {
-  return stripe.webhooks.constructEvent(
-    payload,
-    signature,
-    process.env.STRIPE_WEBHOOK_SECRET!
-  )
-}
-
-export async function getHostBalance(stripeAccountId: string) {
-  const balance = await stripe.balance.retrieve({
-    stripeAccount: stripeAccountId,
-  })
-  const payouts = await stripe.payouts.list(
-    { limit: 5 },
-    { stripeAccount: stripeAccountId }
-  )
-
-  return {
-    available: balance.available.reduce((s, b) => s + b.amount, 0) / 100,
-    pending:   balance.pending.reduce((s, b) => s + b.amount, 0) / 100,
-    currency:  balance.available[0]?.currency ?? 'eur',
-    recentPayouts: payouts.data.map(p => ({
-      id:          p.id,
-      amount:      p.amount / 100,
-      status:      p.status,
-      arrivalDate: new Date(p.arrival_date * 1000).toLocaleDateString('fr-FR'),
-    })),
+  const connecter = async () => {
+    if (!email || !password) { setError('Email et mot de passe requis.'); return }
+    setLoading(true); setError('')
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
+      const searchParams = new URLSearchParams(window.location.search)
+      const redirect = searchParams.get('redirect') ?? '/profil'
+      router.push(redirect)
+    } catch (err: any) {
+      switch (err.code) {
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+        case 'auth/invalid-credential': setError('Email ou mot de passe incorrect.'); break
+        case 'auth/too-many-requests':  setError('Trop de tentatives. Reessayez plus tard.'); break
+        default: setError('Erreur de connexion.')
+      }
+    } finally { setLoading(false) }
   }
+
+  return (
+    <div className="min-h-screen bg-[#1A3A6B] flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-[#F5C84A] tracking-widest mb-1">VESTILIB</h1>
+          <p className="text-white/50 text-sm">Connexion</p>
+        </div>
+        <div className="bg-white rounded-2xl p-6 shadow-xl">
+          <h2 className="text-base font-semibold text-gray-900 mb-5">Se connecter</h2>
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="jean@email.com" onKeyDown={e => e.key === 'Enter' && connecter()}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">Mot de passe</label>
+              <div className="relative">
+                <input type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••" onKeyDown={e => e.key === 'Enter' && connecter()}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors pr-20" />
+                <button type="button" onClick={() => setShowPwd(!showPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
+                  {showPwd ? 'Masquer' : 'Afficher'}
+                </button>
+              </div>
+            </div>
+          </div>
+          {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+          <button onClick={connecter} disabled={loading}
+            className="mt-5 w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
+            {loading ? 'Connexion...' : 'Se connecter'}
+          </button>
+          <p className="text-xs text-gray-400 text-center mt-4">
+            Pas encore de compte ?{' '}
+            <Link href="/user/register" className="text-[#1A3A6B] font-medium hover:underline">S inscrire</Link>
+          </p>
+        </div>
+        <p className="text-white/20 text-xs text-center mt-6">VESTILIB · Connexion securisee</p>
+      </div>
+    </div>
+  )
 }
