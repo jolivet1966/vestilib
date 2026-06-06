@@ -37,6 +37,35 @@ export async function createConnectAccount(params: {
       last_name:  params.nom,
       address:    { city: params.ville, country: 'FR' },
     },
+    const account = await stripe.accounts.create({
+    type: 'express',
+    country: 'FR',
+    email: params.email,
+    capabilities: {
+      card_payments: { requested: true },
+      transfers:     { requested: true },
+    },
+    business_type: 'individual',
+    individual: {
+      first_name: params.prenom,
+      last_name:  params.nom,
+      address:    { city: params.ville, country: 'FR' },
+    },
+    business_profile: {
+      mcc: '7011',
+      url: 'https://vestilib-z8oc.vercel.app',
+      product_description: 'Point de depot VESTILIB',
+    },
+    settings: {
+      payouts: {
+        schedule: { interval: 'monthly', monthly_anchor: 1 },
+      },
+    },
+    metadata: {
+      vestilib: 'true',
+      ville: params.ville,
+    },
+  })
     settings: {
       payouts: {
         // Virement automatique le 1er de chaque mois
