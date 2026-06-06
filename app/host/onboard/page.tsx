@@ -73,14 +73,19 @@ export default function OnboardHostPage() {
   }, [])
 
   // Charger Google Maps et initialiser autocomplete
-  useEffect(() => {
+ useEffect(() => {
     if (etape !== 1) return
-    const initAutocomplete = () => {
-      if (!adresseRef.current || !window.google?.maps?.places) return
+    
+    const init = () => {
+      if (!adresseRef.current) return
+      if (!window.google?.maps?.places) return
+      
+      if (autocompleteRef.current) return
+      
       autocompleteRef.current = new window.google.maps.places.Autocomplete(adresseRef.current, {
         types: ['address'],
         componentRestrictions: { country: 'fr' },
-        fields: ['address_components', 'formatted_address'],
+        fields: ['address_components'],
       })
       autocompleteRef.current.addListener('place_changed', () => {
         const place = autocompleteRef.current.getPlace()
@@ -99,21 +104,15 @@ export default function OnboardHostPage() {
     }
 
     if (window.google?.maps?.places) {
-      initAutocomplete()
+      setTimeout(init, 100)
     } else {
-      const existing = document.querySelector('script[data-gmaps]')
-      if (!existing) {
-        const script = document.createElement('script')
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`
-        script.async = true
-        script.dataset.gmaps = 'true'
-        script.onload = initAutocomplete
-        document.head.appendChild(script)
-      } else {
-        existing.addEventListener('load', initAutocomplete)
-      }
+      const script = document.createElement('script')
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`
+      script.async = true
+      script.onload = () => setTimeout(init, 100)
+      document.head.appendChild(script)
     }
-  }, [etape])
+  }, [etape]) 
 
   const togglePrestation = (id: string) => {
     setPrestations(prev =>
