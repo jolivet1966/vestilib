@@ -23,20 +23,6 @@ export async function createConnectAccount(params: {
   ville: string
 }): Promise<{ accountId: string; onboardingUrl: string }> {
   // Créer le compte Connect Express
-  const account = await stripe.accounts.create({
-    type: 'express',
-    country: 'FR',
-    email: params.email,
-    capabilities: {
-      card_payments: { requested: true },
-      transfers:     { requested: true },
-    },
-    business_type: 'individual',
-    individual: {
-      first_name: params.prenom,
-      last_name:  params.nom,
-      address:    { city: params.ville, country: 'FR' },
-    },
     const account = await stripe.accounts.create({
     type: 'express',
     country: 'FR',
