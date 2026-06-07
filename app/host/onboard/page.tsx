@@ -29,6 +29,7 @@ export default function OnboardHostPage() {
   const [existingUid, setExistingUid] = useState<string | null>(null)
   const [dejaConnecte, setDejaConnecte] = useState(false)
   const [typeCompte, setTypeCompte] = useState<'individual' | 'company'>('individual')
+  const [modeReservation, setModeReservation] = useState<'immediat' | 'validation'>('immediat')
 
   const [prenom,     setPrenom]     = useState('')
   const [nom,        setNom]        = useState('')
@@ -413,6 +414,23 @@ export default function OnboardHostPage() {
               </div>
 
               {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+              <div className="mt-5 border-t border-gray-100 pt-5">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-3">
+                  Mode de reservation
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={() => setModeReservation('immediat')}
+                    className={`p-3 rounded-xl border text-left transition-colors ${modeReservation === 'immediat' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
+                    <p className="text-sm font-semibold text-gray-800">Immediat</p>
+                    <p className="text-xs text-gray-400">Paiement direct sans validation</p>
+                  </button>
+                  <button type="button" onClick={() => setModeReservation('validation')}
+                    className={`p-3 rounded-xl border text-left transition-colors ${modeReservation === 'validation' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
+                    <p className="text-sm font-semibold text-gray-800">Sur validation</p>
+                    <p className="text-xs text-gray-400">Vous acceptez avant paiement</p>
+                  </button>
+                </div>
+              </div>
               <div className="mt-6 flex gap-3">
                 <button onClick={() => setEtape(2)} className="flex-1 border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors">
                   Retour

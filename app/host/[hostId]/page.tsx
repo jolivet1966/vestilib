@@ -14,6 +14,7 @@ interface Host {
   prestations: string[]
   capaciteMax?: number; capaciteMaxMoto?: number
   capaciteMaxVelo?: number; capaciteMaxDepot?: number
+  modeReservation?: string
   ouvert?: boolean; datesFermeture?: string[]
 }
 interface Capacite {
@@ -249,8 +250,8 @@ export default function HostPage() {
     if (isAnyComplet)   { setPayError('Capacite depassee pour ce creneau.'); return }
     setPaying(true); setPayError('')
 
-    if (modeReservation === 'validation') {
-      try {
+   if (host.modeReservation === 'validation') {
+    try {
         const res = await fetch('/api/request-booking', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -512,28 +513,25 @@ export default function HostPage() {
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
             </div>
 
-            <div className="mb-4">
-              <label className="text-xs text-gray-500 block mb-2">Mode de reservation</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => setModeReservation('immediat')}
-                  className={`p-3 rounded-xl border text-left transition-colors ${modeReservation === 'immediat' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
-                  <p className="text-sm font-semibold text-gray-800">Paiement immediat</p>
-                  <p className="text-xs text-gray-400">Confirmee instantanement</p>
-                </button>
-                <button onClick={() => setModeReservation('validation')}
-                  className={`p-3 rounded-xl border text-left transition-colors ${modeReservation === 'validation' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
-                  <p className="text-sm font-semibold text-gray-800">Demande a l hote</p>
-                  <p className="text-xs text-gray-400">L hote valide avant paiement</p>
-                </button>
+            {host.modeReservation !== 'validation' && (
+              <div className="mb-4 bg-[#1A3A6B]/5 rounded-xl p-3">
+                <p className="text-sm font-medium text-[#1A3A6B]">Paiement immediat</p>
+                <p className="text-xs text-gray-400">Votre reservation est confirmee instantanement</p>
               </div>
-            </div>
+            )}
+            {host.modeReservation === 'validation' && (
+              <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-xl p-3">
+                <p className="text-sm font-medium text-yellow-800">Demande de reservation</p>
+                <p className="text-xs text-yellow-600">L hote doit valider avant le paiement</p>
+              </div>
+            )}
 
             {payError && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-4">{payError}</p>}
             <div className="flex gap-3">
               <button onClick={() => setEtape(2)} className="flex-1 border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors">Retour</button>
               <button onClick={payer} disabled={paying}
                 className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
-                {paying ? 'Chargement...' : modeReservation === 'immediat' ? `Payer ${total.toFixed(2)}EUR` : 'Envoyer la demande'}
+            {paying ? 'Chargement...' : host.modeReservation === 'validation' ? 'Envoyer la demande' : `Payer ${total.toFixed(2)}EUR`}
               </button>
             </div>
             <p className="text-xs text-gray-400 text-center mt-3">Paiement securise · Stripe · PCI-DSS</p>
