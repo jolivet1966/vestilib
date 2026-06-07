@@ -178,6 +178,7 @@ export default function OnboardHostPage() {
           horaires, prestations,
           capaciteMax, capaciteMaxMoto, capaciteMaxVelo, capaciteMaxDepot,
           existingUid: existingUid ?? undefined,
+          modeReservation,
           typeCompte,
         }),
       })
