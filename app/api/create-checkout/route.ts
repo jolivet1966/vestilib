@@ -17,8 +17,7 @@ import type { CreateCheckoutInput }   from '@/types'
 export async function POST(req: NextRequest) {
   try {
     const body: CreateCheckoutInput = await req.json()
-    const { hostId, amountEuros, description, customerEmail } = body
-
+const { hostId, amountEuros, description, customerEmail, date, creneau, prestations } = body  
     if (!hostId || !amountEuros || !description) {
       return NextResponse.json(
         { error: 'Champs requis : hostId, amountEuros, description' },
@@ -74,8 +73,12 @@ export async function POST(req: NextRequest) {
       vestilibCommission: parseFloat((amountEuros * 0.3).toFixed(2)),
       status:         'pending',
       customerEmail:  customerEmail ?? null,
+      date:           date ?? null,
+      creneau:        creneau ?? null,
+      prestations:    prestations ?? null,
       createdAt:      new Date(),
     })
+    
 
     return NextResponse.json({
       success:   true,
