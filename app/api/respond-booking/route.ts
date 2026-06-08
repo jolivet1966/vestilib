@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
         status: 'accepted',
         paymentUrl: session.url,
         acceptedAt: new Date(),
+        stripeCheckoutSessionId: session.id,
       })
 
       await sendBookingAccepted({
