@@ -103,18 +103,20 @@ export default function ProfilPage() {
           const balRes = await fetch(`/api/host-balance?hostId=${hostDocId}`)
           if (balRes.ok) setBalance(await balRes.json())
         }
+      // Réservations en cours du client
+        const resaSnap = await getDocs(query(
+          collection(db, 'bookings'),
+          where('customerEmail', '==', firebaseUser.email)
+        ))
+        const enCours = resaSnap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter((r: any) => ['pending', 'awaiting_approval', 'accepted', 'paid'].includes(r.status))
+          .sort((a: any, b: any) => b.createdAt?.seconds - a.createdAt?.seconds)
+        setMesResas(enCours)
 
       } catch (e) { console.error(e) }
-      // Réservations en cours du client
-const resaSnap = await getDocs(query(
-  collection(db, 'bookings'),
-  where('customerEmail', '==', firebaseUser.email)
-))
-const enCours = resaSnap.docs
-  .map(d => ({ id: d.id, ...d.data() }))
-  .filter((r: any) => ['pending', 'awaiting_approval', 'accepted', 'paid'].includes(r.status))
-  .sort((a: any, b: any) => b.createdAt?.seconds - a.createdAt?.seconds)
-setMesResas(enCours)
+ 
+
       finally { setLoading(false) }
     })
     return () => unsub()
