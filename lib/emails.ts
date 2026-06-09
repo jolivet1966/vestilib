@@ -35,6 +35,7 @@ export async function sendConfirmationUser(params: {
             <tr><td style="padding:8px 0;color:#666;font-weight:600;">Total paye</td><td style="padding:8px 0;text-align:right;font-weight:700;color:#1A3A6B;">${params.totalAmount}EUR</td></tr>
           </table>
         </div>
+        <p style="color:#666;font-size:13px;text-align:center;margin-top:16px;">Vous pouvez consulter le detail de votre reservation dans <a href="https://vestilib-z8oc.vercel.app/profil" style="color:#1A3A6B;font-weight:600;">votre profil VESTILIB</a>.</p>
         <p style="color:#999;font-size:12px;text-align:center;">Presentez ce code a l hote lors de votre arrivee.<br/>VESTILIB · Paiement securise Stripe</p>
       </div>
     `,
@@ -144,6 +145,7 @@ export async function sendBookingAccepted(params: {
           <a href="${params.paymentUrl}" style="display:block;background:#1A3A6B;color:#F5C84A;text-align:center;padding:16px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;">
             Payer maintenant ${params.totalAmount}EUR
           </a>
+          <p style="color:#666;font-size:13px;text-align:center;margin-top:16px;">Vous pouvez consulter le detail de votre reservation dans <a href="https://vestilib-z8oc.vercel.app/profil" style="color:#1A3A6B;font-weight:600;">votre profil VESTILIB</a>.</p>
           <p style="color:#999;font-size:11px;text-align:center;margin-top:12px;">Ce lien de paiement est valable 24h.</p>
         </div>
         <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Paiement securise Stripe</p>
