@@ -11,6 +11,16 @@ export async function POST(req: NextRequest) {
     if (!hostId || !fromEmail || !fromNom || !sujet || !message) {
       return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 })
     }
+    // Vérifier absence de coordonnées personnelles
+const regexTel = /(\+?\d[\s\-.]?){7,}/
+const regexEmail = /[^\s@]+@[^\s@]+\.[^\s@]+/
+
+if (regexTel.test(message) || regexEmail.test(message)) {
+  return NextResponse.json(
+    { error: 'Pour des raisons de sécurité, les coordonnées personnelles (téléphone, email) ne sont pas autorisées avant confirmation de la réservation.' },
+    { status: 400 }
+  )
+}
 
     // 1. Récupérer l'hôte
     const hostDoc = await adminDb.collection('hosts').doc(hostId).get()
