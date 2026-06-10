@@ -154,7 +154,7 @@ export default function ProfilPage() {
     const firebaseUser = auth.currentUser
     if (!firebaseUser || !userData) return
     try {
-      await deleteDoc(doc(db, 'users', userData.id))
+      try { await deleteDoc(doc(db, 'users', userData.id)) } catch {}
       if (hostId) {
         await updateDoc(doc(db, 'hosts', hostId), {
           visible: false,
