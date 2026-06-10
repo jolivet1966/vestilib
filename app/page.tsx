@@ -1,17 +1,20 @@
 'use client'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import NavBar from '@/app/components/NavBar'
 
-export default function HomePage() {
+function HomeContent() {
   const [splash, setSplash] = useState(true)
   const [popup, setPopup] = useState(false)
+  const [compteSuprime, setCompteSuprime] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    const timer = setTimeout(() => setSplash(false), 2500)
-    return () => clearTimeout(timer)
+    if (searchParams.get('compte') === 'supprime') setCompteSuprime(true)
+const timer = setTimeout(() => setSplash(false), 2500)
+return () => clearTimeout(timer)
   }, [])
 
   const handlePopupOk = () => {
@@ -32,6 +35,19 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white font-sans overflow-x-hidden pb-24">
+      {compteSuprime && (
+  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
+    <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
+      <div className="text-4xl mb-4">✅</div>
+      <h2 className="text-base font-bold text-[#1A3A6B] mb-2">Compte supprimé</h2>
+      <p className="text-sm text-gray-500 mb-6">Votre compte a bien été supprimé. Merci d'avoir utilisé VESTILIB.</p>
+      <button onClick={() => setCompteSuprime(false)}
+        className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
+        Fermer
+      </button>
+    </div>
+  </div>
+)}
 
       {popup && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
@@ -119,5 +135,12 @@ export default function HomePage() {
 
       <NavBar />
     </div>
+  )
+}
+export default function HomePage() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
   )
 }
