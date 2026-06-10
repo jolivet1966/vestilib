@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
-import { doc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore'
 import Link from 'next/link'
 
 interface UserData {
@@ -150,6 +150,21 @@ export default function ProfilPage() {
   }
 
   const deconnecter = async () => { await signOut(auth); router.push('/') }
+  const supprimerCompte = async () => {
+  const firebaseUser = auth.currentUser
+  if (!firebaseUser || !userData) return
+  try {
+    await deleteDoc(doc(db, 'users', userData.id))
+    await firebaseUser.delete()
+    router.push('/')
+  } catch (e: any) {
+    if (e.code === 'auth/requires-recent-login') {
+      alert('Pour des raisons de sécurité, veuillez vous reconnecter avant de supprimer votre compte.')
+    } else {
+      alert('Erreur lors de la suppression.')
+    }
+  }
+}
 
   if (loading) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -330,7 +345,7 @@ export default function ProfilPage() {
               {showDelete && (
                 <div className="px-5 pb-5 border-t border-red-50">
                   <p className="text-xs text-gray-500 my-3">Cette action est irreversible.</p>
-                  <button className="w-full bg-red-600 text-white font-medium py-2.5 rounded-xl hover:bg-red-700 transition-colors text-sm">
+                  <button onClick={supprimerCompte} className="w-full bg-red-600 text-white font-medium py-2.5 rounded-xl hover:bg-red-700 transition-colors text-sm">
                     Confirmer la fermeture du compte
                   </button>
                 </div>
