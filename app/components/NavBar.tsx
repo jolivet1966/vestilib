@@ -52,18 +52,17 @@ export default function NavBar() {
           <span className="text-[10px] font-medium">Rechercher</span>
         </Link>
 
-        <Link href={totalBadge > 0 ? '/host/dashboard' : '/messages'} className={`relative flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}></Link>
-
-          {totalBadge > 0 && (
-            <span className="absolute top-2 right-6 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[9px] font-bold">
-              {totalBadge}
-            </span>
-          )}
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-          <span className="text-[10px] font-medium">Messages</span>
-        </Link>
+        <<Link href={totalBadge > 0 ? '/host/dashboard' : '/messages'} className={`relative flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}>
+  {totalBadge > 0 && (
+    <span className="absolute top-2 right-6 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[9px] font-bold">
+      {totalBadge}
+    </span>
+  )}
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+  <span className="text-[10px] font-medium">Messages</span>
+</Link>
 
         <Link href="/profil" className={`flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/profil')}`}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
