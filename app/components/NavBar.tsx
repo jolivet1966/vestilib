@@ -1,14 +1,45 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth, db } from '@/lib/firebase'
+import { collection, query, where, getDocs } from 'firebase/firestore'
 
 export default function NavBar() {
   const pathname = usePathname()
+  const [badgeMessages, setBadgeMessages] = useState(0)
+  const [badgeResas, setBadgeResas] = useState(0)
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async firebaseUser => {
+      if (!firebaseUser) return
+
+      // Messages non lus (hôte)
+      const msgSnap = await getDocs(query(
+        collection(db, 'messages'),
+        where('hostId', '==', firebaseUser.uid),
+        where('lu', '==', false)
+      ))
+      setBadgeMessages(msgSnap.size)
+
+      // Demandes de réservation en attente (hôte)
+      const resaSnap = await getDocs(query(
+        collection(db, 'bookings'),
+        where('hostId', '==', firebaseUser.uid),
+        where('status', '==', 'awaiting_approval')
+      ))
+      setBadgeResas(resaSnap.size)
+    })
+    return () => unsub()
+  }, [])
 
   const actif = (href: string) =>
     pathname === href
       ? 'text-[#F5C84A] bg-[#1A3A6B]'
       : 'text-[#1A3A6B] hover:bg-gray-50'
+
+  const totalBadge = badgeMessages + badgeResas
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50">
@@ -21,7 +52,12 @@ export default function NavBar() {
           <span className="text-[10px] font-medium">Rechercher</span>
         </Link>
 
-        <Link href="/messages" className={`flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}>
+        <Link href="/messages" className={`relative flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}>
+          {totalBadge > 0 && (
+            <span className="absolute top-2 right-6 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[9px] font-bold">
+              {totalBadge}
+            </span>
+          )}
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>

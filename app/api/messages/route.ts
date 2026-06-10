@@ -20,15 +20,16 @@ export async function POST(req: NextRequest) {
     const host = hostDoc.data()!
 
     // 2. Enregistrer le message dans Firestore
-    await adminDb.collection('messages').add({
-      hostId,
-      fromEmail,
-      fromNom,
-      sujet,
-      message,
-      statut: 'envoye',
-      createdAt: new Date(),
-    })
+   await adminDb.collection('messages').add({
+  hostId,
+  fromEmail,
+  fromNom,
+  sujet,
+  message,
+  statut: 'envoye',
+  lu: false,
+  createdAt: new Date(),
+})
 
     // 3. Envoyer les emails
     const { sendMessageToHote, sendConfirmationMessage } = await import('@/lib/emails')
