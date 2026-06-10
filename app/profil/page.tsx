@@ -166,13 +166,14 @@ export default function ProfilPage() {
       await firebaseUser.delete()
       router.push('/?compte=supprime')
     } catch (e: any) {
-      if (e.code === 'auth/requires-recent-login') {
-        alert('Pour des raisons de sécurité, veuillez vous reconnecter avant de supprimer votre compte.')
-      } else {
-        alert('Erreur lors de la suppression.')
-      }
+    console.error('Erreur suppression:', e.code, e.message)
+    if (e.code === 'auth/requires-recent-login') {
+      alert('Pour des raisons de sécurité, veuillez vous déconnecter puis vous reconnecter avant de supprimer votre compte.')
+    } else {
+      alert(`Erreur : ${e.code} — ${e.message}`)
     }
   }
+}
 
   if (loading) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
