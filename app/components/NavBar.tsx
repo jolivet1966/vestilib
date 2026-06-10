@@ -52,7 +52,8 @@ export default function NavBar() {
           <span className="text-[10px] font-medium">Rechercher</span>
         </Link>
 
-        <Link href="/messages" className={`relative flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}>
+        <Link href={totalBadge > 0 ? '/host/dashboard' : '/messages'} className={`relative flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}></Link>
+
           {totalBadge > 0 && (
             <span className="absolute top-2 right-6 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[9px] font-bold">
               {totalBadge}
