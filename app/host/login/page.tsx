@@ -1,5 +1,4 @@
 'use client'
-// app/host/login/page.tsx
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signInWithEmailAndPassword } from 'firebase/auth'
@@ -19,7 +18,7 @@ export default function HostLoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      router.push('/host/dashboard')
+      router.replace('/host/dashboard')
     } catch (err: any) {
       switch (err.code) {
         case 'auth/user-not-found':
@@ -42,7 +41,6 @@ export default function HostLoginPage() {
     <div className="min-h-screen bg-[#1A3A6B] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
 
-        {/* Logo */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#F5C84A] tracking-widest mb-1">VESTILIB</h1>
           <p className="text-white/50 text-sm">Espace hôte</p>
