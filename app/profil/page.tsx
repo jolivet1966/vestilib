@@ -103,7 +103,8 @@ export default function ProfilPage() {
           const balRes = await fetch(`/api/host-balance?hostId=${hostDocId}`)
           if (balRes.ok) setBalance(await balRes.json())
         }
-      // Réservations en cours du client
+
+        // Réservations en cours du client
         const resaSnap = await getDocs(query(
           collection(db, 'bookings'),
           where('customerEmail', '==', firebaseUser.email)
@@ -115,8 +116,6 @@ export default function ProfilPage() {
         setMesResas(enCours)
 
       } catch (e) { console.error(e) }
- 
-
       finally { setLoading(false) }
     })
     return () => unsub()
@@ -150,21 +149,30 @@ export default function ProfilPage() {
   }
 
   const deconnecter = async () => { await signOut(auth); router.push('/') }
+
   const supprimerCompte = async () => {
-  const firebaseUser = auth.currentUser
-  if (!firebaseUser || !userData) return
-  try {
-    await deleteDoc(doc(db, 'users', userData.id))
-    await firebaseUser.delete()
-    router.push('/')
-  } catch (e: any) {
-    if (e.code === 'auth/requires-recent-login') {
-      alert('Pour des raisons de sécurité, veuillez vous reconnecter avant de supprimer votre compte.')
-    } else {
-      alert('Erreur lors de la suppression.')
+    const firebaseUser = auth.currentUser
+    if (!firebaseUser || !userData) return
+    try {
+      await deleteDoc(doc(db, 'users', userData.id))
+      if (hostId) {
+        await updateDoc(doc(db, 'hosts', hostId), {
+          visible: false,
+          ouvert: false,
+          compteSuprime: true,
+          email: '',
+        })
+      }
+      await firebaseUser.delete()
+      router.push('/?compte=supprime')
+    } catch (e: any) {
+      if (e.code === 'auth/requires-recent-login') {
+        alert('Pour des raisons de sécurité, veuillez vous reconnecter avant de supprimer votre compte.')
+      } else {
+        alert('Erreur lors de la suppression.')
+      }
     }
   }
-}
 
   if (loading) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -214,44 +222,45 @@ export default function ProfilPage() {
 
         {menu === 'utilisateur' && (
           <>
-          {mesResas.length > 0 && (
-  <div className="bg-[#F5C84A]/10 border border-[#F5C84A] rounded-2xl p-5 shadow-sm">
-    <p className="text-xs font-semibold text-[#1A3A6B] uppercase tracking-wider mb-3">
-      🔔 Mes réservations
-    </p>
-    <div className="space-y-3">
-      {mesResas.map((r: any) => (
-        <div key={r.id} className="bg-white rounded-xl p-4 border border-[#F5C84A]/30">
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-mono font-bold text-[#1A3A6B] text-sm">{r.bookingCode}</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-              r.status === 'paid' ? 'bg-green-100 text-green-600' :
-              r.status === 'accepted' ? 'bg-blue-100 text-blue-600' :
-              r.status === 'awaiting_approval' ? 'bg-yellow-100 text-yellow-600' :
-              'bg-gray-100 text-gray-500'
-            }`}>
-              {r.status === 'paid' ? 'Payée' :
-               r.status === 'accepted' ? 'Acceptée — paiement en attente' :
-               r.status === 'awaiting_approval' ? 'En attente de validation' :
-               'En cours'}
-            </span>
-          </div>
-          <div className="space-y-1 text-xs text-gray-500">
-            {r.date && <p>📅 {new Date(r.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>}
-            {r.creneau && <p>🕐 {r.creneau}</p>}
-            <p>💶 {r.totalAmount} EUR</p>
-            {r.status === 'accepted' && r.paymentUrl && (
-              <a href={r.paymentUrl}
-                className="mt-2 block w-full text-center bg-[#1A3A6B] text-[#F5C84A] font-semibold py-2 rounded-xl text-xs">
-                Payer maintenant
-              </a>
+            {mesResas.length > 0 && (
+              <div className="bg-[#F5C84A]/10 border border-[#F5C84A] rounded-2xl p-5 shadow-sm">
+                <p className="text-xs font-semibold text-[#1A3A6B] uppercase tracking-wider mb-3">
+                  🔔 Mes réservations
+                </p>
+                <div className="space-y-3">
+                  {mesResas.map((r: any) => (
+                    <div key={r.id} className="bg-white rounded-xl p-4 border border-[#F5C84A]/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-mono font-bold text-[#1A3A6B] text-sm">{r.bookingCode}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          r.status === 'paid' ? 'bg-green-100 text-green-600' :
+                          r.status === 'accepted' ? 'bg-blue-100 text-blue-600' :
+                          r.status === 'awaiting_approval' ? 'bg-yellow-100 text-yellow-600' :
+                          'bg-gray-100 text-gray-500'
+                        }`}>
+                          {r.status === 'paid' ? 'Payée' :
+                           r.status === 'accepted' ? 'Acceptée — paiement en attente' :
+                           r.status === 'awaiting_approval' ? 'En attente de validation' :
+                           'En cours'}
+                        </span>
+                      </div>
+                      <div className="space-y-1 text-xs text-gray-500">
+                        {r.date && <p>📅 {new Date(r.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>}
+                        {r.creneau && <p>🕐 {r.creneau}</p>}
+                        <p>💶 {r.totalAmount} EUR</p>
+                        {r.status === 'accepted' && r.paymentUrl && (
+                          <a href={r.paymentUrl}
+                            className="mt-2 block w-full text-center bg-[#1A3A6B] text-[#F5C84A] font-semibold py-2 rounded-xl text-xs">
+                            Payer maintenant
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Informations personnelles</p>
@@ -299,8 +308,6 @@ export default function ProfilPage() {
                 </Link>
               </div>
             )}
-
-            
 
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <button onClick={() => setShowPwd(!showPwd)}
