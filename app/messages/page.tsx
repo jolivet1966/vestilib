@@ -13,7 +13,6 @@ interface Host {
 interface Message {
   id: string; fromNom: string; fromEmail: string; sujet: string; message: string; lu: boolean; createdAt: any; reponse?: string
 }
-  id: string; fromNom: string; fromEmail: string; sujet: string; message: string; lu: boolean; createdAt: any
 }
 
 const SUJETS = [
