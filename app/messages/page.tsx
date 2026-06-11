@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
-import Link from 'next/link'
+import { useSearchParams, useRouter } from 'next/navigation'import Link from 'next/link'
 import NavBar from '@/app/components/NavBar'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
@@ -20,6 +19,7 @@ const SUJETS = [
 ]
 
 function MessagesContent() {
+  const router = useRouter()
   const params = useSearchParams()
   const hostIdParam = params.get('hostId')
 
@@ -45,7 +45,7 @@ function MessagesContent() {
       .catch(console.error)
 
     const unsub = onAuthStateChanged(auth, async firebaseUser => {
-      if (!firebaseUser) return
+      if (!firebaseUser) { router.push('/user/login?redirect=/messages'); return }
       // Vérifier si hôte
       const snap = await getDocs(query(collection(db, 'hosts'), where('email', '==', firebaseUser.email)))
       if (snap.empty) return
