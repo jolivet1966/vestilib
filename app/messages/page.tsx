@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'import Link from 'next/link'
+import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import NavBar from '@/app/components/NavBar'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
