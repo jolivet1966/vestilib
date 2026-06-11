@@ -231,6 +231,65 @@ function MessagesContent() {
   )
 }
 
+function RepondreForm({ messageId, sujet }: { messageId: string; sujet: string }) {
+  const [reponse, setReponse] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
+  const [open, setOpen] = useState(false)
+
+  const envoyer = async () => {
+    if (!reponse) return
+    setSending(true); setError('')
+    try {
+      const res = await fetch('/api/repondre-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId, reponse }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error ?? 'Erreur'); return }
+      setSent(true)
+    } catch { setError('Erreur réseau.') }
+    finally { setSending(false) }
+  }
+
+  if (sent) return (
+    <div className="mt-2 bg-green-50 rounded-xl p-3 text-center">
+      <p className="text-xs text-green-700 font-medium">Réponse envoyée !</p>
+    </div>
+  )
+
+  return (
+    <div className="mt-2">
+      {!open ? (
+        <button onClick={() => setOpen(true)}
+          className="block w-full text-center bg-[#1A3A6B] text-[#F5C84A] font-semibold py-2 rounded-xl text-sm hover:bg-[#0C2447] transition-colors">
+          Répondre
+        </button>
+      ) : (
+        <div className="space-y-2">
+          <textarea value={reponse} onChange={e => setReponse(e.target.value)}
+            placeholder="Votre réponse..."
+            rows={3}
+            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#1A3A6B] resize-none" />
+          {error && <p className="text-xs text-red-600">{error}</p>}
+          <div className="flex gap-2">
+            <button onClick={envoyer} disabled={sending || !reponse}
+              className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-semibold py-2 rounded-xl text-sm disabled:opacity-50">
+              {sending ? 'Envoi...' : 'Envoyer'}
+            </button>
+            <button onClick={() => setOpen(false)}
+              className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-xl text-sm">
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function MessagesPage() {
   return (
     <Suspense fallback={
