@@ -29,17 +29,17 @@ if (regexTel.test(message) || regexEmail.test(message)) {
     }
     const host = hostDoc.data()!
 
-    // 2. Enregistrer le message dans Firestore
-   await adminDb.collection('messages').add({
-  hostId,
-  fromEmail,
-  fromNom,
-  sujet,
-  message,
-  statut: 'envoye',
-  lu: false,
-  createdAt: new Date(),
-})
+   // 2. Enregistrer le message dans Firestore
+    const msgRef = await adminDb.collection('messages').add({
+      hostId,
+      fromEmail,
+      fromNom,
+      sujet,
+      message,
+      statut: 'envoye',
+      lu: false,
+      createdAt: new Date(),
+    })
 
     // 3. Envoyer les emails
     const { sendMessageToHote, sendConfirmationMessage } = await import('@/lib/emails')
@@ -47,11 +47,10 @@ if (regexTel.test(message) || regexEmail.test(message)) {
     await sendMessageToHote({
       toHote:     host.email,
       hostPrenom: host.prenom,
-      fromEmail,
       fromNom,
       sujet,
       message,
-      hostId,
+      messageId:  msgRef.id,
     })
 
     await sendConfirmationMessage({

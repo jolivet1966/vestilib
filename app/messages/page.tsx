@@ -11,6 +11,8 @@ interface Host {
   id: string; prenom: string; nom: string; ville: string; adresse: string
 }
 interface Message {
+  id: string; fromNom: string; fromEmail: string; sujet: string; message: string; lu: boolean; createdAt: any; reponse?: string
+}
   id: string; fromNom: string; fromEmail: string; sujet: string; message: string; lu: boolean; createdAt: any
 }
 
@@ -149,10 +151,14 @@ function MessagesContent() {
                 </div>
                 <p className="text-xs font-medium text-[#1A3A6B] mb-1">{msg.sujet}</p>
                 <p className="text-sm text-gray-600 mb-3">{msg.message}</p>
-                <a href={`mailto:${msg.fromEmail}?subject=Re: ${msg.sujet}`}
-                  className="block w-full text-center bg-[#1A3A6B] text-[#F5C84A] font-semibold py-2 rounded-xl text-sm hover:bg-[#0C2447] transition-colors">
-                  Répondre par email
-                </a>
+                {msg.reponse ? (
+  <div className="mt-2 bg-green-50 rounded-xl p-3 border border-green-100">
+    <p className="text-xs font-semibold text-green-700 mb-1">Votre réponse :</p>
+    <p className="text-xs text-gray-600">{msg.reponse}</p>
+  </div>
+) : (
+  <RepondreForm messageId={msg.id} sujet={msg.sujet} />
+)}
               </div>
             ))}
           </div>

@@ -187,13 +187,15 @@ export async function sendBookingRefused(params: {
 }
 
 // ─── Email message utilisateur vers hote ──────────────
+// ─── Email message utilisateur vers hote ──────────────
 export async function sendMessageToHote(params: {
-  toHote: string; hostPrenom: string; fromEmail: string
-  fromNom: string; sujet: string; message: string; hostId: string
+  toHote: string; hostPrenom: string; fromNom: string
+  sujet: string; message: string; messageId: string
 }) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'
   await resend.emails.send({
-    from: FROM, to: params.toHote, reply_to: params.fromEmail,
-    subject: `Message de ${params.fromNom} — ${params.sujet}`,
+    from: FROM, to: params.toHote,
+    subject: `Nouveau message — ${params.sujet}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
         <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
@@ -201,13 +203,16 @@ export async function sendMessageToHote(params: {
         </div>
         <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
           <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 4px;">Bonjour ${params.hostPrenom}</h2>
-          <p style="color:#666;font-size:14px;margin:0 0 20px;">Message de <strong>${params.fromNom}</strong> (${params.fromEmail})</p>
+          <p style="color:#666;font-size:14px;margin:0 0 20px;">Vous avez recu un nouveau message de <strong>${params.fromNom}</strong>.</p>
           <div style="background:#F5C84A20;border-left:4px solid #F5C84A;padding:16px;border-radius:0 8px 8px 0;margin-bottom:20px;">
             <p style="font-weight:600;color:#1A3A6B;margin:0 0 8px;">Sujet : ${params.sujet}</p>
             <p style="color:#333;margin:0;line-height:1.6;">${params.message}</p>
           </div>
+          <a href="${appUrl}/messages" style="display:block;background:#1A3A6B;color:#F5C84A;text-align:center;padding:14px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;">
+            Repondre depuis VESTILIB
+          </a>
         </div>
-        <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Messagerie</p>
+        <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Messagerie securisee</p>
       </div>
     `,
   })
@@ -235,6 +240,37 @@ export async function sendConfirmationMessage(params: {
           </div>
         </div>
         <p style="color:#999;font-size:12px;text-align:center;margin-top:16px;">VESTILIB · Messagerie</p>
+      </div>
+    `,
+  })
+}
+
+// ─── Email réponse hote vers client ──────────────────
+export async function sendReponseClient(params: {
+  to: string; fromPrenom: string; sujet: string; reponse: string
+}) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'
+  await resend.emails.send({
+    from: FROM, to: params.to,
+    subject: `Réponse à votre message — ${params.sujet}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
+        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
+          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
+          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Messagerie sécurisée</p>
+        </div>
+        <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
+          <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 4px;">Vous avez reçu une réponse</h2>
+          <p style="color:#666;font-size:14px;margin:0 0 20px;"><strong>${params.fromPrenom}</strong> a répondu à votre message.</p>
+          <div style="background:#F5C84A20;border-left:4px solid #F5C84A;padding:16px;border-radius:0 8px 8px 0;margin-bottom:20px;">
+            <p style="font-weight:600;color:#1A3A6B;margin:0 0 8px;">Sujet : ${params.sujet}</p>
+            <p style="color:#333;margin:0;line-height:1.6;">${params.reponse}</p>
+          </div>
+          <a href="${appUrl}/messages" style="display:block;background:#1A3A6B;color:#F5C84A;text-align:center;padding:14px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;">
+            Voir dans VESTILIB
+          </a>
+        </div>
+        <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Messagerie sécurisée · Aucune coordonnée partagée</p>
       </div>
     `,
   })
