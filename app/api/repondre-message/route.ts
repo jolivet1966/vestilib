@@ -40,11 +40,12 @@ export async function POST(req: NextRequest) {
     // Envoyer email au client
     const { sendReponseClient } = await import('@/lib/emails')
     await sendReponseClient({
-      to: msg.fromEmail,
-      fromPrenom: host.prenom,
-      sujet: msg.sujet,
-      reponse,
-    })
+  to: msg.fromEmail,
+  fromPrenom: host.prenom,
+  sujet: msg.sujet,
+  reponse,
+  hostId: msg.hostId,
+})
 
     return NextResponse.json({ success: true })
 

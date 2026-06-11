@@ -247,7 +247,7 @@ export async function sendConfirmationMessage(params: {
 
 // ─── Email réponse hote vers client ──────────────────
 export async function sendReponseClient(params: {
-  to: string; fromPrenom: string; sujet: string; reponse: string
+  to: string; fromPrenom: string; sujet: string; reponse: string; hostId: string
 }) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'
   await resend.emails.send({
@@ -266,7 +266,7 @@ export async function sendReponseClient(params: {
             <p style="font-weight:600;color:#1A3A6B;margin:0 0 8px;">Sujet : ${params.sujet}</p>
             <p style="color:#333;margin:0;line-height:1.6;">${params.reponse}</p>
           </div>
-          <a href="${appUrl}/messages" style="display:block;background:#1A3A6B;color:#F5C84A;text-align:center;padding:14px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;">
+          <a href=" ${appUrl}/messages?hostId=${params.hostId}"style="display:block;background:#1A3A6B;color:#F5C84A;text-align:center;padding:14px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;">
             Voir dans VESTILIB
           </a>
         </div>
