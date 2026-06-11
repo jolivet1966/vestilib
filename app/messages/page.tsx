@@ -11,7 +11,7 @@ interface Host {
   id: string; prenom: string; nom: string; ville: string; adresse: string
 }
 interface Message {
-  id: string; fromNom: string; fromEmail: string; sujet: string; message: string; lu: boolean; createdAt: any
+  id: string; fromNom: string; fromEmail: string; sujet: string; message: string; lu: boolean; createdAt: any; reponse?: string
 }
 
 const SUJETS = [
