@@ -139,7 +139,7 @@ function MessagesContent() {
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <p className="text-sm font-semibold text-gray-800">{msg.fromNom}</p>
-                    <p className="text-xs text-gray-400">{msg.fromEmail}</p>
+                   <p className="text-xs text-gray-400">{msg.fromNom}</p> 
                   </div>
                   <div className="text-right">
                     {!msg.lu && <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">Nouveau</span>}
@@ -150,6 +150,14 @@ function MessagesContent() {
                 </div>
                 <p className="text-xs font-medium text-[#1A3A6B] mb-1">{msg.sujet}</p>
                 <p className="text-sm text-gray-600 mb-3">{msg.message}</p>
+                {msg.reponse ? (
+  <div className="mt-2 bg-green-50 rounded-xl p-3 border border-green-100">
+    <p className="text-xs font-semibold text-green-700 mb-1">Votre réponse :</p>
+    <p className="text-xs text-gray-600">{msg.reponse}</p>
+  </div>
+) : (
+  <RepondreForm messageId={msg.id} sujet={msg.sujet} />
+)}
                 
               </div>
             ))}
