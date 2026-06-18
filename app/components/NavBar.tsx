@@ -10,22 +10,47 @@ export default function NavBar() {
   const pathname = usePathname()
   const [badgeMessages, setBadgeMessages] = useState(0)
   const [badgeResas, setBadgeResas] = useState(0)
+  const [isHote, setIsHote] = useState(false)
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async firebaseUser => {
       if (!firebaseUser) return
-      const msgSnap = await getDocs(query(
-        collection(db, 'messages'),
-        where('hostId', '==', firebaseUser.uid),
-        where('lu', '==', false)
+
+      // Vérifier si hôte
+      const hostSnap = await getDocs(query(
+        collection(db, 'hosts'),
+        where('email', '==', firebaseUser.email)
       ))
-      setBadgeMessages(msgSnap.size)
-      const resaSnap = await getDocs(query(
-        collection(db, 'bookings'),
-        where('hostId', '==', firebaseUser.uid),
-        where('status', '==', 'awaiting_approval')
-      ))
-      setBadgeResas(resaSnap.size)
+      const hote = !hostSnap.empty
+      setIsHote(hote)
+
+      if (hote) {
+        const hostId = hostSnap.docs[0].id
+
+        // Conversations non lues pour l'hôte
+        const convSnap = await getDocs(query(
+          collection(db, 'conversations'),
+          where('hostId', '==', hostId),
+          where('luHote', '==', false)
+        ))
+        setBadgeMessages(convSnap.size)
+
+        // Demandes de réservation en attente
+        const resaSnap = await getDocs(query(
+          collection(db, 'bookings'),
+          where('hostId', '==', hostId),
+          where('status', '==', 'awaiting_approval')
+        ))
+        setBadgeResas(resaSnap.size)
+      } else {
+        // Conversations non lues pour le client
+        const convSnap = await getDocs(query(
+          collection(db, 'conversations'),
+          where('clientEmail', '==', firebaseUser.email),
+          where('luClient', '==', false)
+        ))
+        setBadgeMessages(convSnap.size)
+      }
     })
     return () => unsub()
   }, [])
@@ -36,6 +61,7 @@ export default function NavBar() {
       : 'text-[#1A3A6B] hover:bg-gray-50'
 
   const totalBadge = badgeMessages + badgeResas
+  const messagesHref = isHote ? '/host/messages' : '/messages'
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50">
@@ -48,7 +74,7 @@ export default function NavBar() {
           <span className="text-[10px] font-medium">Rechercher</span>
         </Link>
 
-        <Link href="/messages" className={`relative flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}>
+        <Link href={messagesHref} className={`relative flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}>
           {totalBadge > 0 && (
             <span className="absolute top-2 right-6 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[9px] font-bold">
               {totalBadge}
