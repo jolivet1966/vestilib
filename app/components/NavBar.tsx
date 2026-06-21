@@ -4,78 +4,70 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, onSnapshot } from 'firebase/firestore'
 
 export default function NavBar() {
   const pathname = usePathname()
   const [badge, setBadge] = useState(0)
 
   useEffect(() => {
+    const unsubs: (() => void)[] = []
+
     const unsub = onAuthStateChanged(auth, async firebaseUser => {
+      // Annuler les anciens listeners
+      unsubs.forEach(u => u())
+      unsubs.length = 0
+
       if (!firebaseUser) { setBadge(0); return }
 
-      let total = 0
+      let clientCount = 0
+      let hoteCount = 0
+      let resaCount = 0
 
-      // Conversations non lues en tant que client
-      const clientSnap = await getDocs(query(
-        collection(db, 'conversations'),
-        where('clientEmail', '==', firebaseUser.email),
-        where('luClient', '==', false)
-      ))
-      total += clientSnap.size
+      const updateBadge = () => setBadge(clientCount + hoteCount + resaCount)
+
+      // Écouter conversations non lues en tant que client
+      const clientUnsub = onSnapshot(
+        query(collection(db, 'conversations'),
+          where('clientEmail', '==', firebaseUser.email),
+          where('luClient', '==', false)
+        ),
+        snap => { clientCount = snap.size; updateBadge() }
+      )
+      unsubs.push(clientUnsub)
 
       // Vérifier si hôte
-      const hostSnap = await getDocs(query(
-        collection(db, 'hosts'),
-        where('email', '==', firebaseUser.email)
-      ))
+      const { getDocs } = await import('firebase/firestore')
+      const { collection: col, query: q, where: w } = await import('firebase/firestore')
+      const hostSnap = await getDocs(q(col(db, 'hosts'), w('email', '==', firebaseUser.email)))
+
       if (!hostSnap.empty) {
         const hostId = hostSnap.docs[0].id
 
-        // Conversations non lues en tant qu'hôte
-        const hoteSnap = await getDocs(query(
-          collection(db, 'conversations'),
-          where('hostId', '==', hostId),
-          where('luHote', '==', false)
-        ))
-        total += hoteSnap.size
+        // Écouter conversations non lues en tant qu'hôte
+        const hoteUnsub = onSnapshot(
+          query(collection(db, 'conversations'),
+            where('hostId', '==', hostId),
+            where('luHote', '==', false)
+          ),
+          snap => { hoteCount = snap.size; updateBadge() }
+        )
+        unsubs.push(hoteUnsub)
 
-        // Demandes de réservation en attente
-        const resaSnap = await getDocs(query(
-          collection(db, 'bookings'),
-          where('hostId', '==', hostId),
-          where('status', '==', 'awaiting_approval')
-        ))
-        total += resaSnap.size
+        // Écouter réservations en attente
+        const resaUnsub = onSnapshot(
+          query(collection(db, 'bookings'),
+            where('hostId', '==', hostId),
+            where('status', '==', 'awaiting_approval')
+          ),
+          snap => { resaCount = snap.size; updateBadge() }
+        )
+        unsubs.push(resaUnsub)
       }
+    })
 
-      setBadge(total)
-  })
-
-    // Recharger badge toutes les 30 secondes
-    const interval = setInterval(async () => {
-      const user = (await import('firebase/auth')).getAuth().currentUser
-      if (user) {
-        // relancer le calcul du badge
-        const { getDocs, collection, query, where } = await import('firebase/firestore')
-        const { db } = await import('@/lib/firebase')
-        let total = 0
-        const clientSnap = await getDocs(query(collection(db, 'conversations'), where('clientEmail', '==', user.email), where('luClient', '==', false)))
-        total += clientSnap.size
-        const hostSnap = await getDocs(query(collection(db, 'hosts'), where('email', '==', user.email)))
-        if (!hostSnap.empty) {
-          const hId = hostSnap.docs[0].id
-          const hoteSnap = await getDocs(query(collection(db, 'conversations'), where('hostId', '==', hId), where('luHote', '==', false)))
-          total += hoteSnap.size
-          const resaSnap = await getDocs(query(collection(db, 'bookings'), where('hostId', '==', hId), where('status', '==', 'awaiting_approval')))
-          total += resaSnap.size
-        }
-        setBadge(total)
-      }
-    }, 30000)
-
-    return () => { unsub(); clearInterval(interval) }
-  }, [pathname])
+    return () => { unsub(); unsubs.forEach(u => u()) }
+  }, [])
 
   const actif = (href: string) =>
     pathname === href
