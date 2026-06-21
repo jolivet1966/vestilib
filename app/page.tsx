@@ -9,12 +9,16 @@ function HomeContent() {
   const [popup, setPopup] = useState(false)
   const [compteSuprime, setCompteSuprime] = useState(false)
   const [connecte, setConnecte] = useState(false)
+  const [isConnected, setIsConnected] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
     if (searchParams.get('compte') === 'supprime') setCompteSuprime(true)
-   if (searchParams.get('connecte') === 'true') setConnecte(true)   
+   if (searchParams.get('connecte') === 'true') setConnecte(true) 
+      const { onAuthStateChanged } = await import('firebase/auth')
+const { auth } = await import('@/lib/firebase')
+onAuthStateChanged(auth, user => setIsConnected(!!user))
 const timer = setTimeout(() => setSplash(false), 2500)
 return () => clearTimeout(timer)
   }, [])
@@ -71,9 +75,11 @@ return () => clearTimeout(timer)
             <h2 className="text-base font-bold text-[#1A3A6B] text-center mb-2">
               Proposer un point de depot
             </h2>
-            <p className="text-sm text-gray-500 text-center mb-6">
-              Pour proposer un point de depot, vous devez devenir hote. Connectez-vous ou creez votre compte pour acceder au formulaire.
-            </p>
+           <p className="text-sm text-gray-500 text-center mb-6">
+  {isConnected 
+    ? 'Vous êtes connecté. Accédez à votre profil pour devenir hôte.'
+    : 'Pour proposer un point de dépôt, connectez-vous ou créez votre compte.'}
+</p>
             <button onClick={handlePopupOk}
               className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
               Acceder a mon profil
