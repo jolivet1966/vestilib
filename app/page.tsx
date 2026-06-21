@@ -16,9 +16,11 @@ function HomeContent() {
   useEffect(() => {
     if (searchParams.get('compte') === 'supprime') setCompteSuprime(true)
    if (searchParams.get('connecte') === 'true') setConnecte(true) 
-      const { onAuthStateChanged } = await import('firebase/auth')
-const { auth } = await import('@/lib/firebase')
-onAuthStateChanged(auth, user => setIsConnected(!!user))
+ import('@/lib/firebase').then(({ auth }) => {
+  import('firebase/auth').then(({ onAuthStateChanged }) => {
+    onAuthStateChanged(auth, user => setIsConnected(!!user))
+  })
+})
 const timer = setTimeout(() => setSplash(false), 2500)
 return () => clearTimeout(timer)
   }, [])
