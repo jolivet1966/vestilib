@@ -8,11 +8,13 @@ function HomeContent() {
   const [splash, setSplash] = useState(true)
   const [popup, setPopup] = useState(false)
   const [compteSuprime, setCompteSuprime] = useState(false)
+  const [connecte, setConnecte] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
     if (searchParams.get('compte') === 'supprime') setCompteSuprime(true)
+   if (searchParams.get('connecte') === 'true') setConnecte(true)   
 const timer = setTimeout(() => setSplash(false), 2500)
 return () => clearTimeout(timer)
   }, [])
@@ -35,6 +37,19 @@ return () => clearTimeout(timer)
 
   return (
     <div className="min-h-screen bg-white font-sans overflow-x-hidden pb-24">
+      {connecte && (
+  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
+    <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
+      <div className="text-4xl mb-4">👋</div>
+      <h2 className="text-base font-bold text-[#1A3A6B] mb-2">Vous êtes connecté !</h2>
+      <p className="text-sm text-gray-500 mb-6">Bienvenue sur VESTILIB.</p>
+      <button onClick={() => setConnecte(false)}
+        className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
+        Continuer
+      </button>
+    </div>
+  </div>
+)}
       {compteSuprime && (
   <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
     <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
