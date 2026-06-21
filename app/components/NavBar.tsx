@@ -50,8 +50,31 @@ export default function NavBar() {
       }
 
       setBadge(total)
-    })
-    return () => unsub()
+  })
+
+    // Recharger badge toutes les 30 secondes
+    const interval = setInterval(async () => {
+      const user = (await import('firebase/auth')).getAuth().currentUser
+      if (user) {
+        // relancer le calcul du badge
+        const { getDocs, collection, query, where } = await import('firebase/firestore')
+        const { db } = await import('@/lib/firebase')
+        let total = 0
+        const clientSnap = await getDocs(query(collection(db, 'conversations'), where('clientEmail', '==', user.email), where('luClient', '==', false)))
+        total += clientSnap.size
+        const hostSnap = await getDocs(query(collection(db, 'hosts'), where('email', '==', user.email)))
+        if (!hostSnap.empty) {
+          const hId = hostSnap.docs[0].id
+          const hoteSnap = await getDocs(query(collection(db, 'conversations'), where('hostId', '==', hId), where('luHote', '==', false)))
+          total += hoteSnap.size
+          const resaSnap = await getDocs(query(collection(db, 'bookings'), where('hostId', '==', hId), where('status', '==', 'awaiting_approval')))
+          total += resaSnap.size
+        }
+        setBadge(total)
+      }
+    }, 30000)
+
+    return () => { unsub(); clearInterval(interval) }
   }, [pathname])
 
   const actif = (href: string) =>
