@@ -53,7 +53,7 @@ export default function NavBar() {
     })
    })
     return () => unsub()
-  }, [pathname]) )
+  }, [pathname])
 
   const actif = (href: string) =>
     pathname === href
