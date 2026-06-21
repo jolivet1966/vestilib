@@ -83,7 +83,9 @@ function MessagesContent() {
   useEffect(() => {
     if (!selectedConvId) return
     const load = async () => {
-      const res = await fetch(`/api/conversations/${selectedConvId}/messages`)
+      const conv = conversations.find(c => c.id === selectedConvId)
+const role = conv?.monRole ?? 'client'
+const res = await fetch(`/api/conversations/${selectedConvId}/messages?role=${role}`)
       const data = await res.json()
       setMessages(data.messages ?? [])
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
@@ -130,7 +132,7 @@ function MessagesContent() {
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? 'Erreur'); return }
       setTexte('')
-      const res2 = await fetch(`/api/conversations/${selectedConvId}/messages`)
+      const res2 = await fetch(`/api/conversations/${selectedConvId}/messages?role=${conv?.monRole ?? 'client'}`)
       const data2 = await res2.json()
       setMessages(data2.messages ?? [])
       await chargerConversations(userEmail, hostId)

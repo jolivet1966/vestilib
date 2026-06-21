@@ -6,6 +6,9 @@ import { adminDb } from '@/lib/firebase-admin'
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params
+    const { searchParams } = new URL(req.url)
+    const role = searchParams.get('role')
+
     const snap = await adminDb.collection('conversations').doc(id)
       .collection('messages').orderBy('createdAt', 'asc').get()
 
@@ -14,6 +17,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       ...d.data(),
       createdAt: d.data().createdAt?.toDate?.()?.toISOString() ?? null,
     }))
+
+    // Marquer comme lu selon le rôle
+    if (role === 'client') {
+      await adminDb.collection('conversations').doc(id).update({ luClient: true })
+    } else if (role === 'hote') {
+      await adminDb.collection('conversations').doc(id).update({ luHote: true })
+    }
 
     return NextResponse.json({ messages })
   } catch (err: any) {
