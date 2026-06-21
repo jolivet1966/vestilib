@@ -139,7 +139,7 @@ function MessagesContent() {
       const res2 = await fetch(`/api/conversations/${selectedConvId}/messages`)
       const data2 = await res2.json()
       setMessages(data2.messages ?? [])
-      await chargerConversations(userEmail, hostId, vue)
+      await chargerConversations(userEmail, hostId)
     } catch { setError('Erreur réseau.') }
     finally { setSending(false) }
   }
