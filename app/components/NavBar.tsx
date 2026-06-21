@@ -61,8 +61,7 @@ export default function NavBar() {
       : 'text-[#1A3A6B] hover:bg-gray-50'
 
   const totalBadge = badgeMessages + badgeResas
-  const messagesHref = isHote ? '/host/messages' : '/messages'
-
+const messagesHref = '/messages'
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50">
       <div className="max-w-lg mx-auto grid grid-cols-3">
