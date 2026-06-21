@@ -51,7 +51,6 @@ export default function NavBar() {
 
       setBadge(total)
     })
-   })
     return () => unsub()
   }, [pathname])
 
