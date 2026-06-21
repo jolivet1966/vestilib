@@ -151,8 +151,7 @@ function MessagesContent() {
   )
 
   const convActive = conversations.find(c => c.id === selectedConvId)
-  const interlocuteur = vue === 'hote' ? convActive?.clientNom : convActive?.hostNom
-
+const interlocuteur = convActive?.monRole === 'hote' ? convActive?.clientNom : convActive?.hostNom
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <div className="bg-[#1A3A6B] px-4 py-3 flex items-center justify-between">
