@@ -8,32 +8,37 @@ import { collection, query, where, getDocs } from 'firebase/firestore'
 
 export default function NavBar() {
   const pathname = usePathname()
-  const [badgeMessages, setBadgeMessages] = useState(0)
-  const [badgeResas, setBadgeResas] = useState(0)
-  const [isHote, setIsHote] = useState(false)
+  const [badge, setBadge] = useState(0)
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async firebaseUser => {
-      if (!firebaseUser) return
+      if (!firebaseUser) { setBadge(0); return }
+
+      let total = 0
+
+      // Conversations non lues en tant que client
+      const clientSnap = await getDocs(query(
+        collection(db, 'conversations'),
+        where('clientEmail', '==', firebaseUser.email),
+        where('luClient', '==', false)
+      ))
+      total += clientSnap.size
 
       // Vérifier si hôte
       const hostSnap = await getDocs(query(
         collection(db, 'hosts'),
         where('email', '==', firebaseUser.email)
       ))
-      const hote = !hostSnap.empty
-      setIsHote(hote)
-
-      if (hote) {
+      if (!hostSnap.empty) {
         const hostId = hostSnap.docs[0].id
 
-        // Conversations non lues pour l'hôte
-        const convSnap = await getDocs(query(
+        // Conversations non lues en tant qu'hôte
+        const hoteSnap = await getDocs(query(
           collection(db, 'conversations'),
           where('hostId', '==', hostId),
           where('luHote', '==', false)
         ))
-        setBadgeMessages(convSnap.size)
+        total += hoteSnap.size
 
         // Demandes de réservation en attente
         const resaSnap = await getDocs(query(
@@ -41,16 +46,10 @@ export default function NavBar() {
           where('hostId', '==', hostId),
           where('status', '==', 'awaiting_approval')
         ))
-        setBadgeResas(resaSnap.size)
-      } else {
-        // Conversations non lues pour le client
-        const convSnap = await getDocs(query(
-          collection(db, 'conversations'),
-          where('clientEmail', '==', firebaseUser.email),
-          where('luClient', '==', false)
-        ))
-        setBadgeMessages(convSnap.size)
+        total += resaSnap.size
       }
+
+      setBadge(total)
     })
     return () => unsub()
   }, [])
@@ -60,8 +59,6 @@ export default function NavBar() {
       ? 'text-[#F5C84A] bg-[#1A3A6B]'
       : 'text-[#1A3A6B] hover:bg-gray-50'
 
-  const totalBadge = badgeMessages + badgeResas
-const messagesHref = '/messages'
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50">
       <div className="max-w-lg mx-auto grid grid-cols-3">
@@ -73,10 +70,10 @@ const messagesHref = '/messages'
           <span className="text-[10px] font-medium">Rechercher</span>
         </Link>
 
-        <Link href={messagesHref} className={`relative flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}>
-          {totalBadge > 0 && (
+        <Link href="/messages" className={`relative flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}>
+          {badge > 0 && (
             <span className="absolute top-2 right-6 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[9px] font-bold">
-              {totalBadge}
+              {badge}
             </span>
           )}
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
