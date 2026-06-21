@@ -11,7 +11,6 @@ interface Conversation {
   id: string; hostId: string; hostNom: string
   clientEmail: string; clientNom: string
   lastMessage: string; updatedAt: any; luClient: boolean; luHote: boolean
-  monRole: 'client' | 'hote'
 }
 interface Message {
   id: string; texte: string; auteur: string; clientNom: string; createdAt: string
@@ -25,6 +24,7 @@ function MessagesContent() {
 
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [userNom, setUserNom] = useState<string>('')
+  const [isHote, setIsHote] = useState(false)
   const [hostId, setHostId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -37,31 +37,19 @@ function MessagesContent() {
   const [showNewConv, setShowNewConv] = useState(!!hostIdParam && !convIdParam)
   const [hosts, setHosts] = useState<{id: string; prenom: string; nom: string; ville: string}[]>([])
   const [selectedHostId, setSelectedHostId] = useState(hostIdParam ?? '')
+  const [vue, setVue] = useState<'client' | 'hote'>('client')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const chargerConversations = async (email: string, hId: string | null) => {
-    const toutes: Conversation[] = []
-
-    // Conversations en tant que client
-    const resClient = await fetch(`/api/conversations?clientEmail=${encodeURIComponent(email)}`)
-    const dataClient = await resClient.json()
-    const convsClient = (dataClient.conversations ?? []).map((c: any) => ({ ...c, monRole: 'client' }))
-    toutes.push(...convsClient)
-
-    // Conversations en tant qu'hôte
-    if (hId) {
-      const resHote = await fetch(`/api/conversations?hostId=${hId}`)
-      const dataHote = await resHote.json()
-      const convsHote = (dataHote.conversations ?? []).map((c: any) => ({ ...c, monRole: 'hote' }))
-      // Éviter les doublons
-      convsHote.forEach((c: any) => {
-        if (!toutes.find(t => t.id === c.id)) toutes.push(c)
-      })
+  const chargerConversations = async (email: string, hId: string | null, role: 'client' | 'hote') => {
+    if (role === 'hote' && hId) {
+      const res = await fetch(`/api/conversations?hostId=${hId}`)
+      const data = await res.json()
+      setConversations(data.conversations ?? [])
+    } else {
+      const res = await fetch(`/api/conversations?clientEmail=${encodeURIComponent(email)}`)
+      const data = await res.json()
+      setConversations(data.conversations ?? [])
     }
-
-    // Trier par date
-    toutes.sort((a, b) => (b.updatedAt?.seconds ?? 0) - (a.updatedAt?.seconds ?? 0))
-    setConversations(toutes)
   }
 
   useEffect(() => {
@@ -72,10 +60,16 @@ function MessagesContent() {
 
       // Vérifier si hôte
       const snap = await getDocs(query(collection(db, 'hosts'), where('email', '==', firebaseUser.email)))
-      const hId = snap.empty ? null : snap.docs[0].id
-      setHostId(hId)
-
-      await chargerConversations(firebaseUser.email!, hId)
+      if (!snap.empty) {
+        setIsHote(true)
+        setHostId(snap.docs[0].id)
+        // Par défaut, hôte voit ses conversations hôte
+        await chargerConversations(firebaseUser.email!, snap.docs[0].id, 'hote')
+        setVue('hote')
+      } else {
+        await chargerConversations(firebaseUser.email!, null, 'client')
+        setVue('client')
+      }
       setLoading(false)
     })
     return () => unsub()
@@ -102,6 +96,13 @@ function MessagesContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  const changerVue = async (v: 'client' | 'hote') => {
+    setVue(v)
+    setSelectedConvId(null)
+    setShowNewConv(false)
+    if (userEmail) await chargerConversations(userEmail, hostId, v)
+  }
+
   const envoyerNouveauMessage = async () => {
     if (!texte || !selectedHostId || !userEmail) return
     setSending(true); setError('')
@@ -116,7 +117,8 @@ function MessagesContent() {
       setTexte('')
       setShowNewConv(false)
       setSelectedConvId(data.convId)
-      await chargerConversations(userEmail, hostId)
+      await chargerConversations(userEmail, hostId, 'client')
+      setVue('client')
     } catch { setError('Erreur réseau.') }
     finally { setSending(false) }
   }
@@ -125,8 +127,7 @@ function MessagesContent() {
     if (!texte || !selectedConvId || !userEmail) return
     setSending(true); setError('')
     try {
-      const conv = conversations.find(c => c.id === selectedConvId)
-      const auteur = conv?.monRole ?? 'client'
+      const auteur = vue === 'hote' ? 'hote' : 'client'
       const res = await fetch(`/api/conversations/${selectedConvId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -138,7 +139,7 @@ function MessagesContent() {
       const res2 = await fetch(`/api/conversations/${selectedConvId}/messages`)
       const data2 = await res2.json()
       setMessages(data2.messages ?? [])
-      await chargerConversations(userEmail, hostId)
+      await chargerConversations(userEmail, hostId, vue)
     } catch { setError('Erreur réseau.') }
     finally { setSending(false) }
   }
@@ -150,7 +151,7 @@ function MessagesContent() {
   )
 
   const convActive = conversations.find(c => c.id === selectedConvId)
-  const interlocuteur = convActive?.monRole === 'hote' ? convActive?.clientNom : convActive?.hostNom
+  const interlocuteur = vue === 'hote' ? convActive?.clientNom : convActive?.hostNom
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -160,7 +161,7 @@ function MessagesContent() {
           <span className="text-white/30">|</span>
           <span className="text-[#F5C84A] font-bold tracking-widest">Messages</span>
         </div>
-        {!selectedConvId && !showNewConv && (
+        {vue === 'client' && !selectedConvId && !showNewConv && (
           <button onClick={() => { setShowNewConv(true); setSelectedConvId(null) }}
             className="bg-[#F5C84A] text-[#1A3A6B] text-xs font-bold px-3 py-1.5 rounded-lg">
             + Nouveau
@@ -168,10 +169,24 @@ function MessagesContent() {
         )}
       </div>
 
+      {/* ONGLETS CLIENT / HOTE */}
+      {isHote && (
+        <div className="max-w-lg mx-auto px-4 pt-4 flex gap-2">
+          <button onClick={() => changerVue('hote')}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${vue === 'hote' ? 'bg-[#1A3A6B] text-[#F5C84A]' : 'bg-white text-gray-500 border border-gray-100'}`}>
+            📥 En tant qu'hôte
+          </button>
+          <button onClick={() => changerVue('client')}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${vue === 'client' ? 'bg-[#1A3A6B] text-[#F5C84A]' : 'bg-white text-gray-500 border border-gray-100'}`}>
+            💬 En tant que client
+          </button>
+        </div>
+      )}
+
       <div className="max-w-lg mx-auto px-4 py-4">
 
         {/* NOUVEAU MESSAGE */}
-        {showNewConv && (
+        {showNewConv && vue === 'client' && (
           <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
             <h2 className="text-sm font-semibold text-gray-900 mb-4">Nouveau message</h2>
             <div className="space-y-3">
@@ -216,8 +231,7 @@ function MessagesContent() {
             </div>
             <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
               {messages.map(msg => {
-                const monRole = convActive?.monRole ?? 'client'
-                const isMine = (monRole === 'client' && msg.auteur === 'client') || (monRole === 'hote' && msg.auteur === 'hote')
+                const isMine = (vue === 'client' && msg.auteur === 'client') || (vue === 'hote' && msg.auteur === 'hote')
                 return (
                   <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${isMine ? 'bg-[#1A3A6B] text-white' : 'bg-gray-100 text-gray-800'}`}>
@@ -255,14 +269,13 @@ function MessagesContent() {
               <div className="bg-white rounded-2xl p-8 text-center border border-gray-100">
                 <p className="text-3xl mb-3">💬</p>
                 <p className="text-gray-400 text-sm">Aucune conversation.</p>
-                <button onClick={() => setShowNewConv(true)}
-                  className="mt-4 bg-[#1A3A6B] text-[#F5C84A] font-semibold px-6 py-2.5 rounded-xl text-sm">
-                  Contacter un hôte
-                </button>
+                {vue === 'client' && (
+                 
+                )}
               </div>
             ) : conversations.map(conv => {
-              const nonLu = conv.monRole === 'hote' ? !conv.luHote : !conv.luClient
-              const nom = conv.monRole === 'hote' ? conv.clientNom : conv.hostNom
+              const nonLu = vue === 'hote' ? !conv.luHote : !conv.luClient
+              const nom = vue === 'hote' ? conv.clientNom : conv.hostNom
               return (
                 <div key={conv.id} onClick={() => setSelectedConvId(conv.id)}
                   className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm cursor-pointer hover:border-[#1A3A6B]/20 transition-colors">
