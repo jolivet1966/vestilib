@@ -51,8 +51,9 @@ export default function NavBar() {
 
       setBadge(total)
     })
+   })
     return () => unsub()
-  }, [])
+  }, [pathname]) )
 
   const actif = (href: string) =>
     pathname === href
