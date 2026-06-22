@@ -320,9 +320,9 @@ export default function HostPage() {
             })}
           </div>
         </div>
-        <div className="mt-4">
+       <div className="mt-3 mb-1 flex justify-end">
   <Link href={`/messages?hostId=${host.id}`}
-    className="block w-full text-center bg-white border border-[#1A3A6B] text-[#1A3A6B] font-semibold py-2.5 rounded-xl hover:bg-[#1A3A6B] hover:text-[#F5C84A] transition-colors text-sm">
+    className="inline-flex items-center gap-1.5 bg-[#1A3A6B] text-[#F5C84A] font-medium px-4 py-1.5 rounded-full hover:bg-[#0C2447] transition-colors text-xs">
     💬 Contacter l'hôte
   </Link>
 </div>
