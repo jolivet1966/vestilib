@@ -30,10 +30,10 @@ export async function createConnectAccount(params: {
       },
     }),
     business_profile: {
-      mcc: '7011',
-      url: 'https://vestilib-z8oc.vercel.app',
-      product_description: 'Service de consigne et depot bagages',
-    },
+  mcc: '7011',
+  url: 'https://vestilib-z8oc.vercel.app',
+  product_description: typeCompte === 'company' ? 'Service de consigne et depot bagages' : 'Non concerne',
+},
     settings: {
       payouts: {
         schedule: { interval: 'monthly', monthly_anchor: 1 },
