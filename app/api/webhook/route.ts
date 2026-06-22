@@ -11,8 +11,18 @@ export async function POST(req: NextRequest) {
   let event: Stripe.Event
 
   try {
-    const { constructWebhookEvent } = await import('@/lib/stripe')
-    event = constructWebhookEvent(payload, signature)
+    const { stripe } = await import('@/lib/stripe')
+    // Essayer d'abord avec la clé principale
+    try {
+      event = stripe.webhooks.constructEvent(
+        payload, signature, process.env.STRIPE_WEBHOOK_SECRET!
+      )
+    } catch {
+      // Essayer avec la clé Connect
+      event = stripe.webhooks.constructEvent(
+        payload, signature, process.env.STRIPE_WEBHOOK_SECRET_CONNECT!
+      )
+    }
   } catch (err: any) {
     console.error('[webhook] Signature invalide:', err.message)
     return NextResponse.json({ error: 'Signature invalide' }, { status: 400 })
