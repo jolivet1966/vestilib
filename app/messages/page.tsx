@@ -37,6 +37,7 @@ function MessagesContent() {
   const [showNewConv, setShowNewConv] = useState(!!hostIdParam && !convIdParam)
   const [hosts, setHosts] = useState<{id: string; prenom: string; nom: string; ville: string}[]>([])
   const [selectedHostId, setSelectedHostId] = useState(hostIdParam ?? '')
+  const [filtreDepart, setFiltreDepart] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const chargerConversations = async (email: string, hId: string | null) => {
@@ -172,11 +173,19 @@ const res = await fetch(`/api/conversations/${selectedConvId}/messages?role=${ro
             <h2 className="text-sm font-semibold text-gray-900 mb-4">Nouveau message</h2>
             <div className="space-y-3">
               <div>
+                <label className="text-xs text-gray-500 block mb-1">Département</label>
+<select onChange={e => setFiltreDepart(e.target.value)}
+  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] bg-white mb-3">
+  <option value="">Tous les départements</option>
+  {[...new Set(hosts.map(h => h.codePostal?.slice(0,2)).filter(Boolean))].sort().map(dep => (
+    <option key={dep} value={dep}>{dep}</option>
+  ))}
+</select>
                 <label className="text-xs text-gray-500 block mb-1">Hôte</label>
                 <select value={selectedHostId} onChange={e => setSelectedHostId(e.target.value)}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] bg-white">
                   <option value="">Sélectionnez un hôte</option>
-                  {hosts.map(h => (
+{hosts.filter(h => !filtreDepart || h.codePostal?.startsWith(filtreDepart)).map(h => (
                     <option key={h.id} value={h.id}>{h.prenom} {h.nom} - {h.ville}</option>
                   ))}
                 </select>
