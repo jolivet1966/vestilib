@@ -35,7 +35,7 @@ function MessagesContent() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const [showNewConv, setShowNewConv] = useState(!!hostIdParam && !convIdParam)
-  const [hosts, setHosts] = useState<{id: string; prenom: string; nom: string; ville: string}[]>([])
+  const [hosts, setHosts] = useState<{id: string; prenom: string; nom: string; ville: string; codePostal?: string}[]>([])
   const [selectedHostId, setSelectedHostId] = useState(hostIdParam ?? '')
   const [filtreDepart, setFiltreDepart] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
