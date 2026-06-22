@@ -320,6 +320,12 @@ export default function HostPage() {
             })}
           </div>
         </div>
+        <div className="mt-4">
+  <Link href={`/messages?hostId=${host.id}`}
+    className="block w-full text-center bg-white border border-[#1A3A6B] text-[#1A3A6B] font-semibold py-2.5 rounded-xl hover:bg-[#1A3A6B] hover:text-[#F5C84A] transition-colors text-sm">
+    💬 Contacter l'hôte
+  </Link>
+</div>
 
         <div className="flex gap-2 mb-6">
           {[{n:1,label:'Prestations'},{n:2,label:'Date et Heure'},{n:3,label:'Paiement'}].map(s => (
