@@ -177,7 +177,7 @@ const res = await fetch(`/api/conversations/${selectedConvId}/messages?role=${ro
 <select onChange={e => setFiltreDepart(e.target.value)}
   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] bg-white mb-3">
   <option value="">Tous les départements</option>
-  {[...new Set(hosts.map(h => h.codePostal?.slice(0,2)).filter(Boolean))].sort().map(dep => (
+  {(Array.from(new Set(hosts.map(h => h.codePostal?.slice(0,2)).filter(Boolean))) as string[]).sort().map(dep => (
     <option key={dep} value={dep}>{dep}</option>
   ))}
 </select>
