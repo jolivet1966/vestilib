@@ -432,6 +432,12 @@ export default function OnboardHostPage() {
                   </button>
                 </div>
               </div>
+              {typeCompte === 'individual' && (
+  <div className="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-4">
+    <p className="text-xs text-blue-800 font-medium mb-1">ℹ️ Information importante</p>
+    <p className="text-xs text-blue-600">Dans le formulaire Stripe qui suit, vous verrez des champs "entreprise" et "site web" pré-remplis. En tant que particulier, vous n'êtes pas concerné — ces informations sont obligatoires techniquement mais ne vous affectent pas.</p>
+  </div>
+)}
               <div className="mt-6 flex gap-3">
                 <button onClick={() => setEtape(2)} className="flex-1 border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors">
                   Retour
