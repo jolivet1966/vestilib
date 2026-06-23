@@ -15,14 +15,14 @@ function HomeContent() {
 
   useEffect(() => {
     if (searchParams.get('compte') === 'supprime') setCompteSuprime(true)
-   if (searchParams.get('connecte') === 'true') setConnecte(true) 
- import('@/lib/firebase').then(({ auth }) => {
-  import('firebase/auth').then(({ onAuthStateChanged }) => {
-    onAuthStateChanged(auth, user => setIsConnected(!!user))
-  })
-})
-const timer = setTimeout(() => setSplash(false), 2500)
-return () => clearTimeout(timer)
+    if (searchParams.get('connecte') === 'true') setConnecte(true)
+    import('@/lib/firebase').then(({ auth }) => {
+      import('firebase/auth').then(({ onAuthStateChanged }) => {
+        onAuthStateChanged(auth, user => setIsConnected(!!user))
+      })
+    })
+    const timer = setTimeout(() => setSplash(false), 2500)
+    return () => clearTimeout(timer)
   }, [])
 
   const handlePopupOk = () => {
@@ -43,48 +43,53 @@ return () => clearTimeout(timer)
 
   return (
     <div className="min-h-screen bg-white font-sans overflow-x-hidden pb-24">
-      {connecte && (
-  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
-    <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
-      <div className="text-4xl mb-4">👋</div>
-      <h2 className="text-base font-bold text-[#1A3A6B] mb-2">Vous êtes connecté !</h2>
-      <p className="text-sm text-gray-500 mb-6">Bienvenue sur VESTILIB.</p>
-      <button onClick={() => setConnecte(false)}
-        className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
-        Continuer
-      </button>
-    </div>
-  </div>
-)}
-      {compteSuprime && (
-  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
-    <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
-      <div className="text-4xl mb-4">✅</div>
-      <h2 className="text-base font-bold text-[#1A3A6B] mb-2">Compte supprimé</h2>
-      <p className="text-sm text-gray-500 mb-6">Votre compte a bien été supprimé. Merci d'avoir utilisé VESTILIB.</p>
-      <button onClick={() => setCompteSuprime(false)}
-        className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
-        Fermer
-      </button>
-    </div>
-  </div>
-)}
 
+      {/* Popup connecté */}
+      {connecte && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
+            <div className="text-4xl mb-4">👋</div>
+            <h2 className="text-base font-bold text-[#1A3A6B] mb-2">Vous êtes connecté !</h2>
+            <p className="text-sm text-gray-500 mb-6">Bienvenue sur VESTILIB.</p>
+            <button onClick={() => setConnecte(false)}
+              className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
+              Continuer
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Popup compte supprimé */}
+      {compteSuprime && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
+            <div className="text-4xl mb-4">✅</div>
+            <h2 className="text-base font-bold text-[#1A3A6B] mb-2">Compte supprimé</h2>
+            <p className="text-sm text-gray-500 mb-6">Votre compte a bien été supprimé. Merci d'avoir utilisé VESTILIB.</p>
+            <button onClick={() => setCompteSuprime(false)}
+              className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Popup proposer un point */}
       {popup && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
             <div className="text-3xl mb-4 text-center">🏠</div>
             <h2 className="text-base font-bold text-[#1A3A6B] text-center mb-2">
-              Proposer un point de depot
+              Proposer un point de dépôt
             </h2>
-           <p className="text-sm text-gray-500 text-center mb-6">
-  {isConnected 
-    ? 'Vous êtes connecté. Accédez à votre profil pour devenir hôte.'
-    : 'Pour proposer un point de dépôt, connectez-vous ou créez votre compte.'}
-</p>
+            <p className="text-sm text-gray-500 text-center mb-6">
+              {isConnected
+                ? 'Vous êtes connecté. Accédez à votre profil pour devenir hôte.'
+                : 'Pour proposer un point de dépôt, connectez-vous ou créez votre compte.'}
+            </p>
             <button onClick={handlePopupOk}
               className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
-              Acceder a mon profil
+              Accéder à mon profil
             </button>
             <button onClick={() => setPopup(false)}
               className="w-full mt-2 text-gray-400 text-sm py-2 hover:text-gray-600 transition-colors">
@@ -94,72 +99,153 @@ return () => clearTimeout(timer)
         </div>
       )}
 
-      <header className="px-6 py-5 flex items-center justify-between max-w-5xl mx-auto">
+      {/* Header */}
+      <header className="px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 bg-[#1A3A6B] rounded-xl flex items-center justify-center">
-            <svg width="32" height="32" viewBox="0 0 44 44" fill="none">
+          <div className="w-10 h-10 bg-[#1A3A6B] rounded-xl flex items-center justify-center">
+            <svg width="28" height="28" viewBox="0 0 44 44" fill="none">
               <path d="M6 8 L22 36 L38 8" stroke="#F5C84A" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
               <path d="M16 8 Q22 4 28 8" stroke="#F5C84A" strokeWidth="3" strokeLinecap="round" fill="none"/>
               <circle cx="22" cy="4" r="2" fill="#F5C84A"/>
             </svg>
           </div>
           <div>
-            <p className="text-[#1A3A6B] font-black text-xl tracking-widest leading-none">VESTILIB</p>
-            <p className="text-[#1A3A6B]/60 text-[10px] tracking-wider">Pose. Profite. Reviens.</p>
+            <p className="text-[#1A3A6B] font-black text-lg tracking-widest leading-none">VESTILIB</p>
+            <p className="text-[#1A3A6B]/50 text-[9px] tracking-wider">Pose. Profite. Reviens.</p>
           </div>
         </div>
+        {!isConnected && (
+          <Link href="/user/login"
+            className="text-xs font-semibold text-[#1A3A6B] border border-[#1A3A6B]/20 px-4 py-2 rounded-xl hover:bg-[#1A3A6B]/5 transition-colors">
+            Connexion
+          </Link>
+        )}
       </header>
 
-      <section className="px-6 pt-8 pb-16 max-w-5xl mx-auto">
-        <div className="max-w-xl">
-          <h1 className="text-4xl md:text-5xl font-black text-[#1A3A6B] leading-tight mb-4">
-            Profitez de la plage<br/>
-            et de la ville<br/>
-            en toute liberte
-          </h1>
-          <p className="text-[#1A3A6B]/70 text-lg font-medium mb-8 leading-relaxed">
-            Casque ? Sac ? Equipement ?<br/>
-            Ne vous encombrez plus. Profitez.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link href="/map" className="bg-[#1A3A6B] text-[#F5C84A] font-bold px-8 py-4 rounded-2xl text-base hover:bg-[#0C2447] transition-all hover:scale-105 text-center shadow-lg shadow-[#1A3A6B]/20">
-              Trouver un point de depot
-            </Link>
-            <button onClick={() => setPopup(true)}
-              className="bg-gray-100 text-[#1A3A6B] font-semibold px-8 py-4 rounded-2xl text-base hover:bg-gray-200 transition-colors text-center border border-gray-200">
-              Proposer un point de depot
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#1A3A6B] py-14 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { icon: '🎒', titre: 'Deposez',      desc: 'Casque, sac ou equipement en toute securite' },
-              { icon: '📍', titre: 'A 2 min',      desc: 'Des points de depot autour de vous' },
-              { icon: '🤝', titre: 'De confiance', desc: 'Commercants et hotes verifies' },
-              { icon: '⚡', titre: '30 secondes',  desc: 'Simple, rapide, securise' },
-            ].map((a, i) => (
-              <div key={i} className="bg-white/10 rounded-2xl p-5 text-center hover:bg-white/15 transition-colors">
-                <div className="text-3xl mb-3">{a.icon}</div>
-                <p className="text-[#F5C84A] font-bold text-sm mb-1">{a.titre}</p>
-                <p className="text-white/60 text-xs leading-relaxed">{a.desc}</p>
+      {/* Hero */}
+      <section className="px-5 pt-4 pb-8">
+        {/* Visuel illustratif */}
+        <div className="bg-gradient-to-br from-[#1A3A6B] to-[#0C2447] rounded-3xl p-6 mb-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#F5C84A]/10 rounded-full -translate-y-8 translate-x-8" />
+          <div className="absolute bottom-0 left-0 w-20 h-20 bg-[#F5C84A]/5 rounded-full translate-y-6 -translate-x-4" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="bg-[#F5C84A]/20 text-[#F5C84A] text-xs font-semibold px-3 py-1 rounded-full">
+                🎉 Disponible partout
+              </span>
+            </div>
+            <p className="text-white font-black text-2xl leading-tight mb-2">
+              Libérez-vous<br/>de vos affaires.
+            </p>
+            <p className="text-white/60 text-sm leading-relaxed mb-5">
+              Déposez casque, sac ou équipement en toute sécurité chez un hôte près de vous.
+            </p>
+            <div className="flex gap-3">
+              <div className="text-center">
+                <p className="text-[#F5C84A] font-black text-xl">2 min</p>
+                <p className="text-white/50 text-[10px]">pour réserver</p>
               </div>
-            ))}
+              <div className="w-px bg-white/10" />
+              <div className="text-center">
+                <p className="text-[#F5C84A] font-black text-xl">100%</p>
+                <p className="text-white/50 text-[10px]">sécurisé</p>
+              </div>
+              <div className="w-px bg-white/10" />
+              <div className="text-center">
+                <p className="text-[#F5C84A] font-black text-xl">0€</p>
+                <p className="text-white/50 text-[10px]">d'inscription</p>
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* CTAs */}
+        <div className="space-y-3">
+          <Link href="/map"
+            className="flex items-center justify-between w-full bg-[#1A3A6B] text-white font-bold px-5 py-4 rounded-2xl hover:bg-[#0C2447] transition-all active:scale-95 shadow-lg shadow-[#1A3A6B]/20">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">📍</span>
+              <div className="text-left">
+                <p className="text-sm font-bold text-[#F5C84A]">Trouver un point de dépôt</p>
+                <p className="text-xs text-white/50">Voir les hôtes près de vous</p>
+              </div>
+            </div>
+            <span className="text-white/40 text-lg">›</span>
+          </Link>
+
+          <button onClick={() => setPopup(true)}
+            className="flex items-center justify-between w-full bg-gray-50 border border-gray-100 font-bold px-5 py-4 rounded-2xl hover:bg-gray-100 transition-all active:scale-95">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🏠</span>
+              <div className="text-left">
+                <p className="text-sm font-bold text-[#1A3A6B]">Proposer un point de dépôt</p>
+                <p className="text-xs text-gray-400">Générez des revenus</p>
+              </div>
+            </div>
+            <span className="text-gray-300 text-lg">›</span>
+          </button>
         </div>
       </section>
 
-      <footer className="py-4 text-center">
-        <p className="text-[#1A3A6B]/30 text-xs">2026 VESTILIB - Pose. Profite. Reviens.</p>
+      {/* Comment ça marche */}
+      <section className="px-5 pb-8">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Comment ça marche</p>
+        <div className="space-y-3">
+          {[
+            { step: '1', icon: '🔍', titre: 'Trouvez', desc: 'Repérez un point de dépôt sur la carte près de votre destination.' },
+            { step: '2', icon: '📦', titre: 'Déposez', desc: 'Réservez en 30 secondes et déposez vos affaires chez l\'hôte.' },
+            { step: '3', icon: '🎉', titre: 'Profitez', desc: 'Partez les mains libres. Récupérez vos affaires quand vous voulez.' },
+          ].map((e) => (
+            <div key={e.step} className="flex items-start gap-4 bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+              <div className="w-9 h-9 bg-[#1A3A6B] rounded-xl flex items-center justify-center flex-shrink-0">
+                <span className="text-[#F5C84A] font-black text-sm">{e.step}</span>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span>{e.icon}</span>
+                  <p className="text-sm font-bold text-[#1A3A6B]">{e.titre}</p>
+                </div>
+                <p className="text-xs text-gray-500 leading-relaxed">{e.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Avantages */}
+      <section className="bg-[#1A3A6B] mx-4 rounded-3xl py-6 px-5 mb-8">
+        <p className="text-xs font-semibold text-[#F5C84A]/60 uppercase tracking-wider mb-4">Pourquoi VESTILIB</p>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { icon: '🎒', titre: 'Tout type', desc: 'Casque, sac, vélo, équipement' },
+            { icon: '⚡', titre: 'Ultra rapide', desc: 'Réservation en 30 secondes' },
+            { icon: '🤝', titre: 'Vérifié', desc: 'Hôtes certifiés Stripe' },
+            { icon: '🔒', titre: 'Sécurisé', desc: 'Paiement 100% protégé' },
+          ].map((a, i) => (
+            <div key={i} className="bg-white/10 rounded-2xl p-4">
+              <div className="text-2xl mb-2">{a.icon}</div>
+              <p className="text-[#F5C84A] font-bold text-xs mb-1">{a.titre}</p>
+              <p className="text-white/50 text-[10px] leading-relaxed">{a.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-4 text-center px-5">
+        <div className="flex justify-center gap-4 mb-2">
+          <Link href="/cgv" className="text-[10px] text-gray-400 hover:text-gray-600">CGV</Link>
+          <span className="text-gray-200">|</span>
+          <Link href="/confidentialite" className="text-[10px] text-gray-400 hover:text-gray-600">Confidentialité</Link>
+        </div>
+        <p className="text-[#1A3A6B]/30 text-[10px]">© 2026 VESTILIB — Pose. Profite. Reviens.</p>
       </footer>
 
       <NavBar />
     </div>
   )
 }
+
 export default function HomePage() {
   return (
     <Suspense fallback={null}>
