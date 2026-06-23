@@ -384,8 +384,8 @@ export default function ProfilPage() {
               )}
             </div>
 
-            <MenuCard icon="📄" title="Conditions generales" subtitle="CGV VESTILIB" onClick={() => {}} />
-            <MenuCard icon="🔒" title="Protection des donnees" subtitle="Politique de confidentialite" onClick={() => {}} />
+           <MenuCard icon="📄" title="Conditions generales" subtitle="CGV VESTILIB" onClick={() => router.push('/cgv')} />
+<MenuCard icon="🔒" title="Protection des donnees" subtitle="Politique de confidentialite" onClick={() => router.push('/confidentialite')} />
 
             <button onClick={deconnecter}
               className="w-full bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-3 hover:bg-gray-50 transition-colors shadow-sm">
