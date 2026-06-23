@@ -18,6 +18,20 @@ interface Balance {
   available: number; pending: number
   recentPayouts: { id: string; amount: number; status: string; arrivalDate: string }[]
 }
+interface ResaWithHost {
+  id: string
+  bookingCode?: string
+  status: string
+  date?: string
+  creneau?: string
+  totalAmount?: number
+  paymentUrl?: string
+  hostId?: string
+  hostEmail?: string
+  hostTelephone?: string
+  createdAt?: { seconds: number }
+  [key: string]: any
+}
 
 export default function ProfilPage() {
   const router = useRouter()
@@ -27,7 +41,7 @@ export default function ProfilPage() {
   const [hostId,    setHostId]    = useState<string | null>(null)
   const [balance,   setBalance]   = useState<Balance | null>(null)
   const [totalGagne, setTotalGagne] = useState(0)
-  const [mesResas, setMesResas] = useState<any[]>([])
+  const [mesResas, setMesResas]   = useState<ResaWithHost[]>([])
   const [loading,   setLoading]   = useState(true)
 
   const [editMode,   setEditMode]   = useState(false)
@@ -104,16 +118,32 @@ export default function ProfilPage() {
           if (balRes.ok) setBalance(await balRes.json())
         }
 
-        // Réservations en cours du client
+        // Réservations du client
         const resaSnap = await getDocs(query(
           collection(db, 'bookings'),
           where('customerEmail', '==', firebaseUser.email)
         ))
-        const enCours = resaSnap.docs
-          .map(d => ({ id: d.id, ...d.data() }))
-          .filter((r: any) => ['pending', 'awaiting_approval', 'accepted', 'paid'].includes(r.status))
-          .sort((a: any, b: any) => b.createdAt?.seconds - a.createdAt?.seconds)
-        setMesResas(enCours)
+        const enCours: ResaWithHost[] = resaSnap.docs
+          .map(d => ({ id: d.id, ...d.data() } as ResaWithHost))
+          .filter(r => ['pending', 'awaiting_approval', 'accepted', 'paid'].includes(r.status))
+          .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
+
+        // Enrichir les réservations payées avec les coordonnées hôte
+        const enriched = await Promise.all(
+          enCours.map(async r => {
+            if (r.status === 'paid' && r.hostId) {
+              try {
+                const hostDoc = await getDoc(doc(db, 'hosts', r.hostId))
+                if (hostDoc.exists()) {
+                  const h = hostDoc.data()
+                  return { ...r, hostEmail: h.email ?? null, hostTelephone: h.telephone ?? null }
+                }
+              } catch {}
+            }
+            return r
+          })
+        )
+        setMesResas(enriched)
 
       } catch (e) { console.error(e) }
       finally { setLoading(false) }
@@ -166,14 +196,14 @@ export default function ProfilPage() {
       await firebaseUser.delete()
       router.push('/?compte=supprime')
     } catch (e: any) {
-    console.error('Erreur suppression:', e.code, e.message)
-    if (e.code === 'auth/requires-recent-login') {
-      alert('Pour des raisons de sécurité, veuillez vous déconnecter puis vous reconnecter avant de supprimer votre compte.')
-    } else {
-      alert(`Erreur : ${e.code} — ${e.message}`)
+      console.error('Erreur suppression:', e.code, e.message)
+      if (e.code === 'auth/requires-recent-login') {
+        alert('Pour des raisons de sécurité, veuillez vous déconnecter puis vous reconnecter avant de supprimer votre compte.')
+      } else {
+        alert(`Erreur : ${e.code} — ${e.message}`)
+      }
     }
   }
-}
 
   if (loading) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -229,7 +259,7 @@ export default function ProfilPage() {
                   🔔 Mes réservations
                 </p>
                 <div className="space-y-3">
-                  {mesResas.map((r: any) => (
+                  {mesResas.map((r: ResaWithHost) => (
                     <div key={r.id} className="bg-white rounded-xl p-4 border border-[#F5C84A]/30">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-mono font-bold text-[#1A3A6B] text-sm">{r.bookingCode}</span>
@@ -256,6 +286,25 @@ export default function ProfilPage() {
                           </a>
                         )}
                       </div>
+
+                      {/* Coordonnées hôte — visibles uniquement après paiement confirmé */}
+                      {r.status === 'paid' && (r.hostEmail || r.hostTelephone) && (
+                        <div className="mt-3 pt-3 border-t border-[#F5C84A]/30 space-y-1.5">
+                          <p className="text-xs font-semibold text-[#1A3A6B] mb-1">📍 Coordonnées de l'hôte</p>
+                          {r.hostEmail && (
+                            <a href={`mailto:${r.hostEmail}`}
+                              className="flex items-center gap-1.5 text-xs text-[#1A3A6B] hover:underline">
+                              ✉️ {r.hostEmail}
+                            </a>
+                          )}
+                          {r.hostTelephone && (
+                            <a href={`tel:${r.hostTelephone}`}
+                              className="flex items-center gap-1.5 text-xs text-[#1A3A6B] hover:underline">
+                              📞 {r.hostTelephone}
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
