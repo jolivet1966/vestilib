@@ -134,9 +134,9 @@ function HomeContent() {
                 🎉 Disponible partout
               </span>
             </div>
-            <p className="text-white font-black text-2xl leading-tight mb-2">
-              Libérez-vous<br/>de vos affaires.
-            </p>
+           <p className="text-white font-black text-2xl leading-tight mb-2">
+  À la plage ou à la ville,<br/>libérez-vous<br/>de vos affaires.
+</p>
             <p className="text-white/60 text-sm leading-relaxed mb-5">
               Déposez casque, sac ou équipement en toute sécurité chez un hôte près de vous.
             </p>
