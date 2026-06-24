@@ -329,11 +329,11 @@ export default function HostPage() {
             })}
           </div>
         </div>
-        <Link href={`/messages?hostId=${host.id}`}
-  className="mt-4 flex items-center justify-center gap-2 w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl text-sm">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-  Contacter l'hôte
+        <Link href={`/messages?hostId=${host.id}`} className="flex items-center justify-center gap-1.5 text-[#1A3A6B]/60 text-xs py-2 hover:text-[#1A3A6B] transition-colors w-full">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  Contacter l&apos;hote
 </Link>
+  
 
         {/* Étapes */}
         <div className="flex gap-2 mb-5">
