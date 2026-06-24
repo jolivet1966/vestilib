@@ -62,8 +62,6 @@ export async function POST(req: NextRequest) {
           try {
             const { sendConfirmationUser, sendNotificationHote } = await import('@/lib/emails')
 
-console.log('[webhook] customerEmail:', bookingData.customerEmail)
-console.log('[webhook] host email:', host?.email)
             if (bookingData.customerEmail && host) {
               await sendConfirmationUser({
                 to:          bookingData.customerEmail,
@@ -98,6 +96,27 @@ console.log('[webhook] host email:', host?.email)
 
         } else {
           console.warn(`[webhook] Aucune booking trouvée pour session ${session.id}`)
+        }
+        break
+      }
+
+      case 'checkout.session.expired': {
+        const session = event.data.object as Stripe.Checkout.Session
+
+        const snap = await adminDb
+          .collection('bookings')
+          .where('stripeCheckoutSessionId', '==', session.id)
+          .limit(1)
+          .get()
+
+        if (!snap.empty) {
+          await snap.docs[0].ref.update({
+            status:    'expired',
+            expiredAt: new Date(),
+          })
+          console.log(`[webhook] Session expirée : booking ${snap.docs[0].id}`)
+        } else {
+          console.warn(`[webhook] Aucune booking trouvée pour session expirée ${session.id}`)
         }
         break
       }
