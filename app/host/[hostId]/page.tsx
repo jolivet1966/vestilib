@@ -604,8 +604,8 @@ export default function HostPage() {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-amber-800">Demande de réservation</p>
-                  <p className="text-xs text-amber-600">L&apos;hôte doit valider avant le paiement</p>
+                    <p className="text-sm font-bold text-amber-800">Demande de reservation</p>
+                  <p className="text-xs text-amber-600">L&apos;hote doit valider avant le paiement</p>
                 </div>
               </div>
             )}
