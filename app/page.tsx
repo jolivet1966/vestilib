@@ -31,13 +31,43 @@ function HomeContent() {
   }
 
   if (splash) return (
-    <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center gap-6">
-      <svg width="160" height="160" viewBox="0 0 44 44" fill="none">
-        <path d="M6 8 L22 36 L38 8" stroke="#F5C84A" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-        <path d="M16 8 Q22 4 28 8" stroke="#F5C84A" strokeWidth="3" strokeLinecap="round" fill="none"/>
-        <circle cx="22" cy="4" r="2" fill="#F5C84A"/>
-      </svg>
-      <p className="text-[#F5C84A] font-black text-5xl tracking-widest">VESTILIB</p>
+    <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center relative overflow-hidden">
+      {/* Cercles décoratifs */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-[#F5C84A]/5 rounded-full -translate-y-20 translate-x-20" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#F5C84A]/5 rounded-full translate-y-24 -translate-x-24" />
+      <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-white/3 rounded-full -translate-x-1/2 -translate-y-1/2" />
+
+      {/* Contenu central */}
+      <div className="relative z-10 flex flex-col items-center gap-6">
+        {/* Logo animé */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-[#F5C84A]/20 rounded-full blur-2xl scale-150" />
+          <svg width="120" height="120" viewBox="0 0 44 44" fill="none" className="relative z-10 drop-shadow-2xl">
+            <path d="M6 8 L22 36 L38 8" stroke="#F5C84A" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+            <path d="M16 8 Q22 4 28 8" stroke="#F5C84A" strokeWidth="3" strokeLinecap="round" fill="none"/>
+            <circle cx="22" cy="4" r="2" fill="#F5C84A"/>
+          </svg>
+        </div>
+
+        {/* Nom */}
+        <div className="text-center">
+          <p className="text-[#F5C84A] font-black text-5xl tracking-[0.3em] drop-shadow-lg">VESTILIB</p>
+          <p className="text-white/50 text-sm tracking-[0.2em] mt-2 font-light">POSE · PROFITE · REVIENS</p>
+        </div>
+
+        {/* Barre de progression */}
+        <div className="mt-8 w-48 h-0.5 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-full bg-[#F5C84A] rounded-full animate-[loading_2.5s_ease-in-out_forwards]"
+            style={{ animation: 'loading 2.5s ease-in-out forwards' }} />
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes loading {
+          0% { width: 0%; }
+          100% { width: 100%; }
+        }
+      `}</style>
     </div>
   )
 
@@ -134,9 +164,9 @@ function HomeContent() {
                 🎉 Disponible partout
               </span>
             </div>
-           <p className="text-white font-black text-2xl leading-tight mb-2">
-  À la plage ou à la ville,<br/>libérez-vous<br/>de vos affaires.
-</p>
+            <p className="text-white font-black text-2xl leading-tight mb-2">
+              Libérez-vous<br/>de vos affaires.
+            </p>
             <p className="text-white/60 text-sm leading-relaxed mb-5">
               Déposez casque, sac ou équipement en toute sécurité chez un hôte près de vous.
             </p>
