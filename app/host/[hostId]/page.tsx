@@ -446,7 +446,7 @@ export default function HostPage() {
                 className="w-full bg-[#1A3A6B] text-[#F5C84A] font-bold py-4 rounded-2xl hover:bg-[#0C2447] disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 text-sm shadow-lg shadow-[#1A3A6B]/20">
                 Continuer — Choisir la date →
               </button>
-              <Link href={`/messages?hostId=${host.id}`}
+<Link href={`/messages?hostId=${host.id}`}
   className="flex items-center justify-center gap-1.5 text-[#1A3A6B]/50 text-xs py-2 hover:text-[#1A3A6B] transition-colors">
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   Contacter l'hôte
