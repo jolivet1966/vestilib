@@ -92,7 +92,7 @@ export default function HostPage() {
   useEffect(() => {
     fetch(`/api/hosts/${hostId}`)
       .then(r => r.json())
-      .then(d => { if (d.host) setHost(d.host); else setError('Hote introuvable') })
+      .then(d => { if (d.host) setHost(d.host); else setError('Hôte introuvable') })
       .catch(() => setError('Erreur de chargement'))
       .finally(() => setLoading(false))
   }, [hostId])
@@ -102,7 +102,7 @@ export default function HostPage() {
       <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center gap-4 px-6 text-center">
         <div className="w-16 h-16 bg-[#F5C84A]/20 rounded-2xl flex items-center justify-center text-3xl mb-2">🔐</div>
         <h1 className="text-xl font-bold text-white">Connexion requise</h1>
-        <p className="text-sm text-white/50 max-w-xs">Pour reserver un point de depot, vous devez avoir un compte VESTILIB.</p>
+        <p className="text-sm text-white/50 max-w-xs">Pour réserver un point de dépôt, vous devez avoir un compte VESTILIB.</p>
         <div className="flex flex-col gap-3 w-full max-w-xs mt-4">
           <Link href={`/user/login?redirect=/host/${hostId}`}
             className="w-full bg-[#F5C84A] text-[#1A3A6B] font-bold py-3.5 rounded-2xl text-center">
@@ -112,7 +112,7 @@ export default function HostPage() {
             className="w-full bg-white/10 border border-white/20 text-white font-semibold py-3.5 rounded-2xl text-center">
             Créer un compte
           </Link>
-          <Link href="/map" className="text-sm text-white/40 mt-2">&larr; Retour a la carte</Link>
+          <Link href="/map" className="text-sm text-white/40 mt-2">← Retour à la carte</Link>
         </div>
       </div>
     )
@@ -126,16 +126,16 @@ export default function HostPage() {
 
   if (error || !host) return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
-      <p className="text-gray-500">{error || 'Hote introuvable'}</p>
-      <Link href="/map" className="text-[#1A3A6B] text-sm underline">Retour a la carte</Link>
+      <p className="text-gray-500">{error || 'Hôte introuvable'}</p>
+      <Link href="/map" className="text-[#1A3A6B] text-sm underline">Retour à la carte</Link>
     </div>
   )
 
   if (host.ouvert === false) return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4 px-6 text-center">
       <div className="text-5xl mb-2">🔒</div>
-      <h1 className="text-xl font-bold text-gray-900">Point de depot ferme</h1>
-      <p className="text-sm text-gray-400">Cet hote a temporairement ferme son offre VESTILIB.</p>
+      <h1 className="text-xl font-bold text-gray-900">Point de dépôt fermé</h1>
+      <p className="text-sm text-gray-400">Cet hôte a temporairement fermé son offre VESTILIB.</p>
       <Link href="/map" className="bg-[#1A3A6B] text-[#F5C84A] font-semibold px-8 py-3 rounded-xl">
         Trouver un autre hôte
       </Link>
@@ -217,7 +217,7 @@ export default function HostPage() {
 
   const isAnyComplet    = Object.values(capacites).some(c => c.complet)
   const alertMessage    = Object.values(capacites).filter(c => c.complet).map(c =>
-    c.type === 'moto' ? 'parking moto complet' : c.type === 'velo' ? 'parking velo complet' : 'consigne complete'
+    c.type === 'moto' ? 'parking moto complet' : c.type === 'velo' ? 'parking vélo complet' : 'consigne complète'
   ).join(', ')
   const warningMessages = Object.values(capacites).filter(c => !c.complet && c.placesRestantes <= 4).map(c =>
     `${c.placesRestantes} place(s) ${c.type === 'moto' ? 'moto' : c.type === 'velo' ? 'vélo' : 'consigne'}`
@@ -226,8 +226,8 @@ export default function HostPage() {
   const aujourdHui = () => ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'][new Date().getDay()]
   const statut = () => {
     const h = host.horaires?.[aujourdHui()]
-    if (!h?.ouvert) return { ouvert: false, label: 'Ferme aujourd\'hui' }
-    return { ouvert: true, label: h.ouverture + ' - ' + h.fermeture }
+    if (!h?.ouvert) return { ouvert: false, label: "Fermé aujourd'hui" }
+    return { ouvert: true, label: `${h.ouverture} — ${h.fermeture}` }
   }
   const statutAff = statut()
 
@@ -239,7 +239,7 @@ export default function HostPage() {
 
   const payer = async () => {
     if (!customerEmail) { setPayError('Email requis.'); return }
-    if (isAnyComplet)   { setPayError('Capacite depassee pour ce creneau.'); return }
+    if (isAnyComplet)   { setPayError('Capacité dépassée pour ce créneau.'); return }
     setPaying(true); setPayError('')
 
     if (host.modeReservation === 'validation') {
@@ -256,8 +256,8 @@ export default function HostPage() {
         })
         const data = await res.json()
         if (!res.ok) { setPayError(data.error ?? 'Erreur'); return }
-        router.push('/pay/pending?code=' + data.bookingCode + '&email=' + encodeURIComponent(customerEmail))
-      } catch { setPayError('Erreur reseau.') }
+        router.push(`/pay/pending?code=${data.bookingCode}&email=${encodeURIComponent(customerEmail)}`)
+      } catch { setPayError('Erreur réseau.') }
       finally { setPaying(false) }
       return
     }
@@ -267,7 +267,7 @@ export default function HostPage() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           hostId: host.id, amountEuros: Math.max(total, 1),
-          description: 'VESTILIB - ' + description, customerEmail,
+          description: `VESTILIB — ${description}`, customerEmail,
           date: selectedDate, creneau: selectedCreneau,
           prestations: Object.entries(selectedTarifs).map(([tarifId, quantite]) => ({ tarifId, quantite })),
         }),
@@ -275,7 +275,7 @@ export default function HostPage() {
       const data = await res.json()
       if (!res.ok) { setPayError(data.error ?? 'Erreur paiement'); return }
       window.location.href = data.url
-    } catch { setPayError('Erreur reseau.') }
+    } catch { setPayError('Erreur réseau.') }
     finally { setPaying(false) }
   }
 
@@ -294,13 +294,13 @@ export default function HostPage() {
           <p className="text-white/40 text-xs">{host.ville}</p>
         </div>
         <span className={`text-xs font-semibold px-3 py-1 rounded-full ${statutAff.ouvert ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
-          {statutAff.ouvert ? 'Ouvert' : 'Ferme'}
+          {statutAff.ouvert ? '● Ouvert' : '○ Fermé'}
         </span>
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-4">
 
-        {/* Infos hote */}
+        {/* Infos hôte */}
         <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4 shadow-sm">
           <div className="flex items-start justify-between mb-3">
             <div>
@@ -327,14 +327,14 @@ export default function HostPage() {
                   <p className="text-[9px] font-semibold text-gray-400 mb-0.5">{JOURS_LABELS[jour]}</p>
                   {h?.ouvert ? (
                     <><p className="text-[8px] text-[#1A3A6B] font-medium leading-tight">{h.ouverture}</p><p className="text-[8px] text-[#1A3A6B] leading-tight">{h.fermeture}</p></>
-                  ) : <p className="text-[9px] text-gray-300 mt-1">-</p>}
+                  ) : <p className="text-[9px] text-gray-300 mt-1">—</p>}
                 </div>
               )
             })}
           </div>
         </div>
 
-        {/* Etapes */}
+        {/* Étapes */}
         <div className="flex gap-2 mb-5">
           {[{n:1,label:'Prestations'},{n:2,label:'Date & Heure'},{n:3,label:'Paiement'}].map(s => (
             <div key={s.n} className={`flex-1 text-center py-2.5 rounded-xl text-xs font-semibold border transition-all ${
@@ -342,12 +342,12 @@ export default function HostPage() {
               etape > s.n  ? 'bg-green-500 text-white border-green-500' :
               'bg-white text-gray-300 border-gray-100'
             }`}>
-              {etape > s.n ? 'ok' : s.n}. {s.label}
+              {etape > s.n ? '✓' : s.n}. {s.label}
             </div>
           ))}
         </div>
 
-        {/* ETAPE 1 : PRESTATIONS */}
+        {/* ── ÉTAPE 1 : PRESTATIONS ── */}
         {etape === 1 && (
           <div className="space-y-4">
             {CATEGORIES.map(cat => {
@@ -382,13 +382,13 @@ export default function HostPage() {
                             <p className="text-xs text-gray-400 truncate">{tarif.description}</p>
                           </div>
 
-                          {/* Prix + quantite */}
+                          {/* Prix + quantité */}
                           <div className="flex items-center gap-3 flex-shrink-0">
                             {selected && (
                               <div className="flex items-center gap-2">
                                 <button onClick={e => { e.stopPropagation(); updateQty(tarif.id, -1) }}
                                   className="w-7 h-7 rounded-full bg-gray-100 text-gray-600 font-bold text-base flex items-center justify-center hover:bg-gray-200 active:scale-90 transition-all">
-                                  -
+                                  −
                                 </button>
                                 <span className="text-sm font-bold text-[#1A3A6B] w-4 text-center">{qty}</span>
                                 <button onClick={e => { e.stopPropagation(); updateQty(tarif.id, 1) }}
@@ -415,28 +415,28 @@ export default function HostPage() {
               )
             })}
 
-            {/* Alertes capacite */}
+            {/* Alertes capacité */}
             {consigneDepasse && <div className="bg-red-50 border border-red-200 rounded-xl p-3"><p className="text-sm font-semibold text-red-600 text-center">Maximum {host.capaciteMax} articles consigne</p></div>}
             {motoDepasse     && <div className="bg-red-50 border border-red-200 rounded-xl p-3"><p className="text-sm font-semibold text-red-600 text-center">Maximum {host.capaciteMaxMoto} motos</p></div>}
             {veloDepasse     && <div className="bg-red-50 border border-red-200 rounded-xl p-3"><p className="text-sm font-semibold text-red-600 text-center">Maximum {host.capaciteMaxVelo} vélos</p></div>}
 
             {hasDepot && (
               <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-                <p className="text-sm font-bold text-blue-800 mb-1">Depot longue duree</p>
-                <p className="text-xs text-blue-600 mb-3">Les dépôts 24h et 7 jours nécessitent une validation de l&apos;hôte.</p>
+                <p className="text-sm font-bold text-blue-800 mb-1">Dépôt longue durée</p>
+                <p className="text-xs text-blue-600 mb-3">Les dépôts 24h et 7 jours nécessitent une validation de l'hôte.</p>
                 <Link href="/messages" className="block w-full text-center bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-xl">
-                  Contacter l&apos;hôte
+                  Contacter l'hôte
                 </Link>
               </div>
             )}
 
-            {/* Recap total */}
+            {/* Récap total */}
             {total > 0 && !hasDepot && (
               <div className="bg-[#1A3A6B] rounded-2xl p-4">
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-white/60 text-xs">{nbArticles} article{nbArticles > 1 ? 's' : ''} sélectionné{nbArticles > 1 ? 's' : ''}</p>
-                    {remiseTotal > 0 && <p className="text-green-400 text-xs font-medium">Remise -{remiseTotal.toFixed(2)}€ appliquée</p>}
+                    {remiseTotal > 0 && <p className="text-green-400 text-xs font-medium">Remise −{remiseTotal.toFixed(2)}€ appliquée</p>}
                   </div>
                   <p className="text-[#F5C84A] font-black text-2xl">{total.toFixed(2)}€</p>
                 </div>
@@ -458,7 +458,7 @@ export default function HostPage() {
           </div>
         )}
 
-        {/* ETAPE 2 : DATE & CRENEAU */}
+        {/* ── ÉTAPE 2 : DATE & CRÉNEAU ── */}
         {etape === 2 && (
           <div className="space-y-4">
             <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
@@ -504,7 +504,7 @@ export default function HostPage() {
                 {selectedCreneau && !checkingCap && Object.keys(capacites).length > 0 && (
                   <div className={`mt-3 rounded-xl p-3 ${isAnyComplet ? 'bg-red-50 border border-red-200' : warningMessages ? 'bg-orange-50 border border-orange-200' : 'bg-green-50 border border-green-200'}`}>
                     {isAnyComplet ? (
-                      <p className="text-sm font-semibold text-red-600 text-center">⚠ {alertMessage}</p>
+                      <p className="text-sm font-semibold text-red-600 text-center">⚠️ {alertMessage}</p>
                     ) : warningMessages ? (
                       <p className="text-sm font-semibold text-orange-600 text-center">⚡ Reste {warningMessages} !</p>
                     ) : (
@@ -529,10 +529,10 @@ export default function HostPage() {
           </div>
         )}
 
-        {/* ETAPE 3 : PAIEMENT */}
+        {/* ── ÉTAPE 3 : PAIEMENT ── */}
         {etape === 3 && (
           <div className="space-y-4">
-            {/* Recap commande */}
+            {/* Récap commande */}
             <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
               <p className="text-sm font-bold text-[#1A3A6B] mb-3">Récapitulatif</p>
               <div className="space-y-2 mb-3">
@@ -568,7 +568,7 @@ export default function HostPage() {
                 {remiseTotal > 0 && (
                   <div className="flex justify-between text-xs">
                     <span className="text-green-600">Remise 4e article</span>
-                    <span className="font-semibold text-green-600">-{remiseTotal.toFixed(2)}€</span>
+                    <span className="font-semibold text-green-600">−{remiseTotal.toFixed(2)}€</span>
                   </div>
                 )}
               </div>
@@ -605,7 +605,7 @@ export default function HostPage() {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-amber-800">Demande de réservation</p>
-                  <p className="text-xs text-amber-600">L&apos;hôte doit valider avant le paiement</p>
+                  <p className="text-xs text-amber-600">L'hôte doit valider avant le paiement</p>
                 </div>
               </div>
             )}
@@ -629,7 +629,7 @@ export default function HostPage() {
 
             <div className="flex items-center justify-center gap-2 py-1">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <p className="text-xs text-gray-400">Paiement securise - Stripe - PCI-DSS</p>
+              <p className="text-xs text-gray-400">Paiement sécurisé · Stripe · PCI-DSS</p>
             </div>
           </div>
         )}
