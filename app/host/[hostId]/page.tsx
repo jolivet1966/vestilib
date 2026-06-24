@@ -423,9 +423,9 @@ export default function HostPage() {
             {hasDepot && (
               <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
                 <p className="text-sm font-bold text-blue-800 mb-1">Dépôt longue durée</p>
-                <p className="text-xs text-blue-600 mb-3">Les dépôts 24h et 7 jours nécessitent une validation de l'hôte.</p>
+                <p className="text-xs text-blue-600 mb-3">Les dépôts 24h et 7 jours nécessitent une validation de l&apos;hôte.</p>
                 <Link href="/messages" className="block w-full text-center bg-blue-600 text-white text-sm font-semibold py-2.5 rounded-xl">
-                  Contacter l'hôte
+                  Contacter l&apos;hôte
                 </Link>
               </div>
             )}
