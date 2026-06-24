@@ -605,7 +605,7 @@ export default function HostPage() {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-amber-800">Demande de réservation</p>
-                  <p className="text-xs text-amber-600">L'hôte doit valider avant le paiement</p>
+                  <p className="text-xs text-amber-600">L&apos;hôte doit valider avant le paiement</p>
                 </div>
               </div>
             )}
