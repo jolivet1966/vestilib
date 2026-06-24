@@ -62,6 +62,8 @@ export async function POST(req: NextRequest) {
           try {
             const { sendConfirmationUser, sendNotificationHote } = await import('@/lib/emails')
 
+console.log('[webhook] customerEmail:', bookingData.customerEmail)
+console.log('[webhook] host email:', host?.email)
             if (bookingData.customerEmail && host) {
               await sendConfirmationUser({
                 to:          bookingData.customerEmail,
