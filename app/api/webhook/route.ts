@@ -4,6 +4,20 @@ import Stripe from 'stripe'
 
 export const dynamic = 'force-dynamic'
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'
+
+async function sendPush(params: { userEmail?: string; userId?: string; title: string; body: string; url?: string }) {
+  try {
+    await fetch(`${APP_URL}/api/push`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    })
+  } catch (err: any) {
+    console.error('[webhook] Erreur push:', err.message)
+  }
+}
+
 export async function POST(req: NextRequest) {
   const payload   = Buffer.from(await req.arrayBuffer())
   const signature = req.headers.get('stripe-signature') ?? ''
@@ -12,16 +26,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const { stripe } = await import('@/lib/stripe')
-    // Essayer d'abord avec la clé principale
     try {
-      event = stripe.webhooks.constructEvent(
-        payload, signature, process.env.STRIPE_WEBHOOK_SECRET!
-      )
+      event = stripe.webhooks.constructEvent(payload, signature, process.env.STRIPE_WEBHOOK_SECRET!)
     } catch {
-      // Essayer avec la clé Connect
-      event = stripe.webhooks.constructEvent(
-        payload, signature, process.env.STRIPE_WEBHOOK_SECRET_CONNECT!
-      )
+      event = stripe.webhooks.constructEvent(payload, signature, process.env.STRIPE_WEBHOOK_SECRET_CONNECT!)
     }
   } catch (err: any) {
     console.error('[webhook] Signature invalide:', err.message)
@@ -59,6 +67,7 @@ export async function POST(req: NextRequest) {
           const hostDoc = await adminDb.collection('hosts').doc(bookingData.hostId).get()
           const host    = hostDoc.data()
 
+          // Emails
           try {
             const { sendConfirmationUser, sendNotificationHote } = await import('@/lib/emails')
 
@@ -89,9 +98,26 @@ export async function POST(req: NextRequest) {
               })
               console.log(`[webhook] Email hôte envoyé à ${host.email}`)
             }
-
           } catch (emailErr: any) {
             console.error('[webhook] Erreur envoi email:', emailErr.message)
+          }
+
+          // Notifications push
+          if (bookingData.customerEmail) {
+            await sendPush({
+              userEmail: bookingData.customerEmail,
+              title: '✅ Réservation confirmée',
+              body:  `Votre réservation ${bookingCode} est confirmée !`,
+              url:   `${APP_URL}/profil`,
+            })
+          }
+          if (host?.email) {
+            await sendPush({
+              userEmail: host.email,
+              title: '🔔 Nouvelle réservation',
+              body:  `Vous avez reçu une nouvelle réservation (${bookingCode}).`,
+              url:   `${APP_URL}/host/dashboard`,
+            })
           }
 
         } else {
@@ -110,11 +136,21 @@ export async function POST(req: NextRequest) {
           .get()
 
         if (!snap.empty) {
+          const bookingData = snap.docs[0].data()
           await snap.docs[0].ref.update({
             status:    'expired',
             expiredAt: new Date(),
           })
           console.log(`[webhook] Session expirée : booking ${snap.docs[0].id}`)
+
+          if (bookingData.customerEmail) {
+            await sendPush({
+              userEmail: bookingData.customerEmail,
+              title: '⏱ Session expirée',
+              body:  'Votre session de paiement a expiré. Vous pouvez réessayer.',
+              url:   `${APP_URL}/map`,
+            })
+          }
         } else {
           console.warn(`[webhook] Aucune booking trouvée pour session expirée ${session.id}`)
         }
