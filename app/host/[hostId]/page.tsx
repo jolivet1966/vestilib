@@ -256,7 +256,7 @@ export default function HostPage() {
         })
         const data = await res.json()
         if (!res.ok) { setPayError(data.error ?? 'Erreur'); return }
-        router.push(`/pay/pending?code=${data.bookingCode}&email=${encodeURIComponent(customerEmail)}`)
+        router.push('/pay/pending?code=' + data.bookingCode + '&email=' + encodeURIComponent(customerEmail))
       } catch { setPayError('Erreur réseau.') }
       finally { setPaying(false) }
       return
@@ -267,7 +267,7 @@ export default function HostPage() {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           hostId: host.id, amountEuros: Math.max(total, 1),
-          description: `VESTILIB — ${description}`, customerEmail,
+          description: 'VESTILIB — ' + description, customerEmail,
           date: selectedDate, creneau: selectedCreneau,
           prestations: Object.entries(selectedTarifs).map(([tarifId, quantite]) => ({ tarifId, quantite })),
         }),
