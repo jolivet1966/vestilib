@@ -40,7 +40,7 @@ export default function MapPage() {
   useEffect(() => {
     if (!mapsReady || !mapRef.current || mapInstance.current) return
     mapInstance.current = new window.google.maps.Map(mapRef.current, {
-      center: { lat: 46.5, lng: 2.5 }, zoom: 5,
+      center: { lat: 46.5, lng: 2.5 }, zoom: 3,
       styles: [
         { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
         { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] },
