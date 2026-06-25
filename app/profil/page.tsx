@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
@@ -60,6 +60,8 @@ export default function ProfilPage() {
   const [savingPwd, setSavingPwd] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
 
+  const archivesRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     const stored = localStorage.getItem('vestilib_resas_archivees')
     if (stored) setResasArchivees(new Set(JSON.parse(stored)))
@@ -79,6 +81,16 @@ export default function ProfilPage() {
       const next = new Set(Array.from(prev))
       next.delete(id)
       localStorage.setItem('vestilib_resas_archivees', JSON.stringify(Array.from(next)))
+      return next
+    })
+  }
+
+  const toggleArchivees = () => {
+    setShowArchivees(prev => {
+      const next = !prev
+      if (next) {
+        setTimeout(() => archivesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+      }
       return next
     })
   }
@@ -321,7 +333,7 @@ export default function ProfilPage() {
         {/* ===== ONGLET UTILISATEUR ===== */}
         {menu === 'utilisateur' && (
           <>
-            {/* RESERVATIONS ACTIVES */}
+            {/* RESERVATIONS EN COURS */}
             {resasActives.length > 0 && (
               <section>
                 <SectionTitle icon={
@@ -369,41 +381,15 @@ export default function ProfilPage() {
               </section>
             )}
 
-            {/* RESERVATIONS PAYEES */}
-            {resasPayees.length > 0 && (
+            {/* RESERVATIONS CONFIRMEES */}
+            {resasPayeesVisibles.length > 0 && (
               <section>
-                <div className="flex items-center justify-between px-1 mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[#1A3A6B]/50">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-                      </svg>
-                    </span>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Reservations confirmees</p>
-                  </div>
-                  {resasPayeesArchivees.length > 0 && (
-                    <button onClick={() => setShowArchivees(!showArchivees)}
-                      className="text-xs text-gray-400 hover:text-[#1A3A6B] transition-colors flex items-center gap-1">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
-                        <line x1="10" y1="12" x2="14" y2="12"/>
-                      </svg>
-                      {showArchivees ? 'Masquer' : `Archivees (${resasPayeesArchivees.length})`}
-                    </button>
-                  )}
-                </div>
-
+                <SectionTitle icon={
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                } label="Reservations confirmees" />
                 <div className="space-y-3">
-                  {resasPayeesVisibles.length === 0 && !showArchivees && (
-                    <div className="bg-white rounded-2xl border border-gray-100 p-4 text-center shadow-sm">
-                      <p className="text-xs text-gray-400">Toutes vos reservations sont archivees</p>
-                      <button onClick={() => setShowArchivees(true)}
-                        className="text-xs text-[#1A3A6B] font-semibold mt-1 hover:underline">
-                        Voir les archives
-                      </button>
-                    </div>
-                  )}
-
                   {resasPayeesVisibles.map(r => (
                     <div key={r.id} className="bg-white rounded-2xl border border-emerald-100 overflow-hidden shadow-sm">
                       <div className="h-1 w-full bg-emerald-500" />
@@ -459,65 +445,89 @@ export default function ProfilPage() {
                       </div>
                     </div>
                   ))}
-
-                  {/* ARCHIVEES */}
-                  {showArchivees && resasPayeesArchivees.length > 0 && (
-                    <div className="rounded-2xl border border-gray-200 overflow-hidden">
-                      <div className="bg-gray-100 px-4 py-2.5 flex items-center justify-between">
-                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                          {resasPayeesArchivees.length} archivee{resasPayeesArchivees.length > 1 ? 's' : ''}
-                        </p>
-                        <button
-                          onClick={() => {
-                            if (window.confirm('Supprimer toutes les reservations archivees ?')) {
-                              setMesResas(prev => prev.filter(x => !resasArchivees.has(x.id)))
-                              setResasArchivees(new Set())
-                              localStorage.setItem('vestilib_resas_archivees', '[]')
-                              setShowArchivees(false)
-                            }
-                          }}
-                          className="text-[10px] text-red-400 hover:text-red-600 font-semibold transition-colors">
-                          Tout supprimer
-                        </button>
-                      </div>
-                      {resasPayeesArchivees.map((r, i) => (
-                        <div key={r.id} className={`bg-white px-4 py-3 flex items-center justify-between ${i < resasPayeesArchivees.length - 1 ? 'border-b border-gray-100' : ''}`}>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-mono font-bold text-gray-400 text-sm">{r.bookingCode}</p>
-                            {r.date && (
-                              <p className="text-xs text-gray-300 mt-0.5">
-                                {new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                              </p>
-                            )}
-                            <p className="text-xs text-gray-300">{r.totalAmount} EUR</p>
-                          </div>
-                          <div className="flex items-center gap-1.5 flex-shrink-0 ml-3">
-                            <button onClick={() => desarchiverResa(r.id)}
-                              title="Restaurer"
-                              className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 hover:border-[#1A3A6B] hover:bg-blue-50 flex items-center justify-center transition-colors">
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                                <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.76"/>
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (window.confirm('Supprimer definitivement cette reservation ?')) {
-                                  setMesResas(prev => prev.filter(x => x.id !== r.id))
-                                  desarchiverResa(r.id)
-                                }
-                              }}
-                              title="Supprimer definitivement"
-                              className="w-8 h-8 rounded-lg bg-red-50 border border-red-100 hover:bg-red-100 flex items-center justify-center transition-colors">
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2">
-                                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
+              </section>
+            )}
+
+            {/* ARCHIVES — toujours visible si archives existent */}
+            {resasPayeesArchivees.length > 0 && (
+              <section ref={archivesRef}>
+                <div className="flex items-center justify-between px-1 mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#1A3A6B]/50">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+                        <line x1="10" y1="12" x2="14" y2="12"/>
+                      </svg>
+                    </span>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Archives</p>
+                  </div>
+                  <button onClick={toggleArchivees}
+                    className="text-xs text-[#1A3A6B] font-semibold hover:underline flex items-center gap-1">
+                    {showArchivees ? 'Masquer' : `Voir (${resasPayeesArchivees.length})`}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                      className={`transition-transform ${showArchivees ? 'rotate-180' : ''}`}>
+                      <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                  </button>
+                </div>
+
+                {showArchivees && (
+                  <div className="rounded-2xl border border-gray-200 overflow-hidden">
+                    <div className="bg-gray-100 px-4 py-2.5 flex items-center justify-between">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                        {resasPayeesArchivees.length} archivee{resasPayeesArchivees.length > 1 ? 's' : ''}
+                      </p>
+                      <button
+                        onClick={() => {
+                          if (window.confirm('Supprimer toutes les reservations archivees ?')) {
+                            setMesResas(prev => prev.filter(x => !resasArchivees.has(x.id)))
+                            setResasArchivees(new Set())
+                            localStorage.setItem('vestilib_resas_archivees', '[]')
+                            setShowArchivees(false)
+                          }
+                        }}
+                        className="text-[10px] text-red-400 hover:text-red-600 font-semibold transition-colors">
+                        Tout supprimer
+                      </button>
+                    </div>
+                    {resasPayeesArchivees.map((r, i) => (
+                      <div key={r.id} className={`bg-white px-4 py-3 flex items-center justify-between ${i < resasPayeesArchivees.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-mono font-bold text-gray-400 text-sm">{r.bookingCode}</p>
+                          {r.date && (
+                            <p className="text-xs text-gray-300 mt-0.5">
+                              {new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-300">{r.totalAmount} EUR</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-shrink-0 ml-3">
+                          <button onClick={() => desarchiverResa(r.id)}
+                            title="Restaurer"
+                            className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 hover:border-[#1A3A6B] hover:bg-blue-50 flex items-center justify-center transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.76"/>
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (window.confirm('Supprimer definitivement cette reservation ?')) {
+                                setMesResas(prev => prev.filter(x => x.id !== r.id))
+                                desarchiverResa(r.id)
+                              }
+                            }}
+                            title="Supprimer definitivement"
+                            className="w-8 h-8 rounded-lg bg-red-50 border border-red-100 hover:bg-red-100 flex items-center justify-center transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2">
+                              <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </section>
             )}
 
