@@ -95,8 +95,9 @@ export default function HostPage() {
       .then(d => { if (d.host) setHost(d.host); else setError('Hôte introuvable') })
       .catch(() => setError('Erreur de chargement'))
       .finally(() => setLoading(false))
-  }, [hostId])
+}, [hostId])
 
+  if (hostId === 'dashboard') { router.push('/host/dashboard'); return }
   if (authChecked && !isConnected) {
     return (
       <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center gap-4 px-6 text-center">
