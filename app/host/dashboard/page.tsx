@@ -59,8 +59,7 @@ function grouperPeriodes(dates: string[]): string[] {
       periodes.push(debut === fin
         ? `Le ${new Date(debut + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`
         : `Du ${new Date(debut + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} au ${new Date(fin + 'T12:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`)
-      debut = sorted[i]
-      fin = sorted[i]
+      debut = sorted[i]; fin = sorted[i]
     }
   }
   periodes.push(debut === fin
@@ -99,21 +98,52 @@ export default function HostDashboardPage() {
   const [responding,     setResponding]     = useState(false)
   const [respondMsg,     setRespondMsg]     = useState('')
 
+  // Archivage local
+  const [bookingsArchives, setBookingsArchives] = useState<Set<string>>(new Set())
+  const [bookingsSupprime, setBookingsSupprime] = useState<Set<string>>(new Set())
+  const [showArchives,     setShowArchives]     = useState(false)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('vestilib_bookings_archives_host')
+    if (stored) setBookingsArchives(new Set(JSON.parse(stored)))
+    const stored2 = localStorage.getItem('vestilib_bookings_supprimes_host')
+    if (stored2) setBookingsSupprime(new Set(JSON.parse(stored2)))
+  }, [])
+
+  const archiverBooking = (id: string) => {
+    setBookingsArchives(prev => {
+      const next = new Set(Array.from(prev)); next.add(id)
+      localStorage.setItem('vestilib_bookings_archives_host', JSON.stringify(Array.from(next)))
+      return next
+    })
+  }
+  const desarchiverBooking = (id: string) => {
+    setBookingsArchives(prev => {
+      const next = new Set(Array.from(prev)); next.delete(id)
+      localStorage.setItem('vestilib_bookings_archives_host', JSON.stringify(Array.from(next)))
+      return next
+    })
+  }
+  const supprimerBooking = (id: string) => {
+    setBookingsSupprime(prev => {
+      const next = new Set(Array.from(prev)); next.add(id)
+      localStorage.setItem('vestilib_bookings_supprimes_host', JSON.stringify(Array.from(next)))
+      return next
+    })
+    desarchiverBooking(id)
+  }
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async user => {
       if (!user) { router.push('/host/login'); return }
       try {
         const { collection: col, query: q, where: w, getDocs: gd } = await import('firebase/firestore')
         const { db: firedb } = await import('@/lib/firebase')
-
         const snap = await gd(q(col(firedb, 'hosts'), w('email', '==', user.email)))
         if (snap.empty) { router.push('/host/login'); return }
-
         const hostDoc = snap.docs[0]
         const hostData = hostDoc.data() as HostData
-        setHostId(hostDoc.id)
-        setHost(hostData)
-
+        setHostId(hostDoc.id); setHost(hostData)
         if (hostData.horaires)       setHoraires(hostData.horaires)
         if (hostData.prestations)    setPrestations(hostData.prestations)
         if (hostData.capaciteMax)    setCapaciteMax(hostData.capaciteMax)
@@ -122,7 +152,6 @@ export default function HostDashboardPage() {
         if (hostData.capaciteMaxDepot) setCapaciteMaxDepot(hostData.capaciteMaxDepot)
         setOuvert(hostData.ouvert !== false)
         setDatesFermeture(hostData.datesFermeture ?? [])
-
         const bookSnap = await gd(q(col(firedb, 'bookings'), w('hostId', '==', hostDoc.id)))
         const list = bookSnap.docs.map(d => ({
           id: d.id, ...d.data(),
@@ -130,14 +159,11 @@ export default function HostDashboardPage() {
         })) as Booking[]
         list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         setBookings(list)
-        // Marquer les messages comme lus
-const { updateDoc, doc: docRef } = await import('firebase/firestore')
-const msgSnap = await gd(q(col(firedb, 'messages'), w('hostId', '==', hostDoc.id), w('lu', '==', false)))
-await Promise.all(msgSnap.docs.map(d => updateDoc(docRef(firedb, 'messages', d.id), { lu: true })))
-
+        const { updateDoc, doc: docRef } = await import('firebase/firestore')
+        const msgSnap = await gd(q(col(firedb, 'messages'), w('hostId', '==', hostDoc.id), w('lu', '==', false)))
+        await Promise.all(msgSnap.docs.map(d => updateDoc(docRef(firedb, 'messages', d.id), { lu: true })))
         const balRes = await fetch(`/api/host-balance?hostId=${hostDoc.id}`)
         if (balRes.ok) setBalance(await balRes.json())
-
       } catch (err) { console.error(err) }
       finally { setLoading(false) }
     })
@@ -146,25 +172,22 @@ await Promise.all(msgSnap.docs.map(d => updateDoc(docRef(firedb, 'messages', d.i
 
   const handleLogout = async () => { await signOut(auth); router.push('/host/login') }
 
-  const togglePrestation = (id: string) => {
+  const togglePrestation = (id: string) =>
     setPrestations(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id])
-  }
-  const updateHoraire = (jour: string, field: keyof JourHoraire, value: string | boolean) => {
+
+  const updateHoraire = (jour: string, field: keyof JourHoraire, value: string | boolean) =>
     setHoraires(prev => ({ ...prev, [jour]: { ...prev[jour as keyof Horaires], [field]: value } }))
-  }
 
   const sauvegarderServices = async () => {
     if (!hostId) return
     setSaving(true); setSaveMsg('')
     try {
       const res = await fetch('/api/update-host', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hostId, horaires, prestations, capaciteMax, capaciteMaxMoto, capaciteMaxVelo, capaciteMaxDepot }),
       })
       const data = await res.json()
-      if (!res.ok) { setSaveMsg(data.error ?? 'Erreur serveur'); return }
-      setSaveMsg('Services mis a jour avec succes !')
+      setSaveMsg(res.ok ? 'Services mis a jour avec succes !' : (data.error ?? 'Erreur serveur'))
     } catch { setSaveMsg('Erreur reseau.') }
     finally { setSaving(false) }
   }
@@ -175,8 +198,7 @@ await Promise.all(msgSnap.docs.map(d => updateDoc(docRef(firedb, 'messages', d.i
     const nouvelles = getDatesInRange(dateDebut, fin).filter(d => !datesFermeture.includes(d))
     if (nouvelles.length === 0) return
     setDatesFermeture(prev => [...prev, ...nouvelles].sort())
-    setDateDebut('')
-    setDateFin('')
+    setDateDebut(''); setDateFin('')
   }
 
   const sauvegarderDispo = async () => {
@@ -184,14 +206,12 @@ await Promise.all(msgSnap.docs.map(d => updateDoc(docRef(firedb, 'messages', d.i
     setSavingDispo(true); setDispoMsg('')
     try {
       const res = await fetch('/api/update-disponibilite', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hostId, ouvert, datesFermeture }),
       })
       const data = await res.json()
-      if (!res.ok) { setDispoMsg(data.error ?? 'Erreur serveur'); return }
-      setDispoMsg('Disponibilite mise a jour !')
-      setHost(prev => prev ? { ...prev, ouvert, datesFermeture } : null)
+      if (res.ok) { setDispoMsg('Disponibilite mise a jour !'); setHost(prev => prev ? { ...prev, ouvert, datesFermeture } : null) }
+      else setDispoMsg(data.error ?? 'Erreur serveur')
     } catch { setDispoMsg('Erreur reseau.') }
     finally { setSavingDispo(false) }
   }
@@ -200,23 +220,24 @@ await Promise.all(msgSnap.docs.map(d => updateDoc(docRef(firedb, 'messages', d.i
     setResponding(true); setRespondMsg('')
     try {
       const res = await fetch('/api/respond-booking', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bookingId, action, motifRefus: action === 'refuse' ? motifRefus : '' }),
       })
       const data = await res.json()
       if (!res.ok) { setRespondMsg(data.error ?? 'Erreur'); return }
       setRespondMsg(action === 'accept' ? 'Reservation acceptee — email envoye au client !' : 'Reservation refusee — client prevenu.')
-      setRefusBookingId(null)
-      setMotifRefus('')
+      setRefusBookingId(null); setMotifRefus('')
       setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: action === 'accept' ? 'accepted' : 'refused' } : b))
     } catch { setRespondMsg('Erreur reseau.') }
     finally { setResponding(false) }
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-[#1A3A6B] border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen bg-[#F8F9FC] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-4 border-[#1A3A6B] border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-gray-400">Chargement...</p>
+      </div>
     </div>
   )
 
@@ -224,169 +245,305 @@ await Promise.all(msgSnap.docs.map(d => updateDoc(docRef(firedb, 'messages', d.i
   const nbPayees    = bookings.filter(b => b.status === 'paid').length
   const nbEnAttente = bookings.filter(b => b.status === 'awaiting_approval').length
 
-  const statusBadge = (status: string) => {
-    switch (status) {
-      case 'paid':              return <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Payee</span>
-      case 'pending':           return <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">En attente</span>
-      case 'awaiting_approval': return <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">A valider</span>
-      case 'accepted':          return <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Acceptee</span>
-      case 'refused':           return <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-600">Refusee</span>
-      default: return null
-    }
+  const bookingsVisibles  = bookings.filter(b => !bookingsSupprime.has(b.id) && !bookingsArchives.has(b.id))
+  const bookingsArchivees = bookings.filter(b => !bookingsSupprime.has(b.id) && bookingsArchives.has(b.id))
+
+  const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
+    paid:              { label: 'Payee',      color: 'text-emerald-700', bg: 'bg-emerald-50', dot: 'bg-emerald-500' },
+    pending:           { label: 'En attente', color: 'text-amber-700',   bg: 'bg-amber-50',   dot: 'bg-amber-500'   },
+    awaiting_approval: { label: 'A valider',  color: 'text-orange-700',  bg: 'bg-orange-50',  dot: 'bg-orange-500'  },
+    accepted:          { label: 'Acceptee',   color: 'text-blue-700',    bg: 'bg-blue-50',    dot: 'bg-blue-500'    },
+    refused:           { label: 'Refusee',    color: 'text-red-600',     bg: 'bg-red-50',     dot: 'bg-red-500'     },
   }
 
+  const statusBadge = (status: string) => {
+    const s = statusConfig[status]
+    if (!s) return null
+    return (
+      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 ${s.color} ${s.bg}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${s.dot} inline-block`} />
+        {s.label}
+      </span>
+    )
+  }
+
+  const TABS = [
+    { key: 'reservations',  label: 'Reservations', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+    { key: 'solde',         label: 'Solde',         icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
+    { key: 'services',      label: 'Mes services',  icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> },
+    { key: 'disponibilite', label: 'Disponibilite', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
+  ]
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-[#1A3A6B] px-4 py-4">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-[#F5C84A] font-bold tracking-widest">VESTILIB</h1>
-            {host && <p className="text-white/60 text-xs mt-0.5">{host.prenom} {host.nom} · {host.ville}</p>}
+    <div className="min-h-screen bg-[#F8F9FC]">
+
+      {/* HEADER */}
+      <div className="bg-[#1A3A6B] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10"
+          style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #F5C84A 0%, transparent 60%)' }} />
+        <div className="relative px-4 pt-8 pb-5 max-w-2xl mx-auto">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <p className="text-[#F5C84A] font-black tracking-widest text-sm">VESTILIB</p>
+              {host && <p className="text-white font-bold text-lg mt-0.5">{host.prenom} {host.nom}</p>}
+              {host && <p className="text-white/50 text-xs mt-0.5">{host.ville}</p>}
+            </div>
+            <div className="flex items-center gap-2">
+              {host && (
+                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
+                  host.ouvert !== false
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                    : 'bg-red-500/20 text-red-300 border-red-500/30'
+                }`}>
+                  {host.ouvert !== false ? '● Ouvert' : '○ Ferme'}
+                </span>
+              )}
+              <button onClick={handleLogout}
+                className="text-white/40 hover:text-white/70 text-xs transition-colors px-2 py-1">
+                Deconnexion
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            {host && (
-              <span className={`text-xs font-medium px-2 py-1 rounded-full ${host.ouvert !== false ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
-                {host.ouvert !== false ? 'Ouvert' : 'Ferme'}
-              </span>
-            )}
-            <button onClick={handleLogout} className="text-white/50 hover:text-white text-xs transition-colors">
-              Deconnexion
-            </button>
+
+          {/* BANDEAU GAINS */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-white/10 rounded-xl p-3 border border-white/10 text-center">
+              <p className="text-lg font-black text-[#F5C84A] leading-none">{nbPayees}</p>
+              <p className="text-white/50 text-[10px] mt-1 font-medium uppercase tracking-wide">Reservations</p>
+            </div>
+            <div className="bg-white/10 rounded-xl p-3 border border-white/10 text-center">
+              <p className="text-lg font-black text-emerald-400 leading-none">{totalGagne.toFixed(0)}<span className="text-xs font-bold">€</span></p>
+              <p className="text-white/50 text-[10px] mt-1 font-medium uppercase tracking-wide">Total gagne</p>
+            </div>
+            <div className="bg-white/10 rounded-xl p-3 border border-white/10 text-center">
+              <p className="text-lg font-black text-amber-400 leading-none">{nbEnAttente}</p>
+              <p className="text-white/50 text-[10px] mt-1 font-medium uppercase tracking-wide">A valider</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
-
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm text-center">
-            <p className="text-2xl font-bold text-[#1A3A6B]">{nbPayees}</p>
-            <p className="text-xs text-gray-400 mt-1">Reservations</p>
-          </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm text-center">
-            <p className="text-2xl font-bold text-[#1A3A6B]">{totalGagne.toFixed(0)}EUR</p>
-            <p className="text-xs text-gray-400 mt-1">Total gagne</p>
-          </div>
-          <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm text-center">
-            <p className="text-2xl font-bold text-orange-500">{nbEnAttente}</p>
-            <p className="text-xs text-gray-400 mt-1">A valider</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 mb-5">
-          {[
-            { key: 'reservations',  label: 'Reservations' },
-            { key: 'solde',         label: 'Solde' },
-            { key: 'services',      label: 'Mes services' },
-            { key: 'disponibilite', label: 'Disponibilite' },
-          ].map(t => (
+      {/* ONGLETS */}
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-2xl mx-auto flex overflow-x-auto scrollbar-hide">
+          {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key as any)}
-              className={`py-2.5 rounded-xl text-sm font-medium transition-colors ${tab === t.key ? 'bg-[#1A3A6B] text-[#F5C84A]' : 'bg-white text-gray-500 border border-gray-100'}`}>
+              className={`flex-1 min-w-[80px] py-3 text-xs font-semibold border-b-2 transition-all flex flex-col items-center gap-1 ${
+                tab === t.key ? 'border-[#1A3A6B] text-[#1A3A6B]' : 'border-transparent text-gray-400 hover:text-gray-600'
+              }`}>
+              {t.icon}
               {t.label}
             </button>
           ))}
         </div>
+      </div>
 
-        {/* RESERVATIONS */}
+      <div className="max-w-2xl mx-auto px-4 py-5">
+
+        {/* ===== RESERVATIONS ===== */}
         {tab === 'reservations' && (
           <div className="space-y-3">
             {respondMsg && (
-              <div className={`rounded-xl p-3 text-sm text-center font-medium ${respondMsg.includes('acceptee') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+              <div className={`rounded-2xl p-3 text-sm text-center font-medium ${respondMsg.includes('acceptee') ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
                 {respondMsg}
               </div>
             )}
+
             {bookings.length === 0 ? (
-              <div className="bg-white rounded-xl p-8 text-center border border-gray-100">
-                <p className="text-3xl mb-3">📭</p>
-                <p className="text-gray-400 text-sm">Aucune reservation pour l instant.</p>
+              <div className="bg-white rounded-2xl p-10 text-center border border-gray-100 shadow-sm">
+                <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl">📭</div>
+                <p className="text-sm font-semibold text-gray-600 mb-1">Aucune reservation</p>
+                <p className="text-xs text-gray-400">Les reservations apparaitront ici</p>
               </div>
-            ) : bookings.map(booking => (
-              <div key={booking.id} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <p className="font-mono font-bold text-[#1A3A6B] text-sm">{booking.bookingCode || '—'}</p>
-                    {booking.customerEmail && <p className="text-xs text-gray-400">{booking.customerEmail}</p>}
-                  </div>
-                  {statusBadge(booking.status)}
-                </div>
-                {(booking.date || booking.creneau) && (
-                  <div className="flex gap-3 mb-2">
-                    {booking.date && <p className="text-xs text-gray-500">📅 {new Date(booking.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</p>}
-                    {booking.creneau && <p className="text-xs text-gray-500">🕐 {booking.creneau}</p>}
-                  </div>
-                )}
-                <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-                  <p className="text-xs text-gray-400">
-                    {booking.createdAt ? new Date(booking.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
-                  </p>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-400">Total : {booking.totalAmount}EUR</p>
-                    <p className="text-sm font-semibold text-[#1A3A6B]">Vous : {booking.hostEarns}EUR</p>
-                  </div>
-                </div>
-                {booking.status === 'awaiting_approval' && (
-                  <div className="mt-3 pt-3 border-t border-gray-50">
-                    {refusBookingId === booking.id ? (
-                      <div className="space-y-2">
-                        <input type="text" value={motifRefus} onChange={e => setMotifRefus(e.target.value)}
-                          placeholder="Motif du refus (optionnel)"
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1A3A6B]" />
-                        <div className="flex gap-2">
-                          <button onClick={() => repondreReservation(booking.id, 'refuse')} disabled={responding}
-                            className="flex-1 bg-red-600 text-white text-sm font-medium py-2 rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors">
-                            Confirmer le refus
-                          </button>
-                          <button onClick={() => setRefusBookingId(null)}
-                            className="flex-1 border border-gray-200 text-gray-600 text-sm font-medium py-2 rounded-lg hover:bg-gray-50 transition-colors">
-                            Annuler
+            ) : (
+              <>
+                {bookingsVisibles.map(booking => {
+                  const archivable = ['paid', 'refused'].includes(booking.status)
+                  return (
+                    <div key={booking.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                      {/* Barre statut */}
+                      <div className={`h-1 w-full ${statusConfig[booking.status]?.dot ?? 'bg-gray-200'}`} />
+                      <div className="p-4">
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <div>
+                            <p className="font-mono font-bold text-[#1A3A6B] text-base">{booking.bookingCode || '—'}</p>
+                            {booking.customerEmail && <p className="text-xs text-gray-400 mt-0.5">{booking.customerEmail}</p>}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {statusBadge(booking.status)}
+                            {archivable && (
+                              <button onClick={() => archiverBooking(booking.id)}
+                                title="Archiver"
+                                className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                                  <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+                                  <line x1="10" y1="12" x2="14" y2="12"/>
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {(booking.date || booking.creneau) && (
+                          <div className="flex gap-3 mb-3">
+                            {booking.date && (
+                              <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                {new Date(booking.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                            )}
+                            {booking.creneau && (
+                              <span className="flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                {booking.creneau}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="flex justify-between items-center pt-3 border-t border-gray-50">
+                          <p className="text-xs text-gray-300">
+                            {booking.createdAt ? new Date(booking.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                          </p>
+                          <div className="text-right">
+                            <p className="text-xs text-gray-400">Total : {booking.totalAmount}€</p>
+                            <p className="text-sm font-bold text-emerald-700">Vous : {booking.hostEarns}€</p>
+                          </div>
+                        </div>
+
+                        {booking.status === 'awaiting_approval' && (
+                          <div className="mt-3 pt-3 border-t border-gray-50">
+                            {refusBookingId === booking.id ? (
+                              <div className="space-y-2">
+                                <input type="text" value={motifRefus} onChange={e => setMotifRefus(e.target.value)}
+                                  placeholder="Motif du refus (optionnel)"
+                                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                                <div className="flex gap-2">
+                                  <button onClick={() => repondreReservation(booking.id, 'refuse')} disabled={responding}
+                                    className="flex-1 bg-red-600 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-red-700 disabled:opacity-50 transition-colors">
+                                    Confirmer le refus
+                                  </button>
+                                  <button onClick={() => setRefusBookingId(null)}
+                                    className="flex-1 border border-gray-200 text-gray-600 text-sm font-medium py-2.5 rounded-xl hover:bg-gray-50 transition-colors">
+                                    Annuler
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex gap-2">
+                                <button onClick={() => repondreReservation(booking.id, 'accept')} disabled={responding}
+                                  className="flex-1 bg-emerald-600 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors">
+                                  Accepter
+                                </button>
+                                <button onClick={() => setRefusBookingId(booking.id)}
+                                  className="flex-1 bg-red-50 text-red-600 text-sm font-bold py-2.5 rounded-xl hover:bg-red-100 transition-colors">
+                                  Refuser
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {/* ARCHIVES */}
+                {bookingsArchivees.length > 0 && (
+                  <div className="mt-2">
+                    <div className="flex items-center justify-between px-1 mb-2">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Archives ({bookingsArchivees.length})</p>
+                      <button onClick={() => setShowArchives(!showArchives)}
+                        className="text-xs text-[#1A3A6B] font-semibold hover:underline flex items-center gap-1">
+                        {showArchives ? 'Masquer' : 'Voir'}
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                          className={`transition-transform ${showArchives ? 'rotate-180' : ''}`}>
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </button>
+                    </div>
+                    {showArchives && (
+                      <div className="rounded-2xl border border-gray-200 overflow-hidden">
+                        <div className="bg-gray-100 px-4 py-2.5 flex items-center justify-between">
+                          <p className="text-xs font-bold text-gray-500">{bookingsArchivees.length} archivee{bookingsArchivees.length > 1 ? 's' : ''}</p>
+                          <button onClick={() => {
+                            if (window.confirm('Supprimer toutes les reservations archivees ?')) {
+                              bookingsArchivees.forEach(b => supprimerBooking(b.id))
+                              setShowArchives(false)
+                            }
+                          }} className="text-[10px] text-red-400 hover:text-red-600 font-semibold">
+                            Tout supprimer
                           </button>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2">
-                        <button onClick={() => repondreReservation(booking.id, 'accept')} disabled={responding}
-                          className="flex-1 bg-green-600 text-white text-sm font-medium py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors">
-                          Accepter
-                        </button>
-                        <button onClick={() => setRefusBookingId(booking.id)}
-                          className="flex-1 bg-red-50 text-red-600 text-sm font-medium py-2 rounded-lg hover:bg-red-100 transition-colors">
-                          Refuser
-                        </button>
+                        {bookingsArchivees.map((booking, i) => (
+                          <div key={booking.id} className={`bg-white px-4 py-3 flex items-center justify-between ${i < bookingsArchivees.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-mono font-bold text-gray-400 text-sm">{booking.bookingCode}</p>
+                              {booking.date && <p className="text-xs text-gray-300">{new Date(booking.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>}
+                              <p className="text-xs text-gray-300">{booking.hostEarns}€ encaisse</p>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <button onClick={() => desarchiverBooking(booking.id)} title="Restaurer"
+                                className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 hover:border-[#1A3A6B] flex items-center justify-center transition-colors">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                                  <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.76"/>
+                                </svg>
+                              </button>
+                              <button onClick={() => { if (window.confirm('Supprimer definitivement ?')) supprimerBooking(booking.id) }}
+                                title="Supprimer" className="w-8 h-8 rounded-lg bg-red-50 border border-red-100 hover:bg-red-100 flex items-center justify-center transition-colors">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2">
+                                  <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>
                 )}
-              </div>
-            ))}
+              </>
+            )}
           </div>
         )}
 
-        {/* SOLDE */}
+        {/* ===== SOLDE ===== */}
         {tab === 'solde' && (
           <div className="space-y-4">
             {balance ? (
               <>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-                    <p className="text-xs text-gray-400 mb-1">Disponible</p>
-                    <p className="text-2xl font-bold text-green-600">{balance.available.toFixed(2)}EUR</p>
+                {/* Résumé solde */}
+                <div className="bg-[#1A3A6B] rounded-2xl p-5 shadow-md relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#F5C84A]/10 rounded-full -translate-y-8 translate-x-8" />
+                  <div className="grid grid-cols-2 gap-4 relative">
+                    <div className="text-center">
+                      <p className="text-white/50 text-[10px] font-medium uppercase tracking-wide mb-1">Disponible</p>
+                      <p className="text-2xl font-black text-emerald-400 leading-none">{balance.available.toFixed(2)}<span className="text-sm font-bold">€</span></p>
+                    </div>
+                    <div className="text-center border-l border-white/10">
+                      <p className="text-white/50 text-[10px] font-medium uppercase tracking-wide mb-1">En attente</p>
+                      <p className="text-2xl font-black text-amber-400 leading-none">{balance.pending.toFixed(2)}<span className="text-sm font-bold">€</span></p>
+                    </div>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-                    <p className="text-xs text-gray-400 mb-1">En attente</p>
-                    <p className="text-2xl font-bold text-yellow-500">{balance.pending.toFixed(2)}EUR</p>
+                  <div className="mt-4 pt-4 border-t border-white/10 text-center">
+                    <p className="text-white/40 text-xs">Total gagne depuis le debut</p>
+                    <p className="text-white font-black text-xl mt-0.5">{totalGagne.toFixed(2)}<span className="text-sm font-bold">€</span></p>
                   </div>
                 </div>
+
                 {balance.recentPayouts.length > 0 && (
-                  <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-                    <p className="text-sm font-semibold text-gray-900 mb-3">Derniers virements</p>
-                    <div className="space-y-2">
+                  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-50">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Derniers virements</p>
+                    </div>
+                    <div className="divide-y divide-gray-50">
                       {balance.recentPayouts.map(p => (
-                        <div key={p.id} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+                        <div key={p.id} className="flex justify-between items-center px-4 py-3">
                           <div>
-                            <p className="text-sm font-medium text-gray-800">{p.amount.toFixed(2)}EUR</p>
+                            <p className="text-sm font-bold text-gray-800">{p.amount.toFixed(2)}€</p>
                             <p className="text-xs text-gray-400">{p.arrivalDate}</p>
                           </div>
-                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${p.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${p.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
                             {p.status === 'paid' ? 'Verse' : 'En cours'}
                           </span>
                         </div>
@@ -394,77 +551,96 @@ await Promise.all(msgSnap.docs.map(d => updateDoc(docRef(firedb, 'messages', d.i
                     </div>
                   </div>
                 )}
-                <div className="bg-[#1A3A6B]/5 rounded-xl p-4 border border-[#1A3A6B]/10">
-                  <p className="text-xs text-[#1A3A6B] font-medium">Les virements sont effectues automatiquement le 1er du mois.</p>
+
+                <div className="bg-[#1A3A6B]/5 rounded-2xl p-4 border border-[#1A3A6B]/10 flex items-start gap-3">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A3A6B" strokeWidth="2" className="flex-shrink-0 mt-0.5">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <p className="text-xs text-[#1A3A6B] font-medium">Les virements sont effectues automatiquement le 1er du mois via Stripe Connect.</p>
                 </div>
               </>
             ) : (
-              <div className="bg-white rounded-xl p-8 text-center border border-gray-100">
-                <p className="text-gray-400 text-sm">Solde non disponible.</p>
+              <div className="bg-white rounded-2xl p-10 text-center border border-gray-100 shadow-sm">
+                <p className="text-sm font-semibold text-gray-500">Solde non disponible</p>
+                <p className="text-xs text-gray-400 mt-1">Verifiez votre connexion Stripe</p>
               </div>
             )}
           </div>
         )}
 
-        {/* SERVICES */}
+        {/* ===== SERVICES ===== */}
         {tab === 'services' && (
-          <div className="space-y-5">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-              <p className="text-xs text-yellow-800 font-medium">Attention : modification impossible si des reservations confirmees existent sur des creneaux futurs.</p>
+          <div className="space-y-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2" className="flex-shrink-0 mt-0.5">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <p className="text-xs text-amber-800 font-medium">Modification impossible si des reservations confirmees existent sur des creneaux futurs.</p>
             </div>
-            <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Horaires d ouverture</p>
-              <div className="space-y-3">
+
+            {/* Horaires */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-50">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Horaires d ouverture</p>
+              </div>
+              <div className="divide-y divide-gray-50">
                 {JOURS.map(jour => (
-                  <div key={jour} className="flex items-center gap-3">
-                    <div className="w-24 flex items-center gap-2">
+                  <div key={jour} className="px-4 py-3 flex items-center gap-3">
+                    <div className="flex items-center gap-2 w-28 flex-shrink-0">
                       <input type="checkbox" checked={horaires[jour]?.ouvert ?? false}
                         onChange={e => updateHoraire(jour, 'ouvert', e.target.checked)}
-                        className="w-4 h-4 accent-[#1A3A6B]" />
-                      <span className="text-sm text-gray-700 font-medium">{JOURS_LABELS[jour]}</span>
+                        className="w-4 h-4 accent-[#1A3A6B] flex-shrink-0" />
+                      <span className={`text-sm font-semibold ${horaires[jour]?.ouvert ? 'text-gray-800' : 'text-gray-400'}`}>
+                        {JOURS_LABELS[jour]}
+                      </span>
                     </div>
                     {horaires[jour]?.ouvert ? (
                       <div className="flex items-center gap-2 flex-1">
                         <input type="time" value={horaires[jour]?.ouverture ?? '09:00'}
                           onChange={e => updateHoraire(jour, 'ouverture', e.target.value)}
-                          className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-[#1A3A6B]" />
-                        <span className="text-gray-400 text-xs">-</span>
+                          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm text-center focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
+                        <span className="text-gray-300 text-xs font-bold">—</span>
                         <input type="time" value={horaires[jour]?.fermeture ?? '19:00'}
                           onChange={e => updateHoraire(jour, 'fermeture', e.target.value)}
-                          className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm text-center focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
                       </div>
                     ) : (
-                      <span className="text-xs text-gray-400 italic">Ferme</span>
+                      <span className="text-xs text-gray-300 italic">Ferme</span>
                     )}
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Prestations</p>
-              <div className="space-y-5">
+            {/* Prestations */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-50">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Prestations proposees</p>
+              </div>
+              <div className="p-4 space-y-5">
                 {CATEGORIES.map(cat => {
                   const tarifs = TARIFS_VESTILIB.filter(t => t.categorie === cat)
                   return (
                     <div key={cat}>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{cat}</p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">{cat}</p>
                       <div className="space-y-2">
                         {tarifs.map(tarif => (
-                          <label key={tarif.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${
-                            prestations.includes(tarif.id) ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100 hover:border-gray-200'
+                          <label key={tarif.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+                            prestations.includes(tarif.id)
+                              ? 'border-[#1A3A6B] bg-[#1A3A6B]/5'
+                              : 'border-gray-100 hover:border-gray-200 bg-gray-50/50'
                           }`}>
                             <div className="flex items-center gap-3">
                               <input type="checkbox" checked={prestations.includes(tarif.id)}
                                 onChange={() => togglePrestation(tarif.id)}
-                                className="w-4 h-4 accent-[#1A3A6B]" />
+                                className="w-4 h-4 accent-[#1A3A6B] flex-shrink-0" />
                               <div>
-                                <p className="text-sm font-medium text-gray-800">{tarif.label}</p>
+                                <p className="text-sm font-semibold text-gray-800">{tarif.label}</p>
                                 <p className="text-xs text-gray-400">{tarif.description}</p>
                               </div>
                             </div>
-                            <span className={`text-sm font-semibold ${tarif.prix < 0 ? 'text-green-600' : 'text-[#1A3A6B]'}`}>
-                              {tarif.prix < 0 ? `-${Math.abs(tarif.prix)}` : `${tarif.prix}`}EUR
+                            <span className={`text-sm font-bold flex-shrink-0 ml-2 ${tarif.prix < 0 ? 'text-emerald-600' : 'text-[#1A3A6B]'}`}>
+                              {tarif.prix < 0 ? `-${Math.abs(tarif.prix)}` : tarif.prix}€
                             </span>
                           </label>
                         ))}
@@ -475,9 +651,12 @@ await Promise.all(msgSnap.docs.map(d => updateDoc(docRef(firedb, 'messages', d.i
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Capacites maximales</p>
-              <div className="space-y-4">
+            {/* Capacites */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-50">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Capacites maximales</p>
+              </div>
+              <div className="p-4 space-y-3">
                 {prestations.some(p => p.startsWith('4h-') || p.startsWith('8h-')) && (
                   <CapaciteSelector label="Consigne articles" value={capaciteMax} onChange={setCapaciteMax} unite="articles" />
                 )}
@@ -494,85 +673,115 @@ await Promise.all(msgSnap.docs.map(d => updateDoc(docRef(firedb, 'messages', d.i
             </div>
 
             {saveMsg && (
-              <div className={`rounded-xl p-4 text-sm text-center font-medium ${saveMsg.includes('succes') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+              <div className={`rounded-2xl p-4 text-sm text-center font-medium ${saveMsg.includes('succes') ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
                 {saveMsg}
               </div>
             )}
             <button onClick={sauvegarderServices} disabled={saving}
-              className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
+              className="w-full bg-[#1A3A6B] text-[#F5C84A] font-bold py-3 rounded-2xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
               {saving ? 'Sauvegarde...' : 'Sauvegarder mes services'}
             </button>
           </div>
         )}
 
-        {/* DISPONIBILITE */}
+        {/* ===== DISPONIBILITE ===== */}
         {tab === 'disponibilite' && (
           <div className="space-y-4">
-            <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Statut de mon offre</p>
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <p className="text-sm font-medium text-gray-800">Mon point de depot est</p>
-                  <p className="text-xs text-gray-400">{ouvert ? 'Visible et accessible aux clients' : 'Masque — les clients ne peuvent pas reserver'}</p>
-                </div>
-                <button onClick={() => setOuvert(!ouvert)}
-                  className={`w-12 h-6 rounded-full transition-colors relative ${ouvert ? 'bg-green-500' : 'bg-gray-300'}`}>
-                  <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${ouvert ? 'translate-x-7' : 'translate-x-1'}`} />
-                </button>
+
+            {/* Statut ouvert/fermé */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-50">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Statut de mon point de depot</p>
               </div>
-              {!ouvert && (
-                <div className="bg-red-50 rounded-lg p-3 mt-3">
-                  <p className="text-xs text-red-600 font-medium">Votre offre est actuellement fermee.</p>
+              <div className="p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-gray-800 mb-0.5">
+                      {ouvert ? 'Ouvert aux reservations' : 'Ferme aux reservations'}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {ouvert ? 'Les clients peuvent voir et reserver votre point de depot' : 'Votre point de depot est masque des clients'}
+                    </p>
+                  </div>
+                  <button onClick={() => setOuvert(!ouvert)}
+                    className={`w-12 h-6 rounded-full transition-colors relative flex-shrink-0 ${ouvert ? 'bg-emerald-500' : 'bg-gray-200'}`}>
+                    <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${ouvert ? 'translate-x-7' : 'translate-x-1'}`} />
+                  </button>
                 </div>
-              )}
+                {!ouvert && (
+                  <div className="mt-3 bg-red-50 rounded-xl p-3 border border-red-100">
+                    <p className="text-xs text-red-600 font-medium">Votre offre est actuellement fermee aux nouveaux clients.</p>
+                  </div>
+                )}
+                {ouvert && (
+                  <div className="mt-3 bg-emerald-50 rounded-xl p-3 border border-emerald-100">
+                    <p className="text-xs text-emerald-700 font-medium">Votre offre est visible et active.</p>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Periode de fermeture exceptionnelle</p>
-              <div className="space-y-3 mb-4">
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">Date de debut</label>
-                  <input type="date" value={dateDebut} onChange={e => setDateDebut(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1A3A6B]" />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">Date de fin (optionnelle)</label>
-                  <input type="date" value={dateFin} onChange={e => setDateFin(e.target.value)}
-                    min={dateDebut || new Date().toISOString().split('T')[0]}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+            {/* Fermetures exceptionnelles */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-50">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Fermetures exceptionnelles</p>
+              </div>
+              <div className="p-4 space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 block mb-1.5">Date de debut</label>
+                    <input type="date" value={dateDebut} onChange={e => setDateDebut(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 block mb-1.5">Date de fin</label>
+                    <input type="date" value={dateFin} onChange={e => setDateFin(e.target.value)}
+                      min={dateDebut || new Date().toISOString().split('T')[0]}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
+                  </div>
                 </div>
                 <button onClick={ajouterPeriodeFermeture} disabled={!dateDebut}
-                  className="w-full bg-[#1A3A6B] text-[#F5C84A] px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
+                  className="w-full bg-[#1A3A6B] text-[#F5C84A] px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-[#0C2447] disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
                   Ajouter la periode
                 </button>
               </div>
 
               {datesFermeture.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-3">Aucune periode de fermeture planifiee</p>
+                <div className="px-4 pb-4 text-center">
+                  <p className="text-xs text-gray-300">Aucune fermeture planifiee</p>
+                </div>
               ) : (
-                <div className="space-y-2">
-                  <p className="text-xs text-gray-500 font-medium">{datesFermeture.length} jour(s) ferme(s) :</p>
+                <div className="px-4 pb-4 space-y-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold text-gray-500">{datesFermeture.length} jour{datesFermeture.length > 1 ? 's' : ''} ferme{datesFermeture.length > 1 ? 's' : ''}</p>
+                    <button onClick={() => setDatesFermeture([])}
+                      className="text-[10px] text-red-400 hover:text-red-600 font-semibold transition-colors">
+                      Tout effacer
+                    </button>
+                  </div>
                   {grouperPeriodes(datesFermeture).map((periode, i) => (
-                    <div key={i} className="bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-                      <p className="text-sm text-red-600 font-medium">{periode}</p>
+                    <div key={i} className="bg-red-50 border border-red-100 rounded-xl px-3 py-2.5 flex items-center gap-2">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" className="flex-shrink-0">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                      </svg>
+                      <p className="text-xs text-red-600 font-semibold">{periode}</p>
                     </div>
                   ))}
-                  <button onClick={() => setDatesFermeture([])}
-                    className="w-full text-xs text-red-400 hover:text-red-600 py-2 transition-colors">
-                    Effacer toutes les dates
-                  </button>
                 </div>
               )}
             </div>
 
             {dispoMsg && (
-              <div className={`rounded-xl p-4 text-sm text-center font-medium ${dispoMsg.includes('jour') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+              <div className={`rounded-2xl p-4 text-sm text-center font-medium ${dispoMsg.includes('jour') ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
                 {dispoMsg}
               </div>
             )}
             <button onClick={sauvegarderDispo} disabled={savingDispo}
-              className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
+              className="w-full bg-[#1A3A6B] text-[#F5C84A] font-bold py-3 rounded-2xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
               {savingDispo ? 'Sauvegarde...' : 'Sauvegarder la disponibilite'}
             </button>
           </div>
@@ -587,17 +796,21 @@ function CapaciteSelector({ label, value, onChange, unite }: {
   label: string; value: number; onChange: (v: number) => void; unite: string
 }) {
   return (
-    <div className="bg-gray-50 rounded-xl p-4">
-      <p className="text-xs font-medium text-gray-600 mb-3">{label}</p>
+    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+      <p className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wide">{label}</p>
       <div className="flex items-center gap-4">
         <button onClick={() => onChange(Math.max(1, value - 1))}
-          className="w-9 h-9 rounded-full bg-white border border-gray-200 text-gray-600 text-lg flex items-center justify-center hover:bg-gray-100">-</button>
+          className="w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 text-xl flex items-center justify-center hover:bg-gray-100 hover:border-gray-300 transition-colors font-bold">
+          -
+        </button>
         <div className="flex-1 text-center">
-          <p className="text-3xl font-black text-[#1A3A6B]">{value}</p>
-          <p className="text-xs text-gray-400">{unite} max / creneau</p>
+          <p className="text-2xl font-black text-[#1A3A6B] leading-none">{value}</p>
+          <p className="text-xs text-gray-400 mt-1">{unite} max / creneau</p>
         </div>
         <button onClick={() => onChange(value + 1)}
-          className="w-9 h-9 rounded-full bg-[#1A3A6B] text-[#F5C84A] text-lg flex items-center justify-center hover:bg-[#0C2447]">+</button>
+          className="w-10 h-10 rounded-xl bg-[#1A3A6B] text-[#F5C84A] text-xl flex items-center justify-center hover:bg-[#0C2447] transition-colors font-bold">
+          +
+        </button>
       </div>
     </div>
   )
