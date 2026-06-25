@@ -585,8 +585,8 @@ export default function HostDashboardPage() {
               </div>
               <div className="divide-y divide-gray-50">
                 {JOURS.map(jour => (
-                  <div key={jour} className="px-4 py-3 flex items-center gap-3">
-                    <div className="flex items-center gap-2 w-28 flex-shrink-0">
+                  <div key={jour} className="px-4 py-3">
+                    <div className="flex items-center gap-2 mb-2">
                       <input type="checkbox" checked={horaires[jour]?.ouvert ?? false}
                         onChange={e => updateHoraire(jour, 'ouvert', e.target.checked)}
                         className="w-4 h-4 accent-[#1A3A6B] flex-shrink-0" />
@@ -595,17 +595,17 @@ export default function HostDashboardPage() {
                       </span>
                     </div>
                     {horaires[jour]?.ouvert ? (
-                      <div className="flex items-center gap-2 flex-1">
+                      <div className="flex items-center gap-2 ml-6">
                         <input type="time" value={horaires[jour]?.ouverture ?? '09:00'}
                           onChange={e => updateHoraire(jour, 'ouverture', e.target.value)}
-                          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm text-center focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
-                        <span className="text-gray-300 text-xs font-bold">—</span>
+                          className="flex-1 border border-gray-200 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
+                        <span className="text-gray-300 text-xs font-bold flex-shrink-0">—</span>
                         <input type="time" value={horaires[jour]?.fermeture ?? '19:00'}
                           onChange={e => updateHoraire(jour, 'fermeture', e.target.value)}
-                          className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm text-center focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
+                          className="flex-1 border border-gray-200 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
                       </div>
                     ) : (
-                      <span className="text-xs text-gray-300 italic">Ferme</span>
+                      <p className="text-xs text-gray-300 italic ml-6">Ferme</p>
                     )}
                   </div>
                 ))}
