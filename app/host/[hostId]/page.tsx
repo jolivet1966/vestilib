@@ -97,7 +97,9 @@ export default function HostPage() {
       .finally(() => setLoading(false))
 }, [hostId])
 
-  if (hostId === 'dashboard') { router.push('/host/dashboard'); return }
+useEffect(() => {
+    if (hostId === 'dashboard') router.push('/host/dashboard')
+  }, [hostId])
   if (authChecked && !isConnected) {
     return (
       <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center gap-4 px-6 text-center">
