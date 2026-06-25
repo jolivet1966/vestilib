@@ -244,16 +244,13 @@ export default function ProfilPage() {
           style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #F5C84A 0%, transparent 60%)' }} />
         <div className="relative px-4 pt-10 pb-8">
           <div className="max-w-lg mx-auto">
-            {/* Retour accueil */}
             <Link href="/" className="inline-flex items-center gap-1.5 text-white/50 text-xs mb-6 hover:text-white/80 transition-colors">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 5l-7 7 7 7"/>
               </svg>
               Accueil
             </Link>
-
             <div className="flex items-center gap-4">
-              {/* Avatar */}
               <div className="relative flex-shrink-0">
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#F5C84A] to-[#e6b22a] flex items-center justify-center shadow-lg">
                   <span className="text-[#1A3A6B] text-2xl font-black">{initiales}</span>
@@ -266,24 +263,17 @@ export default function ProfilPage() {
                   </div>
                 )}
               </div>
-
               <div className="flex-1 min-w-0">
                 <p className="text-white font-bold text-xl leading-tight">{userData.prenom} {userData.nom}</p>
                 <p className="text-white/50 text-sm mt-0.5 truncate">{userData.email}</p>
                 <div className="flex gap-2 mt-2">
-                  <span className="text-[10px] font-semibold bg-white/10 text-white/80 px-2.5 py-1 rounded-full border border-white/10">
-                    Membre
-                  </span>
+                  <span className="text-[10px] font-semibold bg-white/10 text-white/80 px-2.5 py-1 rounded-full border border-white/10">Membre</span>
                   {isHote && (
-                    <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                      Hote verifie
-                    </span>
+                    <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-500/20">Hote verifie</span>
                   )}
                 </div>
               </div>
             </div>
-
-            {/* Stats rapides */}
             {mesResas.length > 0 && (
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <div className="bg-white/10 rounded-xl p-3 border border-white/10">
@@ -345,7 +335,6 @@ export default function ProfilPage() {
                     const st = statusConfig[r.status] ?? statusConfig.pending
                     return (
                       <div key={r.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
-                        {/* Barre de statut */}
                         <div className={`h-1 w-full ${st.dot}`} />
                         <div className="p-4">
                           <div className="flex items-start justify-between gap-2 mb-3">
@@ -380,8 +369,6 @@ export default function ProfilPage() {
               </section>
             )}
 
-
-
             {/* RESERVATIONS PAYEES */}
             {resasPayees.length > 0 && (
               <section>
@@ -410,6 +397,10 @@ export default function ProfilPage() {
                   {resasPayeesVisibles.length === 0 && !showArchivees && (
                     <div className="bg-white rounded-2xl border border-gray-100 p-4 text-center shadow-sm">
                       <p className="text-xs text-gray-400">Toutes vos reservations sont archivees</p>
+                      <button onClick={() => setShowArchivees(true)}
+                        className="text-xs text-[#1A3A6B] font-semibold mt-1 hover:underline">
+                        Voir les archives
+                      </button>
                     </div>
                   )}
 
@@ -470,30 +461,62 @@ export default function ProfilPage() {
                   ))}
 
                   {/* ARCHIVEES */}
-                  {showArchivees && resasPayeesArchivees.map(r => (
-                    <div key={r.id} className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden opacity-60">
-                      <div className="p-4 flex items-center justify-between">
-                        <div>
-                          <p className="font-mono font-bold text-gray-500 text-sm">{r.bookingCode}</p>
-                          {r.date && (
-                            <p className="text-xs text-gray-400 mt-0.5">
-                              {new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-400">{r.totalAmount} EUR</span>
-                          <button onClick={() => desarchiverResa(r.id)}
-                            title="Restaurer"
-                            className="w-7 h-7 rounded-lg bg-white border border-gray-200 hover:border-[#1A3A6B] flex items-center justify-center transition-colors">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
-                              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.76"/>
-                            </svg>
-                          </button>
-                        </div>
+                  {showArchivees && resasPayeesArchivees.length > 0 && (
+                    <div className="rounded-2xl border border-gray-200 overflow-hidden">
+                      <div className="bg-gray-100 px-4 py-2.5 flex items-center justify-between">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                          {resasPayeesArchivees.length} archivee{resasPayeesArchivees.length > 1 ? 's' : ''}
+                        </p>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Supprimer toutes les reservations archivees ?')) {
+                              setMesResas(prev => prev.filter(x => !resasArchivees.has(x.id)))
+                              setResasArchivees(new Set())
+                              localStorage.setItem('vestilib_resas_archivees', '[]')
+                              setShowArchivees(false)
+                            }
+                          }}
+                          className="text-[10px] text-red-400 hover:text-red-600 font-semibold transition-colors">
+                          Tout supprimer
+                        </button>
                       </div>
+                      {resasPayeesArchivees.map((r, i) => (
+                        <div key={r.id} className={`bg-white px-4 py-3 flex items-center justify-between ${i < resasPayeesArchivees.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-mono font-bold text-gray-400 text-sm">{r.bookingCode}</p>
+                            {r.date && (
+                              <p className="text-xs text-gray-300 mt-0.5">
+                                {new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              </p>
+                            )}
+                            <p className="text-xs text-gray-300">{r.totalAmount} EUR</p>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-shrink-0 ml-3">
+                            <button onClick={() => desarchiverResa(r.id)}
+                              title="Restaurer"
+                              className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 hover:border-[#1A3A6B] hover:bg-blue-50 flex items-center justify-center transition-colors">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                                <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.76"/>
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (window.confirm('Supprimer definitivement cette reservation ?')) {
+                                  setMesResas(prev => prev.filter(x => x.id !== r.id))
+                                  desarchiverResa(r.id)
+                                }
+                              }}
+                              title="Supprimer definitivement"
+                              className="w-8 h-8 rounded-lg bg-red-50 border border-red-100 hover:bg-red-100 flex items-center justify-center transition-colors">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
               </section>
             )}
@@ -664,7 +687,6 @@ export default function ProfilPage() {
         {/* ===== ONGLET HOTE ===== */}
         {menu === 'hote' && hostData && (
           <>
-            {/* GAINS */}
             <section>
               <SectionTitle icon={
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -690,7 +712,6 @@ export default function ProfilPage() {
               </div>
             </section>
 
-            {/* ACCES RAPIDES */}
             <section>
               <SectionTitle icon={
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -703,7 +724,6 @@ export default function ProfilPage() {
               </div>
             </section>
 
-            {/* MON POINT DE DEPOT */}
             <section>
               <SectionTitle icon={
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -736,8 +756,6 @@ export default function ProfilPage() {
     </div>
   )
 }
-
-/* ===== COMPOSANTS ===== */
 
 function SectionTitle({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
