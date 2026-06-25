@@ -65,10 +65,12 @@ export default function ProfilPage() {
     if (stored) setResasArchivees(new Set(JSON.parse(stored)))
   }, [])
 
-  const archiverResa = (id: string) => {
+  <div key={host.id}
+                  ref={el => { hostCardRefs.current[host.id] = el }}
+           const archiverResa = (id: string) => {
     setResasArchivees(prev => {
       const next = new Set(prev).add(id)
-      localStorage.setItem('vestilib_resas_archivees', JSON.stringify([...next]))
+      localStorage.setItem('vestilib_resas_archivees', JSON.stringify(Array.from(next)))
       return next
     })
   }
@@ -77,10 +79,10 @@ export default function ProfilPage() {
     setResasArchivees(prev => {
       const next = new Set(prev)
       next.delete(id)
-      localStorage.setItem('vestilib_resas_archivees', JSON.stringify([...next]))
+      localStorage.setItem('vestilib_resas_archivees', JSON.stringify(Array.from(next)))
       return next
     })
-  }
+  }       onClick={() => setSelectedHost(isSelected ? null : host)}
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async firebaseUser => {
