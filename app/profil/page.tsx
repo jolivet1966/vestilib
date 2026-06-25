@@ -35,26 +35,26 @@ interface ResaWithHost {
 
 export default function ProfilPage() {
   const router = useRouter()
-  const [menu,      setMenu]      = useState<'utilisateur' | 'hote'>('utilisateur')
-  const [userData,  setUserData]  = useState<UserData | null>(null)
-  const [hostData,  setHostData]  = useState<HostData | null>(null)
-  const [hostId,    setHostId]    = useState<string | null>(null)
-  const [balance,   setBalance]   = useState<Balance | null>(null)
+  const [menu, setMenu] = useState<'utilisateur' | 'hote'>('utilisateur')
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [hostData, setHostData] = useState<HostData | null>(null)
+  const [hostId, setHostId] = useState<string | null>(null)
+  const [balance, setBalance] = useState<Balance | null>(null)
   const [totalGagne, setTotalGagne] = useState(0)
-  const [mesResas, setMesResas]   = useState<ResaWithHost[]>([])
-  const [loading,   setLoading]   = useState(true)
+  const [mesResas, setMesResas] = useState<ResaWithHost[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const [editMode,   setEditMode]   = useState(false)
-  const [prenom,     setPrenom]     = useState('')
-  const [nom,        setNom]        = useState('')
-  const [telephone,  setTelephone]  = useState('')
+  const [editMode, setEditMode] = useState(false)
+  const [prenom, setPrenom] = useState('')
+  const [nom, setNom] = useState('')
+  const [telephone, setTelephone] = useState('')
   const [savingInfo, setSavingInfo] = useState(false)
-  const [infoMsg,    setInfoMsg]    = useState('')
+  const [infoMsg, setInfoMsg] = useState('')
 
-  const [showPwd,   setShowPwd]   = useState(false)
-  const [oldPwd,    setOldPwd]    = useState('')
-  const [newPwd,    setNewPwd]    = useState('')
-  const [pwdMsg,    setPwdMsg]    = useState('')
+  const [showPwd, setShowPwd] = useState(false)
+  const [oldPwd, setOldPwd] = useState('')
+  const [newPwd, setNewPwd] = useState('')
+  const [pwdMsg, setPwdMsg] = useState('')
   const [savingPwd, setSavingPwd] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
 
@@ -91,10 +91,7 @@ export default function ProfilPage() {
           hostDocData = hostByUid.data()
           hostDocId = hostByUid.id
         } else {
-          const hostSnap = await getDocs(query(
-            collection(db, 'hosts'),
-            where('email', '==', firebaseUser.email)
-          ))
+          const hostSnap = await getDocs(query(collection(db, 'hosts'), where('email', '==', firebaseUser.email)))
           if (!hostSnap.empty) {
             hostDocData = hostSnap.docs[0].data()
             hostDocId = hostSnap.docs[0].id
@@ -104,31 +101,21 @@ export default function ProfilPage() {
         if (hostDocData && hostDocId) {
           setHostData({ id: hostDocId, ...hostDocData } as HostData)
           setHostId(hostDocId)
-
-          const bookSnap = await getDocs(query(
-            collection(db, 'bookings'),
-            where('hostId', '==', hostDocId)
-          ))
+          const bookSnap = await getDocs(query(collection(db, 'bookings'), where('hostId', '==', hostDocId)))
           const total = bookSnap.docs
             .filter(d => d.data().status === 'paid')
             .reduce((s, d) => s + (d.data().hostEarns ?? 0), 0)
           setTotalGagne(total)
-
           const balRes = await fetch(`/api/host-balance?hostId=${hostDocId}`)
           if (balRes.ok) setBalance(await balRes.json())
         }
 
-        // Réservations du client
-        const resaSnap = await getDocs(query(
-          collection(db, 'bookings'),
-          where('customerEmail', '==', firebaseUser.email)
-        ))
+        const resaSnap = await getDocs(query(collection(db, 'bookings'), where('customerEmail', '==', firebaseUser.email)))
         const enCours: ResaWithHost[] = resaSnap.docs
           .map(d => ({ id: d.id, ...d.data() } as ResaWithHost))
           .filter(r => ['pending', 'awaiting_approval', 'accepted', 'paid'].includes(r.status))
           .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
 
-        // Enrichir les réservations payées avec les coordonnées hôte
         const enriched = await Promise.all(
           enCours.map(async r => {
             if (r.status === 'paid' && r.hostId) {
@@ -144,7 +131,6 @@ export default function ProfilPage() {
           })
         )
         setMesResas(enriched)
-
       } catch (e) { console.error(e) }
       finally { setLoading(false) }
     })
@@ -186,19 +172,13 @@ export default function ProfilPage() {
     try {
       try { await deleteDoc(doc(db, 'users', userData.id)) } catch {}
       if (hostId) {
-        await updateDoc(doc(db, 'hosts', hostId), {
-          visible: false,
-          ouvert: false,
-          compteSuprime: true,
-          email: '',
-        })
+        await updateDoc(doc(db, 'hosts', hostId), { visible: false, ouvert: false, compteSuprime: true, email: '' })
       }
       await firebaseUser.delete()
       router.push('/?compte=supprime')
     } catch (e: any) {
-      console.error('Erreur suppression:', e.code, e.message)
       if (e.code === 'auth/requires-recent-login') {
-        alert('Pour des raisons de sécurité, veuillez vous déconnecter puis vous reconnecter avant de supprimer votre compte.')
+        alert('Pour des raisons de securite, veuillez vous deconnecter puis vous reconnecter avant de supprimer votre compte.')
       } else {
         alert(`Erreur : ${e.code} — ${e.message}`)
       }
@@ -206,8 +186,11 @@ export default function ProfilPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-[#1A3A6B] border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen bg-[#F8F9FC] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-4 border-[#1A3A6B] border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-gray-400">Chargement du profil...</p>
+      </div>
     </div>
   )
 
@@ -215,194 +198,376 @@ export default function ProfilPage() {
 
   const initiales = `${userData.prenom?.[0] ?? ''}${userData.nom?.[0] ?? ''}`.toUpperCase()
   const isHote = !!hostData
+  const resasActives = mesResas.filter(r => r.status !== 'paid')
+  const resasPayees = mesResas.filter(r => r.status === 'paid')
+
+  const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
+    paid: { label: 'Confirmee', color: 'text-emerald-700', bg: 'bg-emerald-50', dot: 'bg-emerald-500' },
+    accepted: { label: 'Paiement en attente', color: 'text-blue-700', bg: 'bg-blue-50', dot: 'bg-blue-500' },
+    awaiting_approval: { label: 'En attente de validation', color: 'text-amber-700', bg: 'bg-amber-50', dot: 'bg-amber-500' },
+    pending: { label: 'En cours', color: 'text-gray-600', bg: 'bg-gray-100', dot: 'bg-gray-400' },
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-[#1A3A6B] px-4 pt-10 pb-6">
-        <div className="max-w-lg mx-auto flex items-center gap-4">
-          <div className="w-16 h-16 bg-[#F5C84A] rounded-full flex items-center justify-center text-[#1A3A6B] text-xl font-black">
-            {initiales}
-          </div>
-          <div>
-            <p className="text-white font-bold text-lg">{userData.prenom} {userData.nom}</p>
-            <p className="text-white/50 text-sm">{userData.email}</p>
-            <div className="flex gap-2 mt-1">
-              <span className="text-[10px] bg-[#F5C84A]/20 text-[#F5C84A] px-2 py-0.5 rounded-full">Utilisateur</span>
-              {isHote && <span className="text-[10px] bg-green-400/20 text-green-300 px-2 py-0.5 rounded-full">Hote</span>}
+    <div className="min-h-screen bg-[#F8F9FC] pb-28">
+
+      {/* HEADER */}
+      <div className="bg-[#1A3A6B] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10"
+          style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #F5C84A 0%, transparent 60%)' }} />
+        <div className="relative px-4 pt-10 pb-8">
+          <div className="max-w-lg mx-auto">
+            {/* Retour accueil */}
+            <Link href="/" className="inline-flex items-center gap-1.5 text-white/50 text-xs mb-6 hover:text-white/80 transition-colors">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 12H5M12 5l-7 7 7 7"/>
+              </svg>
+              Accueil
+            </Link>
+
+            <div className="flex items-center gap-4">
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#F5C84A] to-[#e6b22a] flex items-center justify-center shadow-lg">
+                  <span className="text-[#1A3A6B] text-2xl font-black">{initiales}</span>
+                </div>
+                {isHote && (
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-md border-2 border-[#1A3A6B]">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-bold text-xl leading-tight">{userData.prenom} {userData.nom}</p>
+                <p className="text-white/50 text-sm mt-0.5 truncate">{userData.email}</p>
+                <div className="flex gap-2 mt-2">
+                  <span className="text-[10px] font-semibold bg-white/10 text-white/80 px-2.5 py-1 rounded-full border border-white/10">
+                    Membre
+                  </span>
+                  {isHote && (
+                    <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                      Hote verifie
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
+
+            {/* Stats rapides */}
+            {mesResas.length > 0 && (
+              <div className="mt-5 grid grid-cols-2 gap-3">
+                <div className="bg-white/10 rounded-xl p-3 border border-white/10">
+                  <p className="text-2xl font-black text-[#F5C84A]">{mesResas.length}</p>
+                  <p className="text-white/60 text-xs mt-0.5">reservation{mesResas.length > 1 ? 's' : ''}</p>
+                </div>
+                <div className="bg-white/10 rounded-xl p-3 border border-white/10">
+                  <p className="text-2xl font-black text-emerald-400">{resasPayees.length}</p>
+                  <p className="text-white/60 text-xs mt-0.5">confirme{resasPayees.length > 1 ? 'es' : 'e'}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      {/* ONGLETS */}
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
         <div className="max-w-lg mx-auto flex">
           <button onClick={() => setMenu('utilisateur')}
-            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${menu === 'utilisateur' ? 'border-[#1A3A6B] text-[#1A3A6B]' : 'border-transparent text-gray-400'}`}>
+            className={`flex-1 py-3.5 text-sm font-semibold border-b-2 transition-all flex items-center justify-center gap-2 ${
+              menu === 'utilisateur' ? 'border-[#1A3A6B] text-[#1A3A6B]' : 'border-transparent text-gray-400 hover:text-gray-600'
+            }`}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
             Mon profil
           </button>
           {isHote && (
             <button onClick={() => setMenu('hote')}
-              className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${menu === 'hote' ? 'border-[#1A3A6B] text-[#1A3A6B]' : 'border-transparent text-gray-400'}`}>
-              Mon espace hote
+              className={`flex-1 py-3.5 text-sm font-semibold border-b-2 transition-all flex items-center justify-center gap-2 ${
+                menu === 'hote' ? 'border-[#1A3A6B] text-[#1A3A6B]' : 'border-transparent text-gray-400 hover:text-gray-600'
+              }`}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              Espace hote
             </button>
           )}
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-lg mx-auto px-4 py-5 space-y-4">
 
+        {/* ===== ONGLET UTILISATEUR ===== */}
         {menu === 'utilisateur' && (
           <>
-            {mesResas.length > 0 && (
-              <div className="bg-[#F5C84A]/10 border border-[#F5C84A] rounded-2xl p-5 shadow-sm">
-                <p className="text-xs font-semibold text-[#1A3A6B] uppercase tracking-wider mb-3">
-                  🔔 Mes réservations
-                </p>
+            {/* RESERVATIONS ACTIVES */}
+            {resasActives.length > 0 && (
+              <section>
+                <SectionTitle icon={
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                } label="Reservations en cours" />
                 <div className="space-y-3">
-                  {mesResas.map((r: ResaWithHost) => (
-                    <div key={r.id} className="bg-white rounded-xl p-4 border border-[#F5C84A]/30">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-mono font-bold text-[#1A3A6B] text-sm">{r.bookingCode}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                          r.status === 'paid' ? 'bg-green-100 text-green-600' :
-                          r.status === 'accepted' ? 'bg-blue-100 text-blue-600' :
-                          r.status === 'awaiting_approval' ? 'bg-yellow-100 text-yellow-600' :
-                          'bg-gray-100 text-gray-500'
-                        }`}>
-                          {r.status === 'paid' ? 'Payée' :
-                           r.status === 'accepted' ? 'Acceptée — paiement en attente' :
-                           r.status === 'awaiting_approval' ? 'En attente de validation' :
-                           'En cours'}
-                        </span>
+                  {resasActives.map(r => {
+                    const st = statusConfig[r.status] ?? statusConfig.pending
+                    return (
+                      <div key={r.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                        {/* Barre de statut */}
+                        <div className={`h-1 w-full ${st.dot}`} />
+                        <div className="p-4">
+                          <div className="flex items-start justify-between gap-2 mb-3">
+                            <div>
+                              <p className="font-mono font-bold text-[#1A3A6B] text-base">{r.bookingCode}</p>
+                              {r.date && (
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                  {new Date(r.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                  {r.creneau && ` · ${r.creneau}`}
+                                </p>
+                              )}
+                            </div>
+                            <span className={`text-[10px] font-bold px-2.5 py-1.5 rounded-full flex-shrink-0 flex items-center gap-1.5 ${st.color} ${st.bg}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${st.dot} inline-block`} />
+                              {st.label}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-bold text-gray-800">{r.totalAmount} EUR</p>
+                            {r.status === 'accepted' && r.paymentUrl && (
+                              <a href={r.paymentUrl}
+                                className="bg-[#1A3A6B] text-[#F5C84A] font-bold text-xs py-2 px-4 rounded-xl hover:bg-[#0C2447] active:scale-95 transition-all">
+                                Payer maintenant
+                              </a>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="space-y-1 text-xs text-gray-500">
-                        {r.date && <p>📅 {new Date(r.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>}
-                        {r.creneau && <p>🕐 {r.creneau}</p>}
-                        <p>💶 {r.totalAmount} EUR</p>
-                        {r.status === 'accepted' && r.paymentUrl && (
-                          <a href={r.paymentUrl}
-                            className="mt-2 block w-full text-center bg-[#1A3A6B] text-[#F5C84A] font-semibold py-2 rounded-xl text-xs">
-                            Payer maintenant
-                          </a>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* RESERVATIONS PAYEES */}
+            {resasPayees.length > 0 && (
+              <section>
+                <SectionTitle icon={
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                } label="Reservations confirmees" />
+                <div className="space-y-3">
+                  {resasPayees.map(r => (
+                    <div key={r.id} className="bg-white rounded-2xl border border-emerald-100 overflow-hidden shadow-sm">
+                      <div className="h-1 w-full bg-emerald-500" />
+                      <div className="p-4">
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <div>
+                            <p className="font-mono font-bold text-[#1A3A6B] text-base">{r.bookingCode}</p>
+                            {r.date && (
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                {new Date(r.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                {r.creneau && ` · ${r.creneau}`}
+                              </p>
+                            )}
+                          </div>
+                          <span className="text-sm font-bold text-emerald-700">{r.totalAmount} EUR</span>
+                        </div>
+
+                        {/* Coordonnees hote */}
+                        {(r.hostEmail || r.hostTelephone) && (
+                          <div className="bg-[#1A3A6B]/5 rounded-xl p-3 border border-[#1A3A6B]/10">
+                            <p className="text-xs font-bold text-[#1A3A6B] mb-2 flex items-center gap-1.5">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                              </svg>
+                              Coordonnees de votre hote
+                            </p>
+                            <div className="space-y-1.5">
+                              {r.hostEmail && (
+                                <a href={`mailto:${r.hostEmail}`}
+                                  className="flex items-center gap-2 text-xs text-[#1A3A6B] font-medium hover:underline">
+                                  <span className="w-6 h-6 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">✉️</span>
+                                  {r.hostEmail}
+                                </a>
+                              )}
+                              {r.hostTelephone && (
+                                <a href={`tel:${r.hostTelephone}`}
+                                  className="flex items-center gap-2 text-xs text-[#1A3A6B] font-medium hover:underline">
+                                  <span className="w-6 h-6 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">📞</span>
+                                  {r.hostTelephone}
+                                </a>
+                              )}
+                            </div>
+                          </div>
                         )}
                       </div>
-
-                      {/* Coordonnées hôte — visibles uniquement après paiement confirmé */}
-                      {r.status === 'paid' && (r.hostEmail || r.hostTelephone) && (
-                        <div className="mt-3 pt-3 border-t border-[#F5C84A]/30 space-y-1.5">
-                          <p className="text-xs font-semibold text-[#1A3A6B] mb-1">📍 Coordonnées de l'hôte</p>
-                          {r.hostEmail && (
-                            <a href={`mailto:${r.hostEmail}`}
-                              className="flex items-center gap-1.5 text-xs text-[#1A3A6B] hover:underline">
-                              ✉️ {r.hostEmail}
-                            </a>
-                          )}
-                          {r.hostTelephone && (
-                            <a href={`tel:${r.hostTelephone}`}
-                              className="flex items-center gap-1.5 text-xs text-[#1A3A6B] hover:underline">
-                              📞 {r.hostTelephone}
-                            </a>
-                          )}
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
             )}
 
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Informations personnelles</p>
-                <button onClick={() => setEditMode(!editMode)} className="text-xs text-[#1A3A6B] font-medium hover:underline">
-                  {editMode ? 'Annuler' : 'Modifier'}
-                </button>
-              </div>
-              {editMode ? (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Prenom" value={prenom} onChange={setPrenom} />
-                    <Field label="Nom" value={nom} onChange={setNom} />
-                  </div>
-                  <Field label="Telephone" value={telephone} onChange={setTelephone} type="tel" />
-                  {infoMsg && <p className="text-sm text-center">{infoMsg}</p>}
-                  <button onClick={sauvegarderInfos} disabled={savingInfo}
-                    className="w-full bg-[#1A3A6B] text-[#F5C84A] font-medium py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
-                    {savingInfo ? 'Sauvegarde...' : 'Enregistrer'}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Row label="Nom" value={`${userData.prenom} ${userData.nom}`} />
-                  <Row label="Email" value={userData.email} />
-                  <Row label="Telephone" value={userData.telephone || '—'} />
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Validation du profil</p>
-              <div className="space-y-3">
-                <ValidationRow label="Email valide" status={true} info={userData.email} />
-                <ValidationRow label="Telephone valide" status={!!userData.telephone} info={userData.telephone || 'Non renseigne'} />
-              </div>
-            </div>
-
-            {!isHote && (
-              <div className="bg-[#1A3A6B]/5 border border-[#1A3A6B]/10 rounded-2xl p-5">
-                <p className="text-sm font-semibold text-[#1A3A6B] mb-2">Proposer un point de depot</p>
-                <p className="text-xs text-gray-500 mb-3">Rejoignez le reseau VESTILIB et generez des revenus.</p>
-                <Link href="/host/onboard"
-                  className="block w-full text-center bg-[#1A3A6B] text-[#F5C84A] font-semibold py-2.5 rounded-xl hover:bg-[#0C2447] transition-colors text-sm">
-                  Devenir hote
+            {/* Aucune reservation */}
+            {mesResas.length === 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm">
+                <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-3">🎫</div>
+                <p className="text-sm font-semibold text-gray-700 mb-1">Aucune reservation</p>
+                <p className="text-xs text-gray-400 mb-4">Trouvez un hote pres de vous pour deposer vos bagages</p>
+                <Link href="/map"
+                  className="inline-flex items-center gap-2 bg-[#1A3A6B] text-[#F5C84A] font-semibold text-sm py-2.5 px-5 rounded-xl hover:bg-[#0C2447] transition-colors">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  Voir la carte
                 </Link>
               </div>
             )}
 
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <button onClick={() => setShowPwd(!showPwd)}
-                className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">🔑</span>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-gray-800">Mot de passe</p>
-                    <p className="text-xs text-gray-400">Modifier votre mot de passe</p>
+            {/* INFOS PERSONNELLES */}
+            <section>
+              <SectionTitle icon={
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+              } label="Informations personnelles" />
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                {editMode ? (
+                  <div className="p-4 space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="Prenom" value={prenom} onChange={setPrenom} />
+                      <Field label="Nom" value={nom} onChange={setNom} />
+                    </div>
+                    <Field label="Telephone" value={telephone} onChange={setTelephone} type="tel" />
+                    {infoMsg && <p className="text-sm text-center text-emerald-600 font-medium">{infoMsg}</p>}
+                    <div className="flex gap-2 pt-1">
+                      <button onClick={() => setEditMode(false)}
+                        className="flex-1 border border-gray-200 text-gray-600 font-medium py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors">
+                        Annuler
+                      </button>
+                      <button onClick={sauvegarderInfos} disabled={savingInfo}
+                        className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-bold py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
+                        {savingInfo ? 'Sauvegarde...' : 'Enregistrer'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="divide-y divide-gray-50">
+                      <InfoRow icon="👤" label="Nom" value={`${userData.prenom} ${userData.nom}`} />
+                      <InfoRow icon="✉️" label="Email" value={userData.email} />
+                      <InfoRow icon="📞" label="Telephone" value={userData.telephone || 'Non renseigne'} />
+                    </div>
+                    <div className="px-4 py-3 border-t border-gray-50">
+                      <button onClick={() => setEditMode(true)}
+                        className="w-full text-center text-sm font-semibold text-[#1A3A6B] hover:text-[#0C2447] transition-colors py-1">
+                        Modifier mes informations
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </section>
+
+            {/* DEVENIR HOTE */}
+            {!isHote && (
+              <div className="bg-gradient-to-br from-[#1A3A6B] to-[#0C2447] rounded-2xl p-5 shadow-md">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-[#F5C84A]/20 rounded-xl flex items-center justify-center flex-shrink-0 text-xl">🏠</div>
+                  <div className="flex-1">
+                    <p className="text-white font-bold text-sm mb-1">Proposer un point de depot</p>
+                    <p className="text-white/60 text-xs mb-3">Rejoignez le reseau VESTILIB et generez des revenus supplementaires.</p>
+                    <Link href="/host/onboard"
+                      className="inline-flex items-center gap-2 bg-[#F5C84A] text-[#1A3A6B] font-bold text-sm py-2.5 px-4 rounded-xl hover:bg-[#e6b22a] transition-colors active:scale-95">
+                      Devenir hote
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
+                    </Link>
                   </div>
                 </div>
-                <span className="text-gray-300">{showPwd ? '▲' : '▼'}</span>
-              </button>
-              {showPwd && (
-                <div className="px-5 pb-5 space-y-3 border-t border-gray-50">
-                  <Field label="Ancien mot de passe" value={oldPwd} onChange={setOldPwd} type="password" />
-                  <Field label="Nouveau mot de passe" value={newPwd} onChange={setNewPwd} type="password" />
-                  {pwdMsg && <p className="text-sm text-center">{pwdMsg}</p>}
-                  <button onClick={changerMotDePasse} disabled={savingPwd || !oldPwd || !newPwd}
-                    className="w-full bg-[#1A3A6B] text-[#F5C84A] font-medium py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
-                    {savingPwd ? 'Mise a jour...' : 'Changer le mot de passe'}
-                  </button>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
-           <MenuCard icon="📄" title="Conditions generales" subtitle="CGV VESTILIB" onClick={() => router.push('/cgv')} />
-<MenuCard icon="🔒" title="Protection des donnees" subtitle="Politique de confidentialite" onClick={() => router.push('/confidentialite')} />
+            {/* MOT DE PASSE */}
+            <section>
+              <SectionTitle icon={
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              } label="Securite" />
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                <button onClick={() => setShowPwd(!showPwd)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A3A6B" strokeWidth="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-gray-800">Mot de passe</p>
+                      <p className="text-xs text-gray-400">Modifier votre mot de passe</p>
+                    </div>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"
+                    className={`transition-transform ${showPwd ? 'rotate-180' : ''}`}>
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+                {showPwd && (
+                  <div className="px-4 pb-4 space-y-3 border-t border-gray-50 pt-4">
+                    <Field label="Ancien mot de passe" value={oldPwd} onChange={setOldPwd} type="password" />
+                    <Field label="Nouveau mot de passe" value={newPwd} onChange={setNewPwd} type="password" />
+                    {pwdMsg && <p className="text-sm text-center font-medium text-emerald-600">{pwdMsg}</p>}
+                    <button onClick={changerMotDePasse} disabled={savingPwd || !oldPwd || !newPwd}
+                      className="w-full bg-[#1A3A6B] text-[#F5C84A] font-bold py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
+                      {savingPwd ? 'Mise a jour...' : 'Changer le mot de passe'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </section>
 
-            <button onClick={deconnecter}
-              className="w-full bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-3 hover:bg-gray-50 transition-colors shadow-sm">
-              <span className="text-xl">🚪</span>
-              <span className="text-sm font-medium text-gray-700">Deconnexion</span>
-            </button>
+            {/* LIENS LEGAUX + DECONNEXION */}
+            <section>
+              <SectionTitle icon={
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              } label="Informations et compte" />
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm divide-y divide-gray-50">
+                <MenuRow icon="📄" label="Conditions generales de vente" onClick={() => router.push('/cgv')} />
+                <MenuRow icon="🔒" label="Politique de confidentialite" onClick={() => router.push('/confidentialite')} />
+                <MenuRow icon="🚪" label="Se deconnecter" onClick={deconnecter} labelColor="text-gray-700" />
+              </div>
+            </section>
 
-            <div className="bg-white rounded-2xl border border-red-100 shadow-sm overflow-hidden">
+            {/* SUPPRESSION COMPTE */}
+            <div className="bg-white rounded-2xl border border-red-100 overflow-hidden shadow-sm">
               <button onClick={() => setShowDelete(!showDelete)}
                 className="w-full flex items-center gap-3 p-4 hover:bg-red-50 transition-colors">
-                <span className="text-xl">❌</span>
-                <span className="text-sm font-medium text-red-600">Fermer mon compte</span>
+                <div className="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                  </svg>
+                </div>
+                <span className="text-sm font-semibold text-red-600">Fermer mon compte</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FCA5A5" strokeWidth="2"
+                  className={`ml-auto transition-transform ${showDelete ? 'rotate-180' : ''}`}>
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
               </button>
               {showDelete && (
-                <div className="px-5 pb-5 border-t border-red-50">
-                  <p className="text-xs text-gray-500 my-3">Cette action est irreversible.</p>
-                  <button onClick={supprimerCompte} className="w-full bg-red-600 text-white font-medium py-2.5 rounded-xl hover:bg-red-700 transition-colors text-sm">
+                <div className="px-4 pb-4 border-t border-red-50">
+                  <p className="text-xs text-gray-500 my-3">Cette action est irreversible. Toutes vos donnees seront supprimees.</p>
+                  <button onClick={supprimerCompte}
+                    className="w-full bg-red-600 text-white font-bold py-2.5 rounded-xl hover:bg-red-700 transition-colors text-sm">
                     Confirmer la fermeture du compte
                   </button>
                 </div>
@@ -411,47 +576,75 @@ export default function ProfilPage() {
           </>
         )}
 
+        {/* ===== ONGLET HOTE ===== */}
         {menu === 'hote' && hostData && (
           <>
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Cumul des gains</p>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center bg-green-50 rounded-xl p-3">
-                  <p className="text-xl font-black text-green-600">{totalGagne.toFixed(0)}EUR</p>
-                  <p className="text-xs text-gray-400 mt-1">Total gagne</p>
-                </div>
-                <div className="text-center bg-[#1A3A6B]/5 rounded-xl p-3">
-                  <p className="text-xl font-black text-[#1A3A6B]">{balance?.available?.toFixed(0) ?? '—'}EUR</p>
-                  <p className="text-xs text-gray-400 mt-1">Disponible</p>
-                </div>
-                <div className="text-center bg-yellow-50 rounded-xl p-3">
-                  <p className="text-xl font-black text-yellow-600">{balance?.pending?.toFixed(0) ?? '—'}EUR</p>
-                  <p className="text-xs text-gray-400 mt-1">En attente</p>
+            {/* GAINS */}
+            <section>
+              <SectionTitle icon={
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+              } label="Mes gains" />
+              <div className="bg-[#1A3A6B] rounded-2xl p-5 shadow-md overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#F5C84A]/10 rounded-full -translate-y-8 translate-x-8" />
+                <div className="grid grid-cols-3 gap-3 relative">
+                  <div className="text-center">
+                    <p className="text-2xl font-black text-[#F5C84A]">{totalGagne.toFixed(0)}<span className="text-sm font-bold ml-0.5">€</span></p>
+                    <p className="text-white/50 text-[10px] mt-1 font-medium uppercase tracking-wide">Total gagne</p>
+                  </div>
+                  <div className="text-center border-x border-white/10">
+                    <p className="text-2xl font-black text-emerald-400">{balance?.available?.toFixed(0) ?? '—'}<span className="text-sm font-bold ml-0.5">€</span></p>
+                    <p className="text-white/50 text-[10px] mt-1 font-medium uppercase tracking-wide">Disponible</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-black text-amber-400">{balance?.pending?.toFixed(0) ?? '—'}<span className="text-sm font-bold ml-0.5">€</span></p>
+                    <p className="text-white/50 text-[10px] mt-1 font-medium uppercase tracking-wide">En attente</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </section>
 
-            <MenuCard icon="📋" title="Mes reservations" subtitle="Voir toutes les reservations" onClick={() => router.push('/host/dashboard')} />
-            <MenuCard icon="🏦" title="Solde et Virements" subtitle="Historique des paiements" onClick={() => router.push('/host/dashboard')} />
-
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Mon point de depot</p>
-              <div className="space-y-2">
-                <Row label="Ville" value={hostData.ville} />
-                <Row label="Virements actives" value={hostData.stripePayoutsEnabled ? 'Oui' : 'En attente'} />
-                {hostData.capaciteMax && <Row label="Max articles" value={`${hostData.capaciteMax} articles`} />}
-                {hostData.capaciteMaxMoto && <Row label="Max motos" value={`${hostData.capaciteMaxMoto} motos`} />}
-                {hostData.capaciteMaxVelo && <Row label="Max velos" value={`${hostData.capaciteMaxVelo} velos`} />}
+            {/* ACCES RAPIDES */}
+            <section>
+              <SectionTitle icon={
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                </svg>
+              } label="Acces rapides" />
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm divide-y divide-gray-50">
+                <MenuRow icon="📋" label="Mes reservations" sublabel="Voir et gerer les reservations" onClick={() => router.push('/host/dashboard')} />
+                <MenuRow icon="🏦" label="Solde et virements" sublabel="Historique des paiements Stripe" onClick={() => router.push('/host/dashboard')} />
               </div>
-            </div>
+            </section>
 
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Statut du compte hote</p>
-              <div className="space-y-3">
-                <ValidationRow label="Piece d identite" status={hostData.stripePayoutsEnabled} info="Via Stripe Connect" />
-                <ValidationRow label="Virements actives" status={hostData.stripePayoutsEnabled} info={hostData.stripePayoutsEnabled ? 'Actif' : 'En attente'} />
+            {/* MON POINT DE DEPOT */}
+            <section>
+              <SectionTitle icon={
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+              } label="Mon point de depot" />
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="divide-y divide-gray-50">
+                  <InfoRow icon="📍" label="Ville" value={hostData.ville} />
+                  <InfoRow icon="🏦" label="Virements" value={hostData.stripePayoutsEnabled ? 'Actifs' : 'En attente'} valueColor={hostData.stripePayoutsEnabled ? 'text-emerald-600' : 'text-amber-600'} />
+                  {hostData.capaciteMax ? <InfoRow icon="🎒" label="Capacite articles" value={`${hostData.capaciteMax} articles max`} /> : null}
+                  {hostData.capaciteMaxMoto ? <InfoRow icon="🏍️" label="Capacite motos" value={`${hostData.capaciteMaxMoto} motos max`} /> : null}
+                  {hostData.capaciteMaxVelo ? <InfoRow icon="🚲" label="Capacite velos" value={`${hostData.capaciteMaxVelo} velos max`} /> : null}
+                </div>
+                <div className="p-4 border-t border-gray-50">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${hostData.stripePayoutsEnabled ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                    <p className="text-xs text-gray-500">
+                      {hostData.stripePayoutsEnabled
+                        ? 'Compte verifie — virements actives via Stripe Connect'
+                        : 'Verification en cours via Stripe Connect'}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </section>
           </>
         )}
       </div>
@@ -459,49 +652,51 @@ export default function ProfilPage() {
   )
 }
 
+/* ===== COMPOSANTS ===== */
+
+function SectionTitle({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="flex items-center gap-2 px-1 mb-2">
+      <span className="text-[#1A3A6B]/50">{icon}</span>
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{label}</p>
+    </div>
+  )
+}
+
+function InfoRow({ icon, label, value, valueColor = 'text-gray-800' }: { icon: string; label: string; value: string; valueColor?: string }) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3">
+      <span className="text-base flex-shrink-0">{icon}</span>
+      <span className="text-sm text-gray-400 flex-1">{label}</span>
+      <span className={`text-sm font-semibold ${valueColor} text-right max-w-[55%] truncate`}>{value}</span>
+    </div>
+  )
+}
+
+function MenuRow({ icon, label, sublabel, onClick, labelColor = 'text-gray-800' }: {
+  icon: string; label: string; sublabel?: string; onClick: () => void; labelColor?: string
+}) {
+  return (
+    <button onClick={onClick}
+      className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors text-left">
+      <span className="text-base flex-shrink-0">{icon}</span>
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm font-semibold ${labelColor}`}>{label}</p>
+        {sublabel && <p className="text-xs text-gray-400 mt-0.5">{sublabel}</p>}
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" className="flex-shrink-0">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </button>
+  )
+}
+
 function Field({ label, value, onChange, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
   return (
     <div>
-      <label className="text-xs text-gray-500 block mb-1">{label}</label>
+      <label className="text-xs font-medium text-gray-500 block mb-1.5">{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)}
-        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
+        className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] focus:ring-1 focus:ring-[#1A3A6B]/20 transition-all" />
     </div>
-  )
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between items-center py-1.5 border-b border-gray-50 last:border-0">
-      <span className="text-gray-400 text-xs">{label}</span>
-      <span className="text-gray-700 text-xs font-medium text-right max-w-[60%]">{value}</span>
-    </div>
-  )
-}
-
-function ValidationRow({ label, status, info }: { label: string; status: boolean; info: string }) {
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${status ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
-          {status ? 'ok' : 'o'}
-        </span>
-        <span className="text-sm text-gray-700">{label}</span>
-      </div>
-      <span className="text-xs text-gray-400">{info}</span>
-    </div>
-  )
-}
-
-function MenuCard({ icon, title, subtitle, onClick }: { icon: string; title: string; subtitle: string; onClick: () => void }) {
-  return (
-    <button onClick={onClick}
-      className="w-full bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 hover:bg-gray-50 transition-colors shadow-sm text-left">
-      <span className="text-xl">{icon}</span>
-      <div>
-        <p className="text-sm font-medium text-gray-800">{title}</p>
-        <p className="text-xs text-gray-400">{subtitle}</p>
-      </div>
-      <span className="ml-auto text-gray-300">›</span>
-    </button>
   )
 }
