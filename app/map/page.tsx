@@ -23,6 +23,7 @@ export default function MapPage() {
   const [selectedHost, setSelectedHost] = useState<Host | null>(null)
   const [loading, setLoading] = useState(true)
   const [mapsReady, setMapsReady] = useState(false)
+  const hostCardRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   useEffect(() => {
     fetch('/api/hosts').then(r => r.json()).then(d => setHosts(d.hosts ?? [])).catch(console.error).finally(() => setLoading(false))
@@ -89,11 +90,14 @@ export default function MapPage() {
             strokeWeight: 3,
           },
         })
-        marker.addListener('click', () => {
-          setSelectedHost(host)
-          mapInstance.current.panTo(position)
-          mapInstance.current.setZoom(15)
-        })
+       marker.addListener('click', () => {
+  setSelectedHost(host)
+  mapInstance.current.panTo(position)
+  mapInstance.current.setZoom(15)
+  setTimeout(() => {
+    hostCardRefs.current[host.id]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, 100)
+}) 
         markersRef.current.push(marker)
       })
     }
@@ -177,7 +181,9 @@ export default function MapPage() {
                 const statut = statutOuverture(host)
                 const isSelected = selectedHost?.id === host.id
                 return (
-                  <div key={host.id} onClick={() => setSelectedHost(isSelected ? null : host)}
+                  <div key={host.id}
+                  ref={el => { hostCardRefs.current[host.id] = el }}
+                  onClick={() => setSelectedHost(isSelected ? null : host)}
                     className={`rounded-2xl border cursor-pointer transition-all overflow-hidden ${
                       isSelected
                         ? 'border-[#1A3A6B] shadow-md shadow-[#1A3A6B]/10'
