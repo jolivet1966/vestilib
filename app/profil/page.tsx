@@ -42,6 +42,8 @@ export default function ProfilPage() {
   const [balance, setBalance] = useState<Balance | null>(null)
   const [totalGagne, setTotalGagne] = useState(0)
   const [mesResas, setMesResas] = useState<ResaWithHost[]>([])
+  const [resasArchivees, setResasArchivees] = useState<Set<string>>(new Set())
+  const [showArchivees, setShowArchivees] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const [editMode, setEditMode] = useState(false)
@@ -57,6 +59,28 @@ export default function ProfilPage() {
   const [pwdMsg, setPwdMsg] = useState('')
   const [savingPwd, setSavingPwd] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('vestilib_resas_archivees')
+    if (stored) setResasArchivees(new Set(JSON.parse(stored)))
+  }, [])
+
+  const archiverResa = (id: string) => {
+    setResasArchivees(prev => {
+      const next = new Set(prev).add(id)
+      localStorage.setItem('vestilib_resas_archivees', JSON.stringify([...next]))
+      return next
+    })
+  }
+
+  const desarchiverResa = (id: string) => {
+    setResasArchivees(prev => {
+      const next = new Set(prev)
+      next.delete(id)
+      localStorage.setItem('vestilib_resas_archivees', JSON.stringify([...next]))
+      return next
+    })
+  }
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async firebaseUser => {
@@ -200,6 +224,8 @@ export default function ProfilPage() {
   const isHote = !!hostData
   const resasActives = mesResas.filter(r => r.status !== 'paid')
   const resasPayees = mesResas.filter(r => r.status === 'paid')
+  const resasPayeesVisibles = resasPayees.filter(r => !resasArchivees.has(r.id))
+  const resasPayeesArchivees = resasPayees.filter(r => resasArchivees.has(r.id))
 
   const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
     paid: { label: 'Confirmee', color: 'text-emerald-700', bg: 'bg-emerald-50', dot: 'bg-emerald-500' },
@@ -353,16 +379,40 @@ export default function ProfilPage() {
               </section>
             )}
 
+
+
             {/* RESERVATIONS PAYEES */}
             {resasPayees.length > 0 && (
               <section>
-                <SectionTitle icon={
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-                  </svg>
-                } label="Reservations confirmees" />
+                <div className="flex items-center justify-between px-1 mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#1A3A6B]/50">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                      </svg>
+                    </span>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Reservations confirmees</p>
+                  </div>
+                  {resasPayeesArchivees.length > 0 && (
+                    <button onClick={() => setShowArchivees(!showArchivees)}
+                      className="text-xs text-gray-400 hover:text-[#1A3A6B] transition-colors flex items-center gap-1">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+                        <line x1="10" y1="12" x2="14" y2="12"/>
+                      </svg>
+                      {showArchivees ? 'Masquer' : `Archivees (${resasPayeesArchivees.length})`}
+                    </button>
+                  )}
+                </div>
+
                 <div className="space-y-3">
-                  {resasPayees.map(r => (
+                  {resasPayeesVisibles.length === 0 && !showArchivees && (
+                    <div className="bg-white rounded-2xl border border-gray-100 p-4 text-center shadow-sm">
+                      <p className="text-xs text-gray-400">Toutes vos reservations sont archivees</p>
+                    </div>
+                  )}
+
+                  {resasPayeesVisibles.map(r => (
                     <div key={r.id} className="bg-white rounded-2xl border border-emerald-100 overflow-hidden shadow-sm">
                       <div className="h-1 w-full bg-emerald-500" />
                       <div className="p-4">
@@ -376,10 +426,18 @@ export default function ProfilPage() {
                               </p>
                             )}
                           </div>
-                          <span className="text-sm font-bold text-emerald-700">{r.totalAmount} EUR</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-emerald-700">{r.totalAmount} EUR</span>
+                            <button onClick={() => archiverResa(r.id)}
+                              title="Archiver cette reservation"
+                              className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                                <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+                                <line x1="10" y1="12" x2="14" y2="12"/>
+                              </svg>
+                            </button>
+                          </div>
                         </div>
-
-                        {/* Coordonnees hote */}
                         {(r.hostEmail || r.hostTelephone) && (
                           <div className="bg-[#1A3A6B]/5 rounded-xl p-3 border border-[#1A3A6B]/10">
                             <p className="text-xs font-bold text-[#1A3A6B] mb-2 flex items-center gap-1.5">
@@ -406,6 +464,32 @@ export default function ProfilPage() {
                             </div>
                           </div>
                         )}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* ARCHIVEES */}
+                  {showArchivees && resasPayeesArchivees.map(r => (
+                    <div key={r.id} className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden opacity-60">
+                      <div className="p-4 flex items-center justify-between">
+                        <div>
+                          <p className="font-mono font-bold text-gray-500 text-sm">{r.bookingCode}</p>
+                          {r.date && (
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {new Date(r.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400">{r.totalAmount} EUR</span>
+                          <button onClick={() => desarchiverResa(r.id)}
+                            title="Restaurer"
+                            className="w-7 h-7 rounded-lg bg-white border border-gray-200 hover:border-[#1A3A6B] flex items-center justify-center transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
+                              <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.76"/>
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
