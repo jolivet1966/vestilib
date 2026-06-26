@@ -83,7 +83,7 @@ export default function MapPage() {
           position, map: mapInstance.current, title: `${host.prenom} ${host.nom}`,
           icon: {
             path: window.google.maps.SymbolPath.CIRCLE,
-            scale: 14,
+            scale: 8,
             fillColor: '#1A3A6B',
             fillOpacity: 1,
             strokeColor: '#F5C84A',
