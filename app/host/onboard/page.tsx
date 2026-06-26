@@ -73,16 +73,12 @@ export default function OnboardHostPage() {
     return () => unsub()
   }, [])
 
-  // Charger Google Maps et initialiser autocomplete
- useEffect(() => {
+  useEffect(() => {
     if (etape !== 1) return
-    
     const init = () => {
       if (!adresseRef.current) return
       if (!window.google?.maps?.places) return
-      
       if (autocompleteRef.current) return
-      
       autocompleteRef.current = new window.google.maps.places.Autocomplete(adresseRef.current, {
         types: ['address'],
         componentRestrictions: { country: 'fr' },
@@ -103,7 +99,6 @@ export default function OnboardHostPage() {
         setVille(vil)
       })
     }
-
     if (window.google?.maps?.places) {
       setTimeout(init, 100)
     } else {
@@ -113,61 +108,43 @@ export default function OnboardHostPage() {
       script.onload = () => setTimeout(init, 100)
       document.head.appendChild(script)
     }
-  }, [etape]) 
+  }, [etape])
 
   const togglePrestation = (id: string) => {
-    setPrestations(prev =>
-      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
-    )
+    setPrestations(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id])
   }
 
   const updateHoraire = (jour: string, field: keyof JourHoraire, value: string | boolean) => {
-    setHoraires(prev => ({
-      ...prev,
-      [jour]: { ...prev[jour as keyof Horaires], [field]: value },
-    }))
+    setHoraires(prev => ({ ...prev, [jour]: { ...prev[jour as keyof Horaires], [field]: value } }))
   }
 
   const validerEtape1 = () => {
     if (!prenom || !nom || !email || !telephone || !adresse || !codePostal || !ville) {
-      setError('Veuillez remplir tous les champs.')
-      return
+      setError('Veuillez remplir tous les champs.'); return
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Email invalide.')
-      return
+      setError('Email invalide.'); return
     }
     if (!dejaConnecte) {
       if (!password || password.length < 6) {
-        setError('Le mot de passe doit contenir au moins 6 caracteres.')
-        return
+        setError('Le mot de passe doit contenir au moins 6 caracteres.'); return
       }
       if (password !== password2) {
-        setError('Les mots de passe ne correspondent pas.')
-        return
+        setError('Les mots de passe ne correspondent pas.'); return
       }
     }
-    setError('')
-    setEtape(2)
+    setError(''); setEtape(2)
   }
 
   const validerEtape2 = () => {
     const jourOuvert = JOURS.some(j => horaires[j].ouvert)
-    if (!jourOuvert) {
-      setError("Selectionnez au moins un jour d ouverture.")
-      return
-    }
-    setError('')
-    setEtape(3)
+    if (!jourOuvert) { setError("Selectionnez au moins un jour d ouverture."); return }
+    setError(''); setEtape(3)
   }
 
   const soumettre = async () => {
-    if (prestations.length === 0) {
-      setError('Selectionnez au moins une prestation.')
-      return
-    }
-    setError('')
-    setLoading(true)
+    if (prestations.length === 0) { setError('Selectionnez au moins une prestation.'); return }
+    setError(''); setLoading(true)
     try {
       const res = await fetch('/api/onboard-host', {
         method: 'POST',
@@ -178,8 +155,7 @@ export default function OnboardHostPage() {
           horaires, prestations,
           capaciteMax, capaciteMaxMoto, capaciteMaxVelo, capaciteMaxDepot,
           existingUid: existingUid ?? undefined,
-          modeReservation,
-          typeCompte,
+          modeReservation, typeCompte,
         }),
       })
       const data = await res.json()
@@ -187,9 +163,7 @@ export default function OnboardHostPage() {
       window.location.href = data.onboardingUrl
     } catch {
       setError('Erreur reseau. Verifiez votre connexion.')
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
 
   if (checkingAuth) return (
@@ -232,11 +206,11 @@ export default function OnboardHostPage() {
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
 
+          {/* ETAPE 1 */}
           {etape === 1 && (
             <div>
               <h2 className="text-base font-semibold text-gray-900 mb-5">Vos informations</h2>
               <div className="space-y-4">
-
                 <div className="mb-2">
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Vous etes</label>
                   <div className="grid grid-cols-2 gap-2">
@@ -252,44 +226,31 @@ export default function OnboardHostPage() {
                     </button>
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Prenom" value={prenom} onChange={setPrenom} placeholder="Jean" />
                   <Field label="Nom" value={nom} onChange={setNom} placeholder="Dupont" />
                 </div>
-
                 {dejaConnecte ? (
                   <div>
                     <label className="text-xs text-gray-500 block mb-1">Email</label>
-                    <div className="w-full border border-gray-100 bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-gray-500">
-                      {email}
-                    </div>
+                    <div className="w-full border border-gray-100 bg-gray-50 rounded-lg px-3 py-2.5 text-sm text-gray-500">{email}</div>
                   </div>
                 ) : (
                   <Field label="Email" value={email} onChange={setEmail} placeholder="jean@email.com" type="email" />
                 )}
-
                 <Field label="Telephone" value={telephone} onChange={setTelephone} placeholder="06 12 34 56 78" type="tel" />
-
                 {!dejaConnecte && (
                   <>
                     <Field label="Mot de passe" value={password} onChange={setPassword} placeholder="Minimum 6 caracteres" type="password" />
                     <Field label="Confirmer mot de passe" value={password2} onChange={setPassword2} placeholder="Repetez le mot de passe" type="password" />
                   </>
                 )}
-
                 <div>
                   <label className="text-xs text-gray-500 block mb-1">Adresse (saisir pour autocompletion)</label>
-                  <input
-                    ref={adresseRef}
-                    type="text"
-                    value={adresse}
-                    onChange={e => setAdresse(e.target.value)}
+                  <input ref={adresseRef} type="text" value={adresse} onChange={e => setAdresse(e.target.value)}
                     placeholder="12 rue de la Paix, Montpellier..."
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors"
-                  />
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
                 </div>
-
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-gray-500 block mb-1">Code postal</label>
@@ -304,7 +265,6 @@ export default function OnboardHostPage() {
                       className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
                   </div>
                 </div>
-
               </div>
               {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
               <button onClick={validerEtape1} className="mt-6 w-full bg-[#1A3A6B] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
@@ -313,30 +273,33 @@ export default function OnboardHostPage() {
             </div>
           )}
 
+          {/* ETAPE 2 — HORAIRES */}
           {etape === 2 && (
             <div>
-              <h2 className="text-base font-semibold text-gray-900 mb-5">Horaires d ouverture</h2>
-              <div className="space-y-3">
+              <h2 className="text-base font-semibold text-gray-900 mb-4">Horaires d ouverture</h2>
+              <div className="space-y-1">
                 {JOURS.map(jour => (
-                  <div key={jour} className="flex items-center gap-3">
-                    <div className="w-24 flex items-center gap-2">
+                  <div key={jour} className="py-2.5 border-b border-gray-50 last:border-0">
+                    <div className="flex items-center gap-2 mb-2">
                       <input type="checkbox" checked={horaires[jour].ouvert}
                         onChange={e => updateHoraire(jour, 'ouvert', e.target.checked)}
-                        className="w-4 h-4 accent-[#1A3A6B]" />
-                      <span className="text-sm text-gray-700 font-medium">{JOURS_LABELS[jour]}</span>
+                        className="w-4 h-4 accent-[#1A3A6B] flex-shrink-0" />
+                      <span className={`text-sm font-semibold ${horaires[jour].ouvert ? 'text-gray-800' : 'text-gray-400'}`}>
+                        {JOURS_LABELS[jour]}
+                      </span>
                     </div>
                     {horaires[jour].ouvert ? (
-                      <div className="flex items-center gap-2 flex-1">
+                      <div className="flex items-center gap-2 ml-6">
                         <input type="time" value={horaires[jour].ouverture}
                           onChange={e => updateHoraire(jour, 'ouverture', e.target.value)}
-                          className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-[#1A3A6B]" />
-                        <span className="text-gray-400 text-xs">-</span>
+                          className="flex-1 border border-gray-200 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
+                        <span className="text-gray-300 text-xs font-bold flex-shrink-0">—</span>
                         <input type="time" value={horaires[jour].fermeture}
                           onChange={e => updateHoraire(jour, 'fermeture', e.target.value)}
-                          className="flex-1 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                          className="flex-1 border border-gray-200 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
                       </div>
                     ) : (
-                      <span className="text-xs text-gray-400 italic">Ferme</span>
+                      <p className="text-xs text-gray-300 italic ml-6">Ferme</p>
                     )}
                   </div>
                 ))}
@@ -353,6 +316,7 @@ export default function OnboardHostPage() {
             </div>
           )}
 
+          {/* ETAPE 3 — PRESTATIONS */}
           {etape === 3 && (
             <div>
               <h2 className="text-base font-semibold text-gray-900 mb-1">Vos prestations</h2>
@@ -377,7 +341,7 @@ export default function OnboardHostPage() {
                                 <p className="text-xs text-gray-400">{tarif.description}</p>
                               </div>
                             </div>
-                            <span className={`text-sm font-semibold ${tarif.prix < 0 ? 'text-green-600' : 'text-[#1A3A6B]'}`}>
+                            <span className={`text-sm font-semibold flex-shrink-0 ml-2 ${tarif.prix < 0 ? 'text-green-600' : 'text-[#1A3A6B]'}`}>
                               {tarif.prix < 0 ? `-${Math.abs(tarif.prix)}` : `${tarif.prix}`}EUR
                             </span>
                           </label>
@@ -414,7 +378,6 @@ export default function OnboardHostPage() {
                 )}
               </div>
 
-              {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
               <div className="mt-5 border-t border-gray-100 pt-5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-3">
                   Mode de reservation
@@ -432,12 +395,15 @@ export default function OnboardHostPage() {
                   </button>
                 </div>
               </div>
+
               {typeCompte === 'individual' && (
-  <div className="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-4">
-    <p className="text-xs text-blue-800 font-medium mb-1">ℹ️ Information importante</p>
-    <p className="text-xs text-blue-600">Dans le formulaire Stripe qui suit, vous verrez des champs "entreprise" et "site web" pré-remplis. En tant que particulier, vous n'êtes pas concerné — ces informations sont obligatoires techniquement mais ne vous affectent pas.</p>
-  </div>
-)}
+                <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <p className="text-xs text-blue-800 font-medium mb-1">Information importante</p>
+                  <p className="text-xs text-blue-600">Dans le formulaire Stripe qui suit, vous verrez des champs entreprise et site web pre-remplis. En tant que particulier, vous n etes pas concerne — ces informations sont obligatoires techniquement mais ne vous affectent pas.</p>
+                </div>
+              )}
+
+              {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
               <div className="mt-6 flex gap-3">
                 <button onClick={() => setEtape(2)} className="flex-1 border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors">
                   Retour
