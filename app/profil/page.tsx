@@ -209,7 +209,8 @@ export default function ProfilPage() {
     try {
       try { await deleteDoc(doc(db, 'users', userData.id)) } catch {}
       if (hostId) {
-        await updateDoc(doc(db, 'hosts', hostId), { visible: false, ouvert: false, compteSuprime: true, email: '' })
+if (hostId) {
+        await deleteDoc(doc(db, 'hosts', hostId))
       }
       await firebaseUser.delete()
       router.push('/?compte=supprime')
