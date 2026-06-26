@@ -24,17 +24,52 @@ export async function POST(req: NextRequest) {
 
   let event: Stripe.Event
 
-  try {
+  const [showDeconst [showDelete, setShowDelete] = useState(false)
+  const archivesRef = useRef<HTMLDivElement>(null)lete, setShowDelete] = useState(false)
+    })
+  }
+
+  const desarchiverResa = (id: string) => {
+    setResasArchivees(prev => {
+      const next = new Set(prev)
+      next.delete(id)
+      localStorage.setItem('vestilib_resas_archivees', JSON.stringify(Array.from(next)))
+      return next
+    })
+  }     const archiverResa = (id: string) => {
+    setResasArchivees(prev => {
+      const next = new Set(prev).add(id)
+      localStorage.setItem('vestilib_resas_archivees', JSON.stringify(Array.from(next)))
+      return next
+    })
+  }
+
+  const desarchiverResa = (id: string) => {
+    setResasArchivees(prev => {
+    if (hostId) {
+        await deleteDoc(doc(db, 'hosts', hostId))
+     try {
     const { stripe } = await import('@/lib/stripe')
+    const secret = process.env.STRIPE_WEBHOOK_SECRET!
+    const secretConnect = process.env.STRIPE_WEBHOOK_SECRET_CONNECT
     try {
-      event = stripe.webhooks.constructEvent(payload, signature, process.env.STRIPE_WEBHOOK_SECRET!)
+      event = stripe.webhooks.constructEvent(payload, signature, secret)
     } catch {
-      event = stripe.webhooks.constructEvent(payload, signature, process.env.STRIPE_WEBHOOK_SECRET_CONNECT!)
+      if (!secretConnect) {
+        console.error('[webhook] STRIPE_WEBHOOK_SECRET_CONNECT manquant')
+        return NextResponse.json({ error: 'Config manquante' }, { status: 400 })
+      }
+      event = stripe.webhooks.constructEvent(payload, signature, secretConnect)
     }
   } catch (err: any) {
     console.error('[webhook] Signature invalide:', err.message)
     return NextResponse.json({ error: 'Signature invalide' }, { status: 400 })
-  }
+  } }  const next = new Set(prev)
+      next.delete(id)
+      localStorage.setItem('vestilib_resas_archivees', JSON.stringify(Array.from(next)))
+      return next
+    })
+  }       onClick={() => setSelectedHost(isSelected ? null : host)}
 
   try {
     const { adminDb } = await import('@/lib/firebase-admin')
