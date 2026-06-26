@@ -208,36 +208,9 @@ export default function ProfilPage() {
     if (!firebaseUser || !userData) return
     try {
       try { await deleteDoc(doc(db, 'users', userData.id)) } catch {}
-      const [showDeconst [showDelete, setShowDelete] = useState(false)
-  const archivesRef = useRef<HTMLDivElement>(null)lete, setShowDelete] = useState(false)
-    })
-  }
-
-  const desarchiverResa = (id: string) => {
-    setResasArchivees(prev => {
-      const next = new Set(prev)
-      next.delete(id)
-      localStorage.setItem('vestilib_resas_archivees', JSON.stringify(Array.from(next)))
-      return next
-    })
-  }     const archiverResa = (id: string) => {
-    setResasArchivees(prev => {
-      const next = new Set(prev).add(id)
-      localStorage.setItem('vestilib_resas_archivees', JSON.stringify(Array.from(next)))
-      return next
-    })
-  }
-
-  const desarchiverResa = (id: string) => {
-    setResasArchivees(prev => {
-    if (hostId) {
-        await deleteDoc(doc(db, 'hosts', hostId))
-      }  const next = new Set(prev)
-      next.delete(id)
-      localStorage.setItem('vestilib_resas_archivees', JSON.stringify(Array.from(next)))
-      return next
-    })
-  }       onClick={() => setSelectedHost(isSelected ? null : host)}
+      if (hostId) {
+        try { await deleteDoc(doc(db, 'hosts', hostId)) } catch {}
+      }
       await firebaseUser.delete()
       router.push('/?compte=supprime')
     } catch (e: any) {
