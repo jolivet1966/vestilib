@@ -24,31 +24,7 @@ export async function POST(req: NextRequest) {
 
   let event: Stripe.Event
 
-  const [showDeconst [showDelete, setShowDelete] = useState(false)
-  const archivesRef = useRef<HTMLDivElement>(null)lete, setShowDelete] = useState(false)
-    })
-  }
-
-  const desarchiverResa = (id: string) => {
-    setResasArchivees(prev => {
-      const next = new Set(prev)
-      next.delete(id)
-      localStorage.setItem('vestilib_resas_archivees', JSON.stringify(Array.from(next)))
-      return next
-    })
-  }     const archiverResa = (id: string) => {
-    setResasArchivees(prev => {
-      const next = new Set(prev).add(id)
-      localStorage.setItem('vestilib_resas_archivees', JSON.stringify(Array.from(next)))
-      return next
-    })
-  }
-
-  const desarchiverResa = (id: string) => {
-    setResasArchivees(prev => {
-    if (hostId) {
-        await deleteDoc(doc(db, 'hosts', hostId))
-     try {
+  try {
     const { stripe } = await import('@/lib/stripe')
     const secret = process.env.STRIPE_WEBHOOK_SECRET!
     const secretConnect = process.env.STRIPE_WEBHOOK_SECRET_CONNECT
@@ -64,12 +40,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error('[webhook] Signature invalide:', err.message)
     return NextResponse.json({ error: 'Signature invalide' }, { status: 400 })
-  } }  const next = new Set(prev)
-      next.delete(id)
-      localStorage.setItem('vestilib_resas_archivees', JSON.stringify(Array.from(next)))
-      return next
-    })
-  }       onClick={() => setSelectedHost(isSelected ? null : host)}
+  }
 
   try {
     const { adminDb } = await import('@/lib/firebase-admin')
@@ -97,12 +68,11 @@ export async function POST(req: NextRequest) {
             stripePaymentIntentId: session.payment_intent ?? null,
           })
 
-          console.log(`[webhook] Booking payé : ${bookingDoc.id} (${bookingCode})`)
+          console.log(`[webhook] Booking paye : ${bookingDoc.id} (${bookingCode})`)
 
           const hostDoc = await adminDb.collection('hosts').doc(bookingData.hostId).get()
           const host    = hostDoc.data()
 
-          // Emails
           try {
             const { sendConfirmationUser, sendNotificationHote } = await import('@/lib/emails')
 
@@ -117,7 +87,7 @@ export async function POST(req: NextRequest) {
                 date:        bookingData.date ?? null,
                 creneau:     bookingData.creneau ?? null,
               })
-              console.log(`[webhook] Email utilisateur envoyé à ${bookingData.customerEmail}`)
+              console.log(`[webhook] Email utilisateur envoye a ${bookingData.customerEmail}`)
             }
 
             if (host?.email) {
@@ -131,32 +101,31 @@ export async function POST(req: NextRequest) {
                 date:          bookingData.date ?? null,
                 creneau:       bookingData.creneau ?? null,
               })
-              console.log(`[webhook] Email hôte envoyé à ${host.email}`)
+              console.log(`[webhook] Email hote envoye a ${host.email}`)
             }
           } catch (emailErr: any) {
             console.error('[webhook] Erreur envoi email:', emailErr.message)
           }
 
-          // Notifications push
           if (bookingData.customerEmail) {
             await sendPush({
               userEmail: bookingData.customerEmail,
-              title: '✅ Réservation confirmée',
-              body:  `Votre réservation ${bookingCode} est confirmée !`,
+              title: 'Reservation confirmee',
+              body:  `Votre reservation ${bookingCode} est confirmee !`,
               url:   `${APP_URL}/profil`,
             })
           }
           if (host?.email) {
             await sendPush({
               userEmail: host.email,
-              title: '🔔 Nouvelle réservation',
-              body:  `Vous avez reçu une nouvelle réservation (${bookingCode}).`,
+              title: 'Nouvelle reservation',
+              body:  `Vous avez recu une nouvelle reservation (${bookingCode}).`,
               url:   `${APP_URL}/host/dashboard`,
             })
           }
 
         } else {
-          console.warn(`[webhook] Aucune booking trouvée pour session ${session.id}`)
+          console.warn(`[webhook] Aucune booking trouvee pour session ${session.id}`)
         }
         break
       }
@@ -176,18 +145,18 @@ export async function POST(req: NextRequest) {
             status:    'expired',
             expiredAt: new Date(),
           })
-          console.log(`[webhook] Session expirée : booking ${snap.docs[0].id}`)
+          console.log(`[webhook] Session expiree : booking ${snap.docs[0].id}`)
 
           if (bookingData.customerEmail) {
             await sendPush({
               userEmail: bookingData.customerEmail,
-              title: '⏱ Session expirée',
-              body:  'Votre session de paiement a expiré. Vous pouvez réessayer.',
+              title: 'Session expiree',
+              body:  'Votre session de paiement a expire. Vous pouvez reessayer.',
               url:   `${APP_URL}/map`,
             })
           }
         } else {
-          console.warn(`[webhook] Aucune booking trouvée pour session expirée ${session.id}`)
+          console.warn(`[webhook] Aucune booking trouvee pour session expiree ${session.id}`)
         }
         break
       }
@@ -217,7 +186,7 @@ export async function POST(req: NextRequest) {
             stripePaymentIntentId: pi.id,
             failureMessage:        pi.last_payment_error?.message ?? null,
           })
-          console.log(`[webhook] Paiement échoué : booking ${snap.docs[0].id}`)
+          console.log(`[webhook] Paiement echoue : booking ${snap.docs[0].id}`)
         }
         break
       }
@@ -237,7 +206,7 @@ export async function POST(req: NextRequest) {
             stripePayoutsEnabled:     account.payouts_enabled ?? false,
             visible:                  account.payouts_enabled ?? false,
           })
-          console.log(`[webhook] Compte hôte mis à jour : ${account.id}`)
+          console.log(`[webhook] Compte hote mis a jour : ${account.id}`)
         }
         break
       }
@@ -253,12 +222,12 @@ export async function POST(req: NextRequest) {
           status:          'paid',
           createdAt:       new Date(),
         })
-        console.log(`[webhook] Virement enregistré : ${payout.id}`)
+        console.log(`[webhook] Virement enregistre : ${payout.id}`)
         break
       }
 
       default:
-        console.log(`[webhook] Événement ignoré : ${event.type}`)
+        console.log(`[webhook] Evenement ignore : ${event.type}`)
     }
 
   } catch (err: any) {
