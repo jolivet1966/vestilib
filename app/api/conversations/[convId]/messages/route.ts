@@ -1,15 +1,15 @@
-// app/api/conversations/[id]/messages/route.ts
+// app/api/conversations/[convId]/messages/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/firebase-admin'
 
 // GET — récupérer les messages d'une conversation
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { convId: string } }) {
   try {
-    const { id } = params
+    const { convId } = params
     const { searchParams } = new URL(req.url)
     const role = searchParams.get('role')
 
-    const snap = await adminDb.collection('conversations').doc(id)
+    const snap = await adminDb.collection('conversations').doc(convId)
       .collection('messages').orderBy('createdAt', 'asc').get()
 
     const messages = snap.docs.map(d => ({
@@ -20,9 +20,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     // Marquer comme lu selon le rôle
     if (role === 'client') {
-      await adminDb.collection('conversations').doc(id).update({ luClient: true })
+      await adminDb.collection('conversations').doc(convId).update({ luClient: true })
     } else if (role === 'hote') {
-      await adminDb.collection('conversations').doc(id).update({ luHote: true })
+      await adminDb.collection('conversations').doc(convId).update({ luHote: true })
     }
 
     return NextResponse.json({ messages })
@@ -32,9 +32,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // POST — envoyer un message dans une conversation
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { convId: string } }) {
   try {
-    const { id } = params
+    const { convId } = params
     const { texte, auteur, clientNom } = await req.json()
 
     if (!texte || !auteur) {
@@ -46,19 +46,19 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const regexEmail = /[^\s@]+@[^\s@]+\.[^\s@]+/
     if (regexTel.test(texte) || regexEmail.test(texte)) {
       return NextResponse.json(
-        { error: 'Les coordonnées personnelles ne sont pas autorisées avant confirmation de réservation.' },
+        { error: 'Les coordonnees personnelles ne sont pas autorisees avant confirmation de reservation.' },
         { status: 400 }
       )
     }
 
-    const convDoc = await adminDb.collection('conversations').doc(id).get()
+    const convDoc = await adminDb.collection('conversations').doc(convId).get()
     if (!convDoc.exists) {
       return NextResponse.json({ error: 'Conversation introuvable' }, { status: 404 })
     }
     const conv = convDoc.data()!
 
     // Ajouter le message
-    await adminDb.collection('conversations').doc(id)
+    await adminDb.collection('conversations').doc(convId)
       .collection('messages').add({
         texte,
         auteur,
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       })
 
     // Mettre à jour la conversation
-    await adminDb.collection('conversations').doc(id).update({
+    await adminDb.collection('conversations').doc(convId).update({
       updatedAt: new Date(),
       luHote: auteur === 'client' ? false : conv.luHote,
       luClient: auteur === 'hote' ? false : conv.luClient,
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       await sendReponseClient({
         to: conv.clientEmail,
         fromPrenom: host.prenom,
-        sujet: 'Réponse à votre message',
+        sujet: 'Reponse a votre message',
         reponse: texte,
         hostId: conv.hostId,
       })
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         fromNom: conv.clientNom,
         sujet: 'Nouveau message',
         message: texte,
-        messageId: id,
+        messageId: convId,
       })
     }
 
