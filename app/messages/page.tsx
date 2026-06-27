@@ -367,6 +367,10 @@ function MessagesContent() {
         {/* ===== LISTE DES CONVERSATIONS ===== */}
         {!selectedConvId && !showNewConv && (
           <div className="space-y-2">
+            {/* Bandeau réservations en attente */}
+            {hostId && (
+              <ResaBandeauHote hostId={hostId} />
+            )}
             {conversations.length === 0 ? (
               <div className="bg-white rounded-2xl p-10 text-center border border-gray-100 shadow-sm">
                 <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
@@ -430,7 +434,33 @@ function MessagesContent() {
     </div>
   )
 }
-
+function ResaBandeauHote({ hostId }: { hostId: string }) {
+  const [nb, setNb] = useState(0)
+  useEffect(() => {
+    import('firebase/firestore').then(({ collection, query, where, onSnapshot }) => {
+      import('@/lib/firebase').then(({ db }) => {
+        const q = query(collection(db, 'bookings'), where('hostId', '==', hostId), where('status', '==', 'awaiting_approval'))
+        return onSnapshot(q, snap => setNb(snap.size))
+      })
+    })
+  }, [hostId])
+  if (nb === 0) return null
+  return (
+    <a href="/host/dashboard"
+      className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4 hover:bg-amber-100 transition-colors">
+      <span className="text-xl flex-shrink-0">🔔</span>
+      <div className="flex-1">
+        <p className="text-sm font-bold text-amber-800">
+          {nb} demande{nb > 1 ? 's' : ''} de reservation en attente
+        </p>
+        <p className="text-xs text-amber-600 mt-0.5">Rendez-vous dans votre espace hote pour traiter</p>
+      </div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2" className="flex-shrink-0">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </a>
+  )
+}
 export default function MessagesPage() {
   return (
     <Suspense fallback={
