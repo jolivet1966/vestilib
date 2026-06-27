@@ -115,15 +115,6 @@ function MessagesContent() {
     } catch {}
   }
 
-  const supprimerMessage = async (messageId: string) => {
-    if (!selectedConvId) return
-    if (!window.confirm('Supprimer ce message ?')) return
-    try {
-      await fetch(`/api/conversations/${selectedConvId}/messages/${messageId}`, { method: 'DELETE' })
-      setMessages(prev => prev.filter(m => m.id !== messageId))
-    } catch {}
-  }
-
   const envoyerNouveauMessage = async () => {
     if (!texte || !selectedHostId || !userEmail) return
     setSending(true); setError('')
