@@ -39,6 +39,7 @@ function MessagesContent() {
   const [selectedHostId, setSelectedHostId] = useState(hostIdParam ?? '')
   const [filtreDepart, setFiltreDepart] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const conversationsRef = useRef<Conversation[]>([])
 
   const chargerConversations = async (email: string, hId: string | null) => {
     const toutes: Conversation[] = []
@@ -55,7 +56,9 @@ function MessagesContent() {
       })
     }
     toutes.sort((a, b) => (b.updatedAt?.seconds ?? 0) - (a.updatedAt?.seconds ?? 0))
+    conversationsRef.current = toutes
     setConversations(toutes)
+    return toutes
   }
 
   useEffect(() => {
@@ -79,16 +82,16 @@ function MessagesContent() {
   useEffect(() => {
     if (!selectedConvId) return
     const load = async () => {
-      const conv = conversations.find(c => c.id === selectedConvId)
+      const conv = conversationsRef.current.find(c => c.id === selectedConvId)
       const role = conv?.monRole ?? 'client'
       // Marquer comme lu
-      if (selectedConvId) {
+      try {
         await fetch(`/api/conversations/${selectedConvId}/lu`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role }),
         })
-      }
+      } catch {}
       const res = await fetch(`/api/conversations/${selectedConvId}/messages?role=${role}`)
       const data = await res.json()
       setMessages(data.messages ?? [])
@@ -116,8 +119,8 @@ function MessagesContent() {
       if (!res.ok) { setError(data.error ?? 'Erreur'); return }
       setTexte('')
       setShowNewConv(false)
-      setSelectedConvId(data.convId)
       await chargerConversations(userEmail, hostId)
+      setSelectedConvId(data.convId)
     } catch { setError('Erreur reseau.') }
     finally { setSending(false) }
   }
@@ -126,7 +129,7 @@ function MessagesContent() {
     if (!texte || !selectedConvId || !userEmail) return
     setSending(true); setError('')
     try {
-      const conv = conversations.find(c => c.id === selectedConvId)
+      const conv = conversationsRef.current.find(c => c.id === selectedConvId)
       const auteur = conv?.monRole ?? 'client'
       const res = await fetch(`/api/conversations/${selectedConvId}/messages`, {
         method: 'POST',
@@ -136,8 +139,7 @@ function MessagesContent() {
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? 'Erreur'); return }
       setTexte('')
-      const conv2 = conversations.find(c => c.id === selectedConvId)
-      const res2 = await fetch(`/api/conversations/${selectedConvId}/messages?role=${conv2?.monRole ?? 'client'}`)
+      const res2 = await fetch(`/api/conversations/${selectedConvId}/messages?role=${auteur}`)
       const data2 = await res2.json()
       setMessages(data2.messages ?? [])
       await chargerConversations(userEmail, hostId)
@@ -154,7 +156,7 @@ function MessagesContent() {
     </div>
   )
 
-  const convActive = conversations.find(c => c.id === selectedConvId)
+  const convActive = conversationsRef.current.find(c => c.id === selectedConvId)
   const interlocuteur = convActive?.monRole === 'hote' ? convActive?.clientNom : convActive?.hostNom
   const initiales = (nom: string) => nom?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) ?? '?'
   const nbNonLus = conversations.filter(c => c.monRole === 'hote' ? !c.luHote : !c.luClient).length
@@ -232,7 +234,6 @@ function MessagesContent() {
         {showNewConv && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="p-5 space-y-4">
-
               <div>
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">
                   Filtrer par departement
@@ -245,7 +246,6 @@ function MessagesContent() {
                   ))}
                 </select>
               </div>
-
               <div>
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">
                   Choisir un hote
@@ -258,7 +258,6 @@ function MessagesContent() {
                   ))}
                 </select>
               </div>
-
               <div>
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">
                   Votre message
@@ -268,13 +267,11 @@ function MessagesContent() {
                   rows={4}
                   className="w-full border border-gray-200 rounded-xl px-3.5 py-3 text-sm focus:outline-none focus:border-[#1A3A6B] focus:ring-1 focus:ring-[#1A3A6B]/20 resize-none transition-all" />
               </div>
-
               {error && (
                 <div className="bg-red-50 border border-red-100 rounded-xl px-3 py-2">
                   <p className="text-xs text-red-600">{error}</p>
                 </div>
               )}
-
               <div className="flex gap-2 pt-1">
                 <button onClick={() => setShowNewConv(false)}
                   className="flex-1 border border-gray-200 text-gray-600 font-medium py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors">
@@ -296,8 +293,6 @@ function MessagesContent() {
         {/* ===== VUE CONVERSATION ===== */}
         {selectedConvId && !showNewConv && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-
-            {/* Messages */}
             <div className="p-4 space-y-3 overflow-y-auto" style={{ maxHeight: 'calc(100dvh - 280px)', minHeight: '300px' }}>
               {messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-32 text-gray-300">
@@ -331,9 +326,7 @@ function MessagesContent() {
                       )}
                       <div className={`max-w-[75%] ${isMine ? 'items-end' : 'items-start'} flex flex-col`}>
                         <div className={`rounded-2xl px-4 py-2.5 ${
-                          isMine
-                            ? 'bg-[#1A3A6B] text-white rounded-br-sm'
-                            : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                          isMine ? 'bg-[#1A3A6B] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                         }`}>
                           <p className="text-sm leading-relaxed">{msg.texte}</p>
                         </div>
@@ -347,8 +340,6 @@ function MessagesContent() {
               })}
               <div ref={messagesEndRef} />
             </div>
-
-            {/* Zone de saisie */}
             <div className="p-3 border-t border-gray-100 bg-gray-50/50">
               {error && <p className="text-xs text-red-600 mb-2 px-1">{error}</p>}
               <div className="flex items-end gap-2">
@@ -403,13 +394,9 @@ function MessagesContent() {
                     nonLu ? 'border-[#1A3A6B]/20 shadow-md' : 'border-gray-100 shadow-sm hover:border-gray-200'
                   }`}>
                   <div className="p-4 flex items-center gap-3">
-
-                    {/* Avatar */}
                     <div className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 font-bold text-sm ${couleurAvatar}`}>
                       {initiales(nom)}
                     </div>
-
-                    {/* Contenu */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-0.5">
                         <p className={`text-sm truncate ${nonLu ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'}`}>
@@ -424,14 +411,11 @@ function MessagesContent() {
                         {nonLu && <span className="w-2 h-2 bg-[#1A3A6B] rounded-full flex-shrink-0" />}
                       </div>
                       <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full mt-1 inline-block ${
-                        conv.monRole === 'hote'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-[#1A3A6B]/8 text-[#1A3A6B]'
+                        conv.monRole === 'hote' ? 'bg-emerald-100 text-emerald-700' : 'bg-[#1A3A6B]/8 text-[#1A3A6B]'
                       }`}>
                         {conv.monRole === 'hote' ? 'Hote' : 'Client'}
                       </span>
                     </div>
-
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" className="flex-shrink-0">
                       <path d="M9 18l6-6-6-6"/>
                     </svg>
