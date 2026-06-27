@@ -82,11 +82,13 @@ function MessagesContent() {
       const conv = conversations.find(c => c.id === selectedConvId)
       const role = conv?.monRole ?? 'client'
       // Marquer comme lu
-      await fetch(`/api/conversations/${selectedConvId}/lu`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role }),
-      })
+      if (selectedConvId) {
+        await fetch(`/api/conversations/${selectedConvId}/lu`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role }),
+        })
+      }
       const res = await fetch(`/api/conversations/${selectedConvId}/messages?role=${role}`)
       const data = await res.json()
       setMessages(data.messages ?? [])
