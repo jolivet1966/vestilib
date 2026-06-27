@@ -106,6 +106,24 @@ function MessagesContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  const supprimerMessage = async (messageId: string) => {
+    if (!selectedConvId) return
+    if (!window.confirm('Supprimer ce message ?')) return
+    try {
+      await fetch(`/api/conversations/${selectedConvId}/messages/${messageId}`, { method: 'DELETE' })
+      setMessages(prev => prev.filter(m => m.id !== messageId))
+    } catch {}
+  }
+
+  const supprimerMessage = async (messageId: string) => {
+    if (!selectedConvId) return
+    if (!window.confirm('Supprimer ce message ?')) return
+    try {
+      await fetch(`/api/conversations/${selectedConvId}/messages/${messageId}`, { method: 'DELETE' })
+      setMessages(prev => prev.filter(m => m.id !== messageId))
+    } catch {}
+  }
+
   const envoyerNouveauMessage = async () => {
     if (!texte || !selectedHostId || !userEmail) return
     setSending(true); setError('')
@@ -330,9 +348,19 @@ function MessagesContent() {
                         }`}>
                           <p className="text-sm leading-relaxed">{msg.texte}</p>
                         </div>
-                        <p className="text-[10px] text-gray-300 mt-1 px-1">
-                          {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}
-                        </p>
+                        <div className="flex items-center gap-2 mt-1 px-1">
+                          <p className="text-[10px] text-gray-300">
+                            {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}
+                          </p>
+                          {isMine && (
+                            <button onClick={() => supprimerMessage(msg.id)}
+                              className="text-red-300 hover:text-red-500 transition-colors active:scale-95">
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                              </svg>
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
