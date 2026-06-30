@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
@@ -8,23 +8,28 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore'
 
 export default function NavBar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [badge, setBadge] = useState(0)
+  const [paiementEnAttente, setPaiementEnAttente] = useState(false)
 
   useEffect(() => {
     const unsubs: (() => void)[] = []
 
     const unsub = onAuthStateChanged(auth, async firebaseUser => {
-      // Annuler les anciens listeners
       unsubs.forEach(u => u())
       unsubs.length = 0
 
-      if (!firebaseUser) { setBadge(0); return }
+      if (!firebaseUser) { setBadge(0); setPaiementEnAttente(false); return }
 
       let clientCount = 0
       let hoteCount = 0
       let resaCount = 0
+      let paiementCount = 0
 
-      const updateBadge = () => setBadge(clientCount + hoteCount + resaCount)
+      const updateBadge = () => {
+        setBadge(clientCount + hoteCount + resaCount + paiementCount)
+        setPaiementEnAttente(paiementCount > 0)
+      }
 
       // Écouter conversations non lues en tant que client
       const clientUnsub = onSnapshot(
@@ -36,6 +41,16 @@ export default function NavBar() {
       )
       unsubs.push(clientUnsub)
 
+      // Écouter réservations acceptées en attente de paiement (côté client)
+      const paiementUnsub = onSnapshot(
+        query(collection(db, 'bookings'),
+          where('customerEmail', '==', firebaseUser.email),
+          where('status', '==', 'accepted')
+        ),
+        snap => { paiementCount = snap.size; updateBadge() }
+      )
+      unsubs.push(paiementUnsub)
+
       // Vérifier si hôte
       const { getDocs } = await import('firebase/firestore')
       const { collection: col, query: q, where: w } = await import('firebase/firestore')
@@ -44,7 +59,6 @@ export default function NavBar() {
       if (!hostSnap.empty) {
         const hostId = hostSnap.docs[0].id
 
-        // Écouter conversations non lues en tant qu'hôte
         const hoteUnsub = onSnapshot(
           query(collection(db, 'conversations'),
             where('hostId', '==', hostId),
@@ -54,7 +68,6 @@ export default function NavBar() {
         )
         unsubs.push(hoteUnsub)
 
-        // Écouter réservations en attente
         const resaUnsub = onSnapshot(
           query(collection(db, 'bookings'),
             where('hostId', '==', hostId),
@@ -74,6 +87,13 @@ export default function NavBar() {
       ? 'text-[#F5C84A] bg-[#1A3A6B]'
       : 'text-[#1A3A6B] hover:bg-gray-50'
 
+  const handleMessagesClick = (e: React.MouseEvent) => {
+    if (paiementEnAttente) {
+      e.preventDefault()
+      router.push('/profil')
+    }
+  }
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50">
       <div className="max-w-lg mx-auto grid grid-cols-3">
@@ -85,7 +105,8 @@ export default function NavBar() {
           <span className="text-[10px] font-medium">Rechercher</span>
         </Link>
 
-        <Link href="/messages" className={`relative flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}>
+        <Link href="/messages" onClick={handleMessagesClick}
+          className={`relative flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}>
           {badge > 0 && (
             <span className="absolute top-2 right-6 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[9px] font-bold">
               {badge}
