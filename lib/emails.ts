@@ -275,3 +275,70 @@ export async function sendReponseClient(params: {
     `,
   })
 }
+// ─── Email annulation par le client (notification hote) ─────────────
+export async function sendCancellationHote(params: {
+  to: string; hostPrenom: string; bookingCode: string
+  date?: string | null; creneau?: string | null
+}) {
+  const dateStr = params.date
+    ? new Date(params.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+    : null
+  await resend.emails.send({
+    from: FROM, to: params.to,
+    subject: `Reservation annulee — ${params.bookingCode}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
+        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
+          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
+          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Annulation de reservation</p>
+        </div>
+        <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
+          <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 4px;">Bonjour ${params.hostPrenom}</h2>
+          <p style="color:#666;font-size:14px;margin:0 0 20px;">Un client a annule sa reservation.</p>
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0;">Code</td><td style="padding:8px 0;text-align:right;font-weight:600;font-family:monospace;">${params.bookingCode}</td></tr>
+            ${dateStr ? `<tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0;">Date</td><td style="padding:8px 0;text-align:right;">${dateStr}</td></tr>` : ''}
+            ${params.creneau ? `<tr><td style="padding:8px 0;color:#666;">Creneau</td><td style="padding:8px 0;text-align:right;">${params.creneau}</td></tr>` : ''}
+          </table>
+        </div>
+        <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Aucun paiement n a ete effectue</p>
+      </div>
+    `,
+  })
+}
+
+// ─── Email annulation par l hote (notification client) ──────────────
+export async function sendCancellationClient(params: {
+  to: string; bookingCode: string
+  date?: string | null; creneau?: string | null
+}) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib.fr'
+  const dateStr = params.date
+    ? new Date(params.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+    : null
+  await resend.emails.send({
+    from: FROM, to: params.to,
+    subject: `Reservation annulee — ${params.bookingCode}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
+        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
+          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
+          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Annulation de reservation</p>
+        </div>
+        <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
+          <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 16px;">Votre reservation a ete annulee</h2>
+          <p style="color:#666;font-size:14px;margin:0 0 20px;">L hote a annule votre reservation. Aucun paiement n a ete effectue.</p>
+          <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;">
+            <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0;">Code</td><td style="padding:8px 0;text-align:right;font-weight:600;font-family:monospace;">${params.bookingCode}</td></tr>
+            ${dateStr ? `<tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0;">Date</td><td style="padding:8px 0;text-align:right;">${dateStr}</td></tr>` : ''}
+            ${params.creneau ? `<tr><td style="padding:8px 0;color:#666;">Creneau</td><td style="padding:8px 0;text-align:right;">${params.creneau}</td></tr>` : ''}
+          </table>
+          <a href="${appUrl}/map" style="display:block;background:#1A3A6B;color:#F5C84A;text-align:center;padding:14px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;">
+            Trouver un autre hote
+          </a>
+        </div>
+        <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Nous sommes desoles pour ce desagrement</p>
+      </div>
+    `,
+  })
+}
