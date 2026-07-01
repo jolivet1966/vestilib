@@ -77,6 +77,7 @@ export async function createCheckoutSession(params: {
     ],
     payment_intent_data: {
       application_fee_amount: commissionCents,
+      capture_method: 'manual',
       transfer_data: {
         destination: params.hostStripeAccountId,
       },

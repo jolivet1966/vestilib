@@ -62,9 +62,9 @@ export async function POST(req: NextRequest) {
           const bookingData = bookingDoc.data()
 
           await bookingDoc.ref.update({
-            status:                'paid',
+            status:                'authorized',
             bookingCode,
-            confirmedAt:           new Date(),
+            authorizedAt:          new Date(),
             stripePaymentIntentId: session.payment_intent ?? null,
           })
 

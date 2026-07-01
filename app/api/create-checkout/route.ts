@@ -77,6 +77,8 @@ const { hostId, amountEuros, description, customerEmail, date, creneau, prestati
       creneau:        creneau ?? null,
       prestations:    prestations ?? null,
       createdAt:      new Date(),
+      capturedAt:     null,
+      cancelledAt:    null,
     })
     
 
