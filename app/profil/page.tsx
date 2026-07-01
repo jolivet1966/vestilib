@@ -157,7 +157,7 @@ export default function ProfilPage() {
         const resaSnap = await getDocs(query(collection(db, 'bookings'), where('customerEmail', '==', firebaseUser.email)))
         const enCours: ResaWithHost[] = resaSnap.docs
           .map(d => ({ id: d.id, ...d.data() } as ResaWithHost))
-          .filter(r => ['pending', 'awaiting_approval', 'accepted', 'paid'].includes(r.status))
+          .filter(r => ['pending', 'awaiting_approval', 'accepted', 'authorized', 'paid'].includes(r.status))
           .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
 
         const enriched = await Promise.all(
@@ -219,7 +219,22 @@ export default function ProfilPage() {
       setPwdMsg(e.code === 'auth/wrong-password' ? 'Ancien mot de passe incorrect' : 'Erreur')
     } finally { setSavingPwd(false) }
   }
-
+  const annulerReservation = async (bookingId: string) => {
+  if (!window.confirm('Confirmer l\'annulation ? Cette action est irréversible.')) return
+  try {
+    const res = await fetch('/api/cancel-booking', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingId }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error ?? 'Erreur')
+    setMesResas(prev => prev.filter(r => r.id !== bookingId))
+    alert('Réservation annulée.')
+  } catch (e: any) {
+    alert(`Erreur : ${e.message}`)
+  }
+}
   const deconnecter = async () => { await signOut(auth); router.push('/') }
 
   const supprimerCompte = async () => {
@@ -260,6 +275,7 @@ export default function ProfilPage() {
   const resasPayeesArchivees = resasPayees.filter(r => resasArchivees.has(r.id))
 
   const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
+    authorized: { label: 'Paiement autorisé', color: 'text-violet-700', bg: 'bg-violet-50', dot: 'bg-violet-500' },
     paid: { label: 'Confirmee', color: 'text-emerald-700', bg: 'bg-emerald-50', dot: 'bg-emerald-500' },
     accepted: { label: 'Paiement en attente', color: 'text-blue-700', bg: 'bg-blue-50', dot: 'bg-blue-500' },
     awaiting_approval: { label: 'En attente de validation', color: 'text-amber-700', bg: 'bg-amber-50', dot: 'bg-amber-500' },
@@ -388,9 +404,23 @@ export default function ProfilPage() {
                             {r.status === 'accepted' && r.paymentUrl && (
                               <a href={r.paymentUrl}
                                 className="bg-[#1A3A6B] text-[#F5C84A] font-bold text-xs py-2 px-4 rounded-xl hover:bg-[#0C2447] active:scale-95 transition-all">
-                                Payer maintenant
-                              </a>
-                            )}
+                               Payer maintenant
+              </a>
+            )}
+            {r.status === 'authorized' && r.date && (() => {
+              const datePrestation = new Date(r.date + 'T00:00:00')
+              const dans48h = new Date(Date.now() + 48 * 60 * 60 * 1000)
+              if (datePrestation > dans48h) {
+                return (
+                  <button
+                    onClick={() => annulerReservation(r.id)}
+                    className="mt-2 w-full border border-red-200 text-red-600 font-semibold text-xs py-2 px-4 rounded-xl hover:bg-red-50 active:scale-95 transition-all">
+                    Annuler la réservation
+                  </button>
+                )
+              }
+              return null
+            })()}
                           </div>
                         </div>
                       </div>
