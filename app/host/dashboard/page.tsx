@@ -216,7 +216,24 @@ export default function HostDashboardPage() {
     finally { setSavingDispo(false) }
   }
 
-  const repondreReservation = async (bookingId: string, action: 'accept' | 'refuse') => {
+  const annulerReservation = async (bookingId: string) => {
+  if (!window.confirm('Confirmer l\'annulation ? Cette action est irréversible.')) return
+  try {
+    const res = await fetch('/api/cancel-booking', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingId }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error ?? 'Erreur')
+    setBookings(prev => prev.filter(b => b.id !== bookingId))
+    alert('Réservation annulée.')
+  } catch (e: any) {
+    alert(`Erreur : ${e.message}`)
+  }
+}
+
+const repondreReservation = async (bookingId: string, action: 'accept' | 'refuse') => {
     setResponding(true); setRespondMsg('')
     try {
       const res = await fetch('/api/respond-booking', {
@@ -254,6 +271,7 @@ export default function HostDashboardPage() {
     awaiting_approval: { label: 'A valider',  color: 'text-orange-700',  bg: 'bg-orange-50',  dot: 'bg-orange-500'  },
     accepted:          { label: 'Acceptee',   color: 'text-blue-700',    bg: 'bg-blue-50',    dot: 'bg-blue-500'    },
     refused:           { label: 'Refusee',    color: 'text-red-600',     bg: 'bg-red-50',     dot: 'bg-red-500'     },
+authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 'bg-violet-50', dot: 'bg-violet-500' },
   }
 
   const statusBadge = (status: string) => {
@@ -411,7 +429,23 @@ export default function HostDashboardPage() {
                           </div>
                         </div>
 
-                        {booking.status === 'awaiting_approval' && (
+                        {booking.status === 'authorized' && booking.date && (() => {
+  const datePrestation = new Date(booking.date + 'T00:00:00')
+  const dans48h = new Date(Date.now() + 48 * 60 * 60 * 1000)
+  if (datePrestation > dans48h) {
+    return (
+      <div className="mt-3 pt-3 border-t border-gray-50">
+        <button
+          onClick={() => annulerReservation(booking.id)}
+          className="w-full border border-red-200 text-red-600 font-semibold text-sm py-2.5 rounded-xl hover:bg-red-50 active:scale-95 transition-all">
+          Annuler la réservation
+        </button>
+      </div>
+    )
+  }
+  return null
+})()}
+{booking.status === 'awaiting_approval' && (
                           <div className="mt-3 pt-3 border-t border-gray-50">
                             {refusBookingId === booking.id ? (
                               <div className="space-y-2">
