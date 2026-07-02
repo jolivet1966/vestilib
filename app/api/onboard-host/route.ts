@@ -53,41 +53,29 @@ if (!email || !prenom || !nom || !telephone || !adresse || !codePostal || !ville
 })
    
 
-    // 3. Enregistrer l'hôte dans Firestore
+    // 3. Stocker temporairement dans hosts_pending
     const hostData = {
-      email,
-      prenom,
-      nom,
-      telephone,
-      adresse,
-      codePostal,
-      ville,
-      modeReservation,
-      horaires,
-      prestations,
-      capaciteMax,
-      capaciteMaxMoto,
-      capaciteMaxVelo,
-      capaciteMaxDepot,
-      stripeAccountId:          accountId,
+      email, prenom, nom, telephone,
+      adresse, codePostal, ville,
+      modeReservation, horaires, prestations,
+      capaciteMax, capaciteMaxMoto, capaciteMaxVelo, capaciteMaxDepot,
+      stripeAccountId: accountId,
       stripeOnboardingComplete: false,
-      stripePayoutsEnabled:     false,
-      visible:                  false,
-      createdAt:                new Date(),
+      stripePayoutsEnabled: false,
+      visible: false,
+      createdAt: new Date(),
       ...(existingUid ? { uid: existingUid } : {}),
     }
 
     let hostId: string
     if (existingUid) {
-      // Utilisateur déjà connecté → doc hôte avec son uid comme ID
-      await adminDb.collection('hosts').doc(existingUid).set(hostData)
+      await adminDb.collection('hosts_pending').doc(existingUid).set(hostData)
       hostId = existingUid
-      console.log(`[onboard-host] Hôte lié à user existant : ${existingUid} (${email})`)
+      console.log(`[onboard-host] Hôte en attente : ${existingUid} (${email})`)
     } else {
-      // Nouveau visiteur → ID auto
-      const hostRef = await adminDb.collection('hosts').add(hostData)
+      const hostRef = await adminDb.collection('hosts_pending').add(hostData)
       hostId = hostRef.id
-      console.log(`[onboard-host] Nouvel hôte créé : ${hostId} (${email})`)
+      console.log(`[onboard-host] Hôte en attente : ${hostId} (${email})`)
     }
 
     return NextResponse.json({
