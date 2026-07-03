@@ -407,6 +407,7 @@ export default function ProfilPage() {
                                Payer maintenant
               </a>
             )}
+            </div>
             {r.status === 'authorized' && r.date && (() => {
               const datePrestation = new Date(r.date + 'T00:00:00')
               const dans48h = new Date(Date.now() + 48 * 60 * 60 * 1000)
@@ -423,7 +424,6 @@ export default function ProfilPage() {
             })()}
                           </div>
                         </div>
-                      </div>
                     )
                   })}
                 </div>
