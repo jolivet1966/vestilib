@@ -435,11 +435,19 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
   if (datePrestation > dans48h) {
     return (
       <div className="mt-3 pt-3 border-t border-gray-50">
-        <button
-          onClick={() => annulerReservation(booking.id)}
-          className="w-full border border-red-200 text-red-600 font-semibold text-sm py-2.5 rounded-xl hover:bg-red-50 active:scale-95 transition-all">
-          Annuler la réservation
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => annulerReservation(booking.id)}
+            className="flex-1 border border-red-200 text-red-600 font-semibold text-sm py-2.5 rounded-xl hover:bg-red-50 active:scale-95 transition-all">
+            Annuler la réservation
+          </button>
+          <button
+            onClick={() => alert('Vous pouvez annuler cette réservation jusqu\'à 48 heures avant la date de début de la prestation.')}
+            className="w-7 h-7 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 flex items-center justify-center flex-shrink-0 transition-colors"
+            title="Information annulation">
+            <span className="text-gray-400 text-xs font-bold">i</span>
+          </button>
+        </div>
       </div>
     )
   }
