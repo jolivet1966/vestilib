@@ -225,7 +225,7 @@ export default function ProfilPage() {
     const res = await fetch('/api/cancel-booking', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bookingId }),
+      body: JSON.stringify({ bookingId, cancelledBy: 'client' }),
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error ?? 'Erreur')
