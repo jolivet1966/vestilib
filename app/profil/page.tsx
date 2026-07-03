@@ -413,11 +413,19 @@ export default function ProfilPage() {
               const dans48h = new Date(Date.now() + 48 * 60 * 60 * 1000)
               if (datePrestation > dans48h) {
                 return (
-                  <button
-                    onClick={() => annulerReservation(r.id)}
-                    className="mt-2 w-full border border-red-200 text-red-600 font-semibold text-xs py-2 px-4 rounded-xl hover:bg-red-50 active:scale-95 transition-all">
-                    Annuler la réservation
-                  </button>
+                  <div className="mt-2 flex items-center gap-2">
+                    <button
+                      onClick={() => annulerReservation(r.id)}
+                      className="flex-1 border border-red-200 text-red-600 font-semibold text-xs py-2 px-4 rounded-xl hover:bg-red-50 active:scale-95 transition-all">
+                      Annuler la réservation
+                    </button>
+                    <button
+                      onClick={() => alert('Vous pouvez annuler votre réservation jusqu\'à 48 heures avant la date de début de la prestation.')}
+                      className="w-7 h-7 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 flex items-center justify-center flex-shrink-0 transition-colors"
+                      title="Information annulation">
+                      <span className="text-gray-400 text-xs font-bold">i</span>
+                    </button>
+                  </div>
                 )
               }
               return null
