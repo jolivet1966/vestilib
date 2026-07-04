@@ -261,7 +261,7 @@ const repondreReservation = async (bookingId: string, action: 'accept' | 'refuse
   const nbPayees    = bookings.filter(b => b.status === 'paid').length
   const nbEnAttente = bookings.filter(b => b.status === 'awaiting_approval').length
 
-  const bookingsVisibles  = bookings.filter(b => !bookingsSupprime.has(b.id) && !bookingsArchives.has(b.id))
+  const bookingsVisibles  = bookings.filter(b => !bookingsSupprime.has(b.id) && !bookingsArchives.has(b.id) && b.status !== 'cancelled')
   const bookingsArchivees = bookings.filter(b => !bookingsSupprime.has(b.id) && bookingsArchives.has(b.id))
 
   const statusConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
