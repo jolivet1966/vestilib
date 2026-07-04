@@ -83,6 +83,11 @@ export async function createCheckoutSession(params: {
       },
       metadata: params.metadata ?? {},
     },
+    payment_method_options: {
+      card: {
+        request_three_d_secure: 'any',
+      },
+    },
     customer_email: params.customerEmail,
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/pay/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url:  `${process.env.NEXT_PUBLIC_APP_URL}/pay/cancel`,
