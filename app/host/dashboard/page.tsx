@@ -227,7 +227,6 @@ export default function HostDashboardPage() {
     const data = await res.json()
     if (!res.ok) throw new Error(data.error ?? 'Erreur')
     setBookings(prev => prev.filter(b => b.id !== bookingId))
-    alert('Réservation annulée.')
   } catch (e: any) {
     alert(`Erreur : ${e.message}`)
   }
