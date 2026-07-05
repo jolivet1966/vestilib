@@ -80,6 +80,12 @@ export default function HostPage() {
 
   const [capacites,   setCapacites]   = useState<Record<string, Capacite>>({})
   const [checkingCap, setCheckingCap] = useState(false)
+  const [autreCreneauMode,    setAutreCreneauMode]    = useState(false)
+  const [autreCreneauDebut,   setAutreCreneauDebut]   = useState('')
+  const [autreCreneauFin,     setAutreCreneauFin]     = useState('')
+  const [autreCreneauMessage, setAutreCreneauMessage] = useState('')
+  const [sendingAutreCreneau, setSendingAutreCreneau] = useState(false)
+  const [autreCrenauMsg,      setAutreCreneauMsg]     = useState('')
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, user => {
@@ -511,6 +517,93 @@ useEffect(() => {
                     )}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Autre créneau */}
+            {!autreCreneauMode ? (
+              <button onClick={() => setAutreCreneauMode(true)}
+                className="w-full border border-dashed border-[#1A3A6B]/30 text-[#1A3A6B] font-semibold py-3 rounded-2xl text-sm hover:bg-[#1A3A6B]/5 transition-all">
+                + Demander un autre créneau
+              </button>
+            ) : (
+              <div className="bg-white rounded-2xl border border-[#1A3A6B]/20 p-4 shadow-sm space-y-3">
+                <p className="text-sm font-bold text-[#1A3A6B]">Demander un créneau personnalisé</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 block mb-1">Heure de début</label>
+                    <input type="time" value={autreCreneauDebut} onChange={e => setAutreCreneauDebut(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 block mb-1">Heure de fin</label>
+                    <input type="time" value={autreCreneauFin} onChange={e => setAutreCreneauFin(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                  </div>
+                </div>
+                {autreCreneauDebut && autreCreneauFin && (() => {
+                  const [hD, mD] = autreCreneauDebut.split(':').map(Number)
+                  const [hF, mF] = autreCreneauFin.split(':').map(Number)
+                  const dureeMin = (hF * 60 + mF) - (hD * 60 + mD)
+                  const tarif = dureeMin <= 240 ? '4h' : '8h'
+                  return dureeMin > 0 ? (
+                    <div className="bg-[#1A3A6B]/5 rounded-xl p-3">
+                      <p className="text-xs text-[#1A3A6B] font-medium">
+                        Durée : {Math.floor(dureeMin/60)}h{dureeMin%60 > 0 ? dureeMin%60 : ''} → Tarif <strong>{tarif}</strong> appliqué
+                      </p>
+                    </div>
+                  ) : null
+                })()}
+                <div>
+                  <label className="text-xs font-medium text-gray-500 block mb-1">Message pour l'hôte</label>
+                  <textarea value={autreCreneauMessage} onChange={e => setAutreCreneauMessage(e.target.value)}
+                    placeholder="Ex: Arrivée après un concert, besoin de déposer casque et blouson..."
+                    rows={3}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] resize-none" />
+                </div>
+                {autreCrenauMsg && <p className="text-sm text-center font-medium text-emerald-600">{autreCrenauMsg}</p>}
+                <div className="flex gap-2">
+                  <button onClick={() => { setAutreCreneauMode(false); setAutreCreneauMsg('') }}
+                    className="flex-1 border border-gray-200 text-gray-600 font-medium py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors">
+                    Annuler
+                  </button>
+                  <button
+                    disabled={!autreCreneauDebut || !autreCreneauFin || !autreCreneauMessage || !selectedDate || !customerEmail || sendingAutreCreneau}
+                    onClick={async () => {
+                      setSendingAutreCreneau(true)
+                      const [hD, mD] = autreCreneauDebut.split(':').map(Number)
+                      const [hF, mF] = autreCreneauFin.split(':').map(Number)
+                      const dureeMin = (hF * 60 + mF) - (hD * 60 + mD)
+                      const tarif = dureeMin <= 240 ? '4h' : '8h'
+                      const creneauStr = `${autreCreneauDebut}-${autreCreneauFin}`
+                      const desc = Object.entries(selectedTarifs).map(([id, qty]) => {
+                        const t = TARIFS_VESTILIB.find(t => t.id === id); return t ? `${qty}x ${t.label}` : ''
+                      }).filter(Boolean).join(', ')
+                      try {
+                        const res = await fetch('/api/request-booking', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            hostId: host.id, customerEmail, date: selectedDate,
+                            creneau: creneauStr,
+                            description: `${desc} — Créneau personnalisé (tarif ${tarif}) — Message: ${autreCreneauMessage}`,
+                            prestations: Object.entries(selectedTarifs).map(([tarifId, quantite]) => ({ tarifId, quantite })),
+                            totalAmount: total, hostEarns,
+                            autreCreneauMessage,
+                          }),
+                        })
+                        const data = await res.json()
+                        if (!res.ok) { setAutreCreneauMsg(data.error ?? 'Erreur'); return }
+                        setAutreCreneauMsg('Demande envoyée ! L\'hôte vous contactera par email.')
+                        setTimeout(() => router.push(`/pay/pending?code=${data.bookingCode}&email=${encodeURIComponent(customerEmail)}`), 2000)
+                      } catch { setAutreCreneauMsg('Erreur réseau.') }
+                      finally { setSendingAutreCreneau(false) }
+                    }}
+                    className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-bold py-2.5 rounded-xl text-sm hover:bg-[#0C2447] disabled:opacity-40 transition-colors">
+                    {sendingAutreCreneau ? 'Envoi...' : 'Envoyer la demande'}
+                  </button>
+                </div>
+                <p className="text-[10px] text-gray-400 text-center">Votre email est requis à l'étape suivante pour recevoir la réponse</p>
               </div>
             )}
 
