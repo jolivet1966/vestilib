@@ -561,6 +561,12 @@ useEffect(() => {
                     rows={3}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] resize-none" />
                 </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 block mb-1">Votre email *</label>
+                  <input type="email" value={customerEmail} onChange={e => setCustomerEmail(e.target.value)}
+                    placeholder="vous@email.com"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                </div>
                 {autreCrenauMsg && <p className="text-sm text-center font-medium text-emerald-600">{autreCrenauMsg}</p>}
                 <div className="flex gap-2">
                   <button onClick={() => { setAutreCreneauMode(false); setAutreCreneauMsg('') }}
