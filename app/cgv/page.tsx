@@ -13,7 +13,7 @@ export default function CGVPage() {
 
         <Section titre="1. Objet">
           <p>Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre la plateforme VESTILIB (ci-après « la Plateforme ») et toute personne physique utilisant ses services en qualité de client ou d'hôte (ci-après « l'Utilisateur »).</p>
-          <p className="mt-2">VESTILIB est une plateforme de mise en relation permettant aux organisateurs d'événements et aux festivaliers de déposer temporairement leurs affaires personnelles (bagages, vêtements, équipements) auprès de particuliers ou professionnels référencés (les « hôtes »).</p>
+          <p className="mt-2">VESTILIB est une plateforme de mise en relation permettant aux utilisateurs de déposer temporairement leurs affaires personnelles (bagages, vêtements, équipements) auprès de particuliers ou professionnels référencés (les « hôtes »).</p>
         </Section>
 
         <Section titre="2. Inscription et compte utilisateur">
@@ -32,9 +32,9 @@ export default function CGVPage() {
           <p className="mt-2">Le paiement est sécurisé et traité par Stripe. VESTILIB ne conserve aucune donnée bancaire.</p>
         </Section>
 
-        <Section titre="5. Annulation et remboursement">
-          <p>Toute annulation doit être effectuée avant la date de la prestation. En cas d'annulation par le client plus de 24h avant la prestation, un remboursement intégral est effectué. En deçà de 24h, aucun remboursement n'est garanti.</p>
-          <p className="mt-2">En cas d'annulation par l'hôte, le client est remboursé intégralement dans les meilleurs délais.</p>
+        <Section titre="5. Annulation">
+          <p>Toute annulation doit être effectuée avant la date de la prestation. En cas d'annulation plus de 48h avant la prestation, la carte du client n'est pas débitée et l'annulation est sans frais.</p>
+          <p className="mt-2">En deçà de 48h (J-48), la réservation est ferme, définitive et non remboursable. Ces règles s'appliquent aux clients et aux hôtes.</p>
         </Section>
 
         <Section titre="6. Responsabilités">
