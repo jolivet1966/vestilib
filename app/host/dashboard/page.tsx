@@ -441,7 +441,7 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
             Annuler la réservation
           </button>
           <button
-            onClick={() => alert('Vous pouvez annuler cette réservation jusqu\'à 48 heures avant la date de début de la prestation.')}
+            onClick={() => alert('Vous pouvez annuler votre réservation au plus tard 48 heures avant le début de la prestation, votre carte ne sera pas débitée, aucun frais ne sera retenu. La réservation est ferme et définitive au-delà de ce délai.')}
             className="w-7 h-7 rounded-full border border-gray-200 bg-gray-50 hover:bg-gray-100 flex items-center justify-center flex-shrink-0 transition-colors"
             title="Information annulation">
             <span className="text-gray-400 text-xs font-bold">i</span>
