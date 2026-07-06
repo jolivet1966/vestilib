@@ -10,12 +10,14 @@ function HomeContent() {
   const [compteSuprime, setCompteSuprime] = useState(false)
   const [connecte, setConnecte] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
+  const [showLaunchBanner, setShowLaunchBanner] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
     if (searchParams.get('compte') === 'supprime') setCompteSuprime(true)
     if (searchParams.get('connecte') === 'true') setConnecte(true)
+    if (!localStorage.getItem('vestilib_launch_banner_dismissed')) setShowLaunchBanner(true)
     import('@/lib/firebase').then(({ auth }) => {
       import('firebase/auth').then(({ onAuthStateChanged }) => {
         onAuthStateChanged(auth, user => setIsConnected(!!user))
@@ -24,6 +26,11 @@ function HomeContent() {
     const timer = setTimeout(() => setSplash(false), 2500)
     return () => clearTimeout(timer)
   }, [])
+
+  const dismissLaunchBanner = () => {
+    localStorage.setItem('vestilib_launch_banner_dismissed', 'true')
+    setShowLaunchBanner(false)
+  }
 
   const handlePopupOk = () => {
     setPopup(false)
@@ -137,6 +144,22 @@ function HomeContent() {
           </Link>
         )}
       </header>
+
+      {/* Bandeau lancement */}
+      {showLaunchBanner && (
+        <div className="bg-[#F5C84A]/15 border-b border-[#F5C84A]/30 px-4 py-3">
+          <div className="flex items-start gap-3">
+            <span className="text-lg leading-none mt-0.5">🚀</span>
+            <p className="text-xs text-[#0C2447] leading-relaxed flex-1">
+              <span className="font-bold">VESTILIB est une nouvelle plateforme en phase de lancement.</span> Nous avons besoin d'un peu de temps pour réunir les premiers hôtes partout en France. Merci de votre patience et de votre confiance !
+            </p>
+            <button onClick={dismissLaunchBanner}
+              className="text-[#0C2447]/40 hover:text-[#0C2447] text-lg leading-none flex-shrink-0 -mt-1">
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <section className="px-4 pt-4 pb-6">
