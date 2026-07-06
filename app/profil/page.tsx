@@ -724,7 +724,7 @@ export default function ProfilPage() {
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm divide-y divide-gray-50">
                 <MenuRow icon="📄" label="Conditions generales de vente" onClick={() => router.push('/cgv')} />
                 <MenuRow icon="🔒" label="Politique de confidentialite" onClick={() => router.push('/confidentialite')} />
-                <MenuRow icon="✉️" label="Nous contacter" onClick={() => window.location.href = 'mailto:contact@vestilib.fr'} />
+                <MenuRow icon="✉️" label="Nous contacter" onClick={() => router.push('/contact')} />
                 <MenuRow icon="🚪" label="Se deconnecter" onClick={deconnecter} labelColor="text-gray-700" />
               </div>
             </section>

@@ -275,6 +275,61 @@ export async function sendReponseClient(params: {
     `,
   })
 }
+// ─── Contact formulaire "Nous contacter" ──────────────
+export async function sendContactMessage(params: {
+  fromEmail: string; fromNom: string; sujet: string; message: string
+}) {
+  await resend.emails.send({
+    from: FROM,
+    to: 'contact@vestilib.fr',
+    reply_to: params.fromEmail,
+    subject: `[Contact] ${params.sujet}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
+        <div style="background:#1A3A6B;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+          <h1 style="color:#F5C84A;font-size:20px;margin:0;">Nouveau message via le formulaire</h1>
+        </div>
+        <div style="background:white;border-radius:16px;padding:24px;">
+          <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:16px;">
+            <tr><td style="padding:6px 0;color:#666;">De</td><td style="padding:6px 0;text-align:right;font-weight:600;">${params.fromNom}</td></tr>
+            <tr><td style="padding:6px 0;color:#666;">Email</td><td style="padding:6px 0;text-align:right;">${params.fromEmail}</td></tr>
+            <tr><td style="padding:6px 0;color:#666;">Sujet</td><td style="padding:6px 0;text-align:right;">${params.sujet}</td></tr>
+          </table>
+          <div style="background:#f5f5f5;border-radius:12px;padding:16px;">
+            <p style="color:#333;margin:0;line-height:1.6;white-space:pre-wrap;">${params.message}</p>
+          </div>
+        </div>
+        <p style="color:#999;font-size:12px;text-align:center;margin-top:16px;">Repondre a cet email revient a repondre directement au client.</p>
+      </div>
+    `,
+  })
+
+  await resend.emails.send({
+    from: FROM,
+    to: params.fromEmail,
+    subject: 'Nous avons bien reçu votre message',
+    html: `
+      <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
+        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
+          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
+          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Merci de nous avoir contactes</p>
+        </div>
+        <div style="background:white;border-radius:16px;padding:24px;">
+          <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 12px;">Bonjour ${params.fromNom},</h2>
+          <p style="color:#666;font-size:14px;line-height:1.6;margin:0 0 16px;">
+            Votre message a bien ete transmis a notre equipe. Nous vous repondrons directement a cette adresse email dans les plus brefs delais.
+          </p>
+          <div style="background:#f5f5f5;border-radius:12px;padding:16px;">
+            <p style="font-weight:600;color:#333;margin:0 0 8px;">Sujet : ${params.sujet}</p>
+            <p style="color:#666;margin:0;line-height:1.6;white-space:pre-wrap;">${params.message}</p>
+          </div>
+        </div>
+        <p style="color:#999;font-size:12px;text-align:center;margin-top:16px;">VESTILIB · Pose. Profite. Reviens.</p>
+      </div>
+    `,
+  })
+}
+
 // ─── Email annulation par le client (notification hote) ─────────────
 export async function sendCancellationHote(params: {
   to: string; hostPrenom: string; bookingCode: string
