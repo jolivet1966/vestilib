@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import NavBar from '@/app/components/NavBar'
+import InstallAppButton from '@/app/components/InstallAppButton'
 
 function HomeContent() {
   const [splash, setSplash] = useState(true)
@@ -226,6 +227,8 @@ function HomeContent() {
           </div>
           <span className="text-gray-300 text-xl">›</span>
         </button>
+
+        <InstallAppButton />
       </section>
 
       {/* Comment ça marche — timeline */}
