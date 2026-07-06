@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import PushInit from '@/app/components/PushInit'
+import InstallBanner from '@/app/components/InstallBanner'
 
 export const metadata: Metadata = {
   title: 'VESTILIB',
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className="bg-gray-50 min-h-screen font-sans antialiased">
+        <InstallBanner />
         {children}
         <PushInit />
       </body>
