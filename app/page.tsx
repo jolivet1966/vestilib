@@ -39,7 +39,7 @@ function HomeContent() {
   }
 
   if (splash) return (
-    <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center relative overflow-hidden" style={{ animation: 'fadeIn 0.4s ease-out' }}>
       <div className="absolute top-0 right-0 w-64 h-64 bg-[#F5C84A]/5 rounded-full -translate-y-20 translate-x-20" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#F5C84A]/5 rounded-full translate-y-24 -translate-x-24" />
       <div className="relative z-10 flex flex-col items-center gap-6">
@@ -51,16 +51,18 @@ function HomeContent() {
             <circle cx="22" cy="4" r="2" fill="#F5C84A"/>
           </svg>
         </div>
-        <div className="text-center">
+        <div className="text-center" style={{ animation: 'fadeInText 0.5s ease-out 0.15s both' }}>
           <p className="text-[#F5C84A] font-black text-5xl tracking-[0.3em] drop-shadow-lg">VESTILIB</p>
           <p className="text-white/50 text-sm tracking-[0.2em] mt-2 font-light">POSE · PROFITE · REVIENS</p>
         </div>
-        <div className="mt-8 w-48 h-0.5 bg-white/10 rounded-full overflow-hidden">
+        <div className="mt-8 w-48 h-0.5 bg-white/10 rounded-full overflow-hidden" style={{ animation: 'fadeInText 0.5s ease-out 0.15s both' }}>
           <div className="h-full bg-[#F5C84A] rounded-full" style={{ animation: 'loadbar 2.5s ease-in-out forwards' }} />
         </div>
       </div>
       <style jsx>{`
         @keyframes loadbar { 0% { width: 0% } 100% { width: 100% } }
+        @keyframes fadeIn { 0% { opacity: 0 } 100% { opacity: 1 } }
+        @keyframes fadeInText { 0% { opacity: 0; transform: translateY(6px) } 100% { opacity: 1; transform: translateY(0) } }
       `}</style>
     </div>
   )
