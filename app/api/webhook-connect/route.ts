@@ -32,21 +32,47 @@ export async function POST(req: NextRequest) {
         const account = event.data.object as Stripe.Account
         console.log(`[webhook-connect] account.updated : ${account.id} — payouts_enabled: ${account.payouts_enabled}`)
 
-        const snap = await adminDb
-          .collection('hosts')
+        // Vérifier d'abord dans hosts_pending
+        const pendingSnap = await adminDb
+          .collection('hosts_pending')
           .where('stripeAccountId', '==', account.id)
           .limit(1)
           .get()
 
-        if (!snap.empty) {
-          await snap.docs[0].ref.update({
-            stripeOnboardingComplete: account.details_submitted,
-            stripePayoutsEnabled:     account.payouts_enabled ?? false,
-            visible:                  account.payouts_enabled ?? false,
+        if (!pendingSnap.empty && account.payouts_enabled) {
+          // Onboarding terminé → migrer vers hosts
+          const pendingDoc = pendingSnap.docs[0]
+          const hostData = pendingDoc.data()
+
+          const hostId = hostData.uid ?? pendingDoc.id
+          await adminDb.collection('hosts').doc(hostId).set({
+            ...hostData,
+            stripeOnboardingComplete: true,
+            stripePayoutsEnabled: true,
+            visible: true,
           })
-          console.log(`[webhook-connect] Compte hote mis a jour : ${account.id} — visible: ${account.payouts_enabled}`)
+          await pendingDoc.ref.delete()
+          console.log(`[webhook-connect] Hote migre de pending vers hosts : ${hostId}`)
         } else {
-          console.warn(`[webhook-connect] Aucun hote trouve pour stripeAccountId: ${account.id}`)
+          // Hôte déjà dans hosts → mise à jour simple
+          const snap = await adminDb
+            .collection('hosts')
+            .where('stripeAccountId', '==', account.id)
+            .limit(1)
+            .get()
+
+          if (!snap.empty) {
+            await snap.docs[0].ref.update({
+              stripeOnboardingComplete: account.details_submitted,
+              stripePayoutsEnabled:     account.payouts_enabled ?? false,
+              visible:                  account.payouts_enabled ?? false,
+            })
+            console.log(`[webhook-connect] Compte hote mis a jour : ${account.id} — visible: ${account.payouts_enabled}`)
+          } else if (pendingSnap.empty) {
+            console.warn(`[webhook-connect] Aucun hote trouve (pending ou actif) pour stripeAccountId: ${account.id}`)
+          } else {
+            console.log(`[webhook-connect] Hote encore en attente (payouts non actives) : ${account.id}`)
+          }
         }
         break
       }
