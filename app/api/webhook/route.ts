@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
             if (hostPrivate.email) {
               await sendNotificationHote({
                 to:            hostPrivate.email,
-                hostPrenom:    host.prenom ?? '',
+                hostPrenom:    host?.prenom ?? '',
                 bookingCode,
                 totalAmount:   bookingData.totalAmount?.toString() ?? '0',
                 hostEarns:     bookingData.hostEarns?.toString() ?? '0',
