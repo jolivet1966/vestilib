@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       if (cancelledBy === 'client' && hostPrivate.email) {
         await sendCancellationHote({
           to: hostPrivate.email,
-          hostPrenom: host.prenom,
+          hostPrenom: host?.prenom,
           bookingCode: booking.bookingCode,
           date: booking.date,
           creneau: booking.creneau,
