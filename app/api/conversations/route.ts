@@ -105,9 +105,11 @@ export async function POST(req: NextRequest) {
     // Notifier l'hôte par email
     const hostDoc = await adminDb.collection('hosts').doc(hostId).get()
     const host = hostDoc.data()!
+    const hostPrivateDoc = await adminDb.collection('hosts').doc(hostId).collection('private').doc('contact').get()
+    const hostPrivate = hostPrivateDoc.data() ?? {}
     const { sendMessageToHote } = await import('@/lib/emails')
     await sendMessageToHote({
-      toHote: host.email,
+      toHote: hostPrivate.email,
       hostPrenom: host.prenom,
       fromNom: clientNom,
       sujet: 'Nouveau message',

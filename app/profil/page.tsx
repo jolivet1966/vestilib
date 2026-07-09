@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
-import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore'
+import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore'
 import Link from 'next/link'
 
 interface UserData {
@@ -133,18 +133,13 @@ export default function ProfilPage() {
         if (hostByUid.exists()) {
           hostDocData = hostByUid.data()
           hostDocId = hostByUid.id
-        } else {
-          const hostSnap = await getDocs(query(collection(db, 'hosts'), where('email', '==', firebaseUser.email)))
-          if (!hostSnap.empty) {
-            hostDocData = hostSnap.docs[0].data()
-            hostDocId = hostSnap.docs[0].id
-          }
         }
 
         if (hostDocData && hostDocId) {
           setHostData({ id: hostDocId, ...hostDocData } as HostData)
           setHostId(hostDocId)
-          setTelephoneHote(hostDocData.telephone ?? '')
+          const hostPrivateSnap = await getDoc(doc(db, 'hosts', hostDocId, 'private', 'contact'))
+          setTelephoneHote(hostPrivateSnap.exists() ? (hostPrivateSnap.data().telephone ?? '') : '')
           const bookSnap = await getDocs(query(collection(db, 'bookings'), where('hostId', '==', hostDocId)))
           const total = bookSnap.docs
             .filter(d => d.data().status === 'paid')
@@ -160,21 +155,8 @@ export default function ProfilPage() {
           .filter(r => ['pending', 'awaiting_approval', 'accepted', 'authorized', 'paid'].includes(r.status))
           .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
 
-        const enriched = await Promise.all(
-          enCours.map(async r => {
-            if (r.status === 'paid' && r.hostId) {
-              try {
-                const hostDoc = await getDoc(doc(db, 'hosts', r.hostId))
-                if (hostDoc.exists()) {
-                  const h = hostDoc.data()
-                  return { ...r, hostEmail: h.email ?? null, hostTelephone: h.telephone ?? null }
-                }
-              } catch {}
-            }
-            return r
-          })
-        )
-        setMesResas(enriched)
+        // Le telephone/email de l'hote sont deja copies sur la reservation par le backend au moment du paiement
+        setMesResas(enCours)
       } catch (e) { console.error(e) }
       finally { setLoading(false) }
     })
@@ -197,7 +179,7 @@ export default function ProfilPage() {
     if (!hostId) return
     setSavingTelHote(true); setTelHoteMsg('')
     try {
-      await updateDoc(doc(db, 'hosts', hostId), { telephone: telephoneHote })
+      await setDoc(doc(db, 'hosts', hostId, 'private', 'contact'), { telephone: telephoneHote }, { merge: true })
       setHostData(prev => prev ? { ...prev, telephone: telephoneHote } : null)
       setTelHoteMsg('Telephone mis a jour')
       setEditTelHote(false)
@@ -849,17 +831,17 @@ export default function ProfilPage() {
                   </div>
                 ) : (
                   <>
-                    <InfoRow icon="📞" label="Telephone" value={hostData.telephone || 'Non renseigne'}
-                      valueColor={hostData.telephone ? 'text-gray-800' : 'text-amber-600'} />
+                    <InfoRow icon="📞" label="Telephone" value={telephoneHote || 'Non renseigne'}
+                      valueColor={telephoneHote ? 'text-gray-800' : 'text-amber-600'} />
                     <div className="px-4 py-3 border-t border-gray-50">
                       <button onClick={() => setEditTelHote(true)}
                         className="w-full text-center text-sm font-semibold text-[#1A3A6B] hover:text-[#0C2447] transition-colors py-1">
-                        {hostData.telephone ? 'Modifier mon telephone' : 'Ajouter mon telephone'}
+                        {telephoneHote ? 'Modifier mon telephone' : 'Ajouter mon telephone'}
                       </button>
                     </div>
                   </>
                 )}
-                {!hostData.telephone && !editTelHote && (
+                {!telephoneHote && !editTelHote && (
                   <div className="px-4 pb-3">
                     <p className="text-[11px] text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
                       Ce numero sera communique a vos clients apres confirmation de paiement.

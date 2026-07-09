@@ -52,12 +52,11 @@ export default function NavBar() {
       unsubs.push(paiementUnsub)
 
       // Vérifier si hôte
-      const { getDocs } = await import('firebase/firestore')
-      const { collection: col, query: q, where: w } = await import('firebase/firestore')
-      const hostSnap = await getDocs(q(col(db, 'hosts'), w('email', '==', firebaseUser.email)))
+      const { getDoc: gd, doc: d } = await import('firebase/firestore')
+      const hostSnap = await gd(d(db, 'hosts', firebaseUser.uid))
 
-      if (!hostSnap.empty) {
-        const hostId = hostSnap.docs[0].id
+      if (hostSnap.exists()) {
+        const hostId = hostSnap.id
 
         const hoteUnsub = onSnapshot(
           query(collection(db, 'conversations'),

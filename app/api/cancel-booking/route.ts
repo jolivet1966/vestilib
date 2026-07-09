@@ -55,14 +55,16 @@ export async function POST(req: NextRequest) {
     // Récupérer les infos pour les emails
     const hostDoc = await adminDb.collection('hosts').doc(booking.hostId).get()
     const host = hostDoc.data()
+    const hostPrivateDoc = await adminDb.collection('hosts').doc(booking.hostId).collection('private').doc('contact').get()
+    const hostPrivate = hostPrivateDoc.data() ?? {}
 
     // Envoyer emails de notification
     try {
       const { sendCancellationClient, sendCancellationHote } = await import('@/lib/emails')
 
-      if (cancelledBy === 'client' && host?.email) {
+      if (cancelledBy === 'client' && hostPrivate.email) {
         await sendCancellationHote({
-          to: host.email,
+          to: hostPrivate.email,
           hostPrenom: host.prenom,
           bookingCode: booking.bookingCode,
           date: booking.date,

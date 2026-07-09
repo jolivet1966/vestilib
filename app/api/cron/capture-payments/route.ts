@@ -37,10 +37,18 @@ export async function GET(req: NextRequest) {
           // Capturer le paiement Stripe
           await stripe.paymentIntents.capture(booking.stripePaymentIntentId)
 
+          // Récupérer les coordonnées de l'hôte pour les copier sur la réservation
+          const hostDoc = await adminDb.collection('hosts').doc(booking.hostId).get()
+          const hostPrivateDoc = await adminDb.collection('hosts').doc(booking.hostId).collection('private').doc('contact').get()
+          const host = hostDoc.data()
+          const hostPrivate = hostPrivateDoc.data() ?? {}
+
           // Mettre à jour Firestore
           await doc.ref.update({
             status: 'paid',
             capturedAt: new Date(),
+            hostEmail: hostPrivate.email ?? null,
+            hostTelephone: hostPrivate.telephone ?? null,
           })
 
           console.log(`[cron] Paiement capture : ${doc.id} (${booking.bookingCode})`)
@@ -48,8 +56,6 @@ export async function GET(req: NextRequest) {
 
           // Envoyer email de confirmation
           try {
-            const hostDoc = await adminDb.collection('hosts').doc(booking.hostId).get()
-            const host = hostDoc.data()
             const { sendConfirmationUser, sendNotificationHote } = await import('@/lib/emails')
             const bookingCode = booking.bookingCode ?? ''
 
@@ -66,9 +72,9 @@ export async function GET(req: NextRequest) {
               })
             }
 
-            if (host?.email) {
+            if (hostPrivate.email) {
               await sendNotificationHote({
-                to: host.email,
+                to: hostPrivate.email,
                 hostPrenom: host.prenom ?? '',
                 bookingCode,
                 totalAmount: booking.totalAmount?.toString() ?? '0',

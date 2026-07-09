@@ -20,6 +20,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Hote introuvable' }, { status: 404 })
     }
     const host = hostDoc.data()!
+    const hostPrivateDoc = await adminDb.collection('hosts').doc(hostId).collection('private').doc('contact').get()
+    const hostPrivate = hostPrivateDoc.data() ?? {}
 
     // Generer un code de reservation
     const bookingCode = 'VST-' + Math.random().toString(36).substring(2, 8).toUpperCase()
@@ -41,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     // Envoyer email notification a l hote
     await sendNotificationHoteDemandeReservation({
-      to: host.email,
+      to: hostPrivate.email,
       hostPrenom: host.prenom,
       bookingCode,
       bookingId: bookingRef.id,

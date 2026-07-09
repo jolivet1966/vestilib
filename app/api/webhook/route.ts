@@ -72,6 +72,8 @@ export async function POST(req: NextRequest) {
 
           const hostDoc = await adminDb.collection('hosts').doc(bookingData.hostId).get()
           const host    = hostDoc.data()
+          const hostPrivateDoc = await adminDb.collection('hosts').doc(bookingData.hostId).collection('private').doc('contact').get()
+          const hostPrivate = hostPrivateDoc.data() ?? {}
 
           try {
             const { sendConfirmationUser, sendNotificationHote } = await import('@/lib/emails')
@@ -90,9 +92,9 @@ export async function POST(req: NextRequest) {
               console.log(`[webhook] Email utilisateur envoye a ${bookingData.customerEmail}`)
             }
 
-            if (host?.email) {
+            if (hostPrivate.email) {
               await sendNotificationHote({
-                to:            host.email,
+                to:            hostPrivate.email,
                 hostPrenom:    host.prenom ?? '',
                 bookingCode,
                 totalAmount:   bookingData.totalAmount?.toString() ?? '0',
@@ -101,7 +103,7 @@ export async function POST(req: NextRequest) {
                 date:          bookingData.date ?? null,
                 creneau:       bookingData.creneau ?? null,
               })
-              console.log(`[webhook] Email hote envoye a ${host.email}`)
+              console.log(`[webhook] Email hote envoye a ${hostPrivate.email}`)
             }
           } catch (emailErr: any) {
             console.error('[webhook] Erreur envoi email:', emailErr.message)
@@ -115,9 +117,9 @@ export async function POST(req: NextRequest) {
               url:   `${APP_URL}/profil`,
             })
           }
-          if (host?.email) {
+          if (hostPrivate.email) {
             await sendPush({
-              userEmail: host.email,
+              userEmail: hostPrivate.email,
               title: 'Nouvelle reservation',
               body:  `Vous avez recu une nouvelle reservation (${bookingCode}).`,
               url:   `${APP_URL}/host/dashboard`,
@@ -205,13 +207,17 @@ export async function POST(req: NextRequest) {
           // Onboarding terminé → migrer vers hosts
           const pendingDoc = pendingSnap.docs[0]
           const hostData = pendingDoc.data()
+          const { email, telephone, ...publicData } = hostData
 
           const hostId = hostData.uid ?? pendingDoc.id
           await adminDb.collection('hosts').doc(hostId).set({
-            ...hostData,
+            ...publicData,
             stripeOnboardingComplete: true,
             stripePayoutsEnabled: true,
             visible: true,
+          })
+          await adminDb.collection('hosts').doc(hostId).collection('private').doc('contact').set({
+            email, telephone,
           })
           await pendingDoc.ref.delete()
           console.log(`[webhook] Hôte migré de pending vers hosts : ${hostId}`)

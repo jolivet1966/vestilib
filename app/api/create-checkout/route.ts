@@ -38,6 +38,8 @@ const { hostId, amountEuros, description, customerEmail, date, creneau, prestati
     }
 
     const host = hostDoc.data()!
+    const hostPrivateDoc = await adminDb.collection('hosts').doc(hostId).collection('private').doc('contact').get()
+    const hostPrivate = hostPrivateDoc.data() ?? {}
     if (!host.stripeAccountId) {
       return NextResponse.json(
         { error: "Cet hôte n'a pas encore de compte Stripe Connect" },
@@ -59,7 +61,7 @@ const { hostId, amountEuros, description, customerEmail, date, creneau, prestati
       customerEmail,
       metadata: {
         hostId,
-        hostEmail: host.email,
+        hostEmail: hostPrivate.email,
         amountEuros: amountEuros.toString(),
       },
     })

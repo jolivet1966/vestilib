@@ -31,12 +31,12 @@ export default function HostMessagesPage() {
     const unsub = onAuthStateChanged(auth, async firebaseUser => {
       if (!firebaseUser) { router.push('/host/login'); return }
 
-      const { collection, query, where, getDocs } = await import('firebase/firestore')
+      const { doc, getDoc } = await import('firebase/firestore')
       const { db } = await import('@/lib/firebase')
-      const snap = await getDocs(query(collection(db, 'hosts'), where('email', '==', firebaseUser.email)))
-      if (snap.empty) { router.push('/host/login'); return }
+      const snap = await getDoc(doc(db, 'hosts', firebaseUser.uid))
+      if (!snap.exists()) { router.push('/host/login'); return }
 
-      const hDoc = snap.docs[0]
+      const hDoc = snap
       setHostId(hDoc.id)
       setHostPrenom(hDoc.data().prenom)
 

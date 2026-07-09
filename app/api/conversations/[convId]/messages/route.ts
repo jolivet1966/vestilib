@@ -88,9 +88,11 @@ export async function POST(req: NextRequest, { params }: { params: { convId: str
     } else {
       const hostDoc = await adminDb.collection('hosts').doc(conv.hostId).get()
       const host = hostDoc.data()!
+      const hostPrivateDoc = await adminDb.collection('hosts').doc(conv.hostId).collection('private').doc('contact').get()
+      const hostPrivate = hostPrivateDoc.data() ?? {}
       const { sendMessageToHote } = await import('@/lib/emails')
       await sendMessageToHote({
-        toHote: host.email,
+        toHote: hostPrivate.email,
         hostPrenom: host.prenom,
         fromNom: conv.clientNom,
         sujet: 'Nouveau message',

@@ -28,6 +28,8 @@ if (regexTel.test(message) || regexEmail.test(message)) {
       return NextResponse.json({ error: 'Hôte introuvable' }, { status: 404 })
     }
     const host = hostDoc.data()!
+    const hostPrivateDoc = await adminDb.collection('hosts').doc(hostId).collection('private').doc('contact').get()
+    const hostPrivate = hostPrivateDoc.data() ?? {}
 
    // 2. Enregistrer le message dans Firestore
     const msgRef = await adminDb.collection('messages').add({
@@ -45,7 +47,7 @@ if (regexTel.test(message) || regexEmail.test(message)) {
     const { sendMessageToHote, sendConfirmationMessage } = await import('@/lib/emails')
 
     await sendMessageToHote({
-      toHote:     host.email,
+      toHote:     hostPrivate.email,
       hostPrenom: host.prenom,
       fromNom,
       sujet,

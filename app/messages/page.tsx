@@ -5,7 +5,7 @@ import Link from 'next/link'
 import NavBar from '@/app/components/NavBar'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore'
 
 interface Conversation {
   id: string; hostId: string; hostNom: string
@@ -66,8 +66,8 @@ function MessagesContent() {
       if (!firebaseUser) { router.push('/user/login?redirect=/messages'); return }
       setUserEmail(firebaseUser.email)
       setUserNom(firebaseUser.displayName ?? firebaseUser.email ?? '')
-      const snap = await getDocs(query(collection(db, 'hosts'), where('email', '==', firebaseUser.email)))
-      const hId = snap.empty ? null : snap.docs[0].id
+      const snap = await getDoc(doc(db, 'hosts', firebaseUser.uid))
+      const hId = snap.exists() ? snap.id : null
       setHostId(hId)
       await chargerConversations(firebaseUser.email!, hId)
       setLoading(false)
