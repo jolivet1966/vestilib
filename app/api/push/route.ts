@@ -76,8 +76,8 @@ async function getAccessToken(): Promise<string> {
   const { GoogleAuth } = await import('google-auth-library')
   const auth = new GoogleAuth({
     credentials: {
-      client_email: process.env.FIREBASE_CLIENT_EMAIL,
-      private_key:  process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      client_email: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
+      private_key:  process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n'),
     },
     scopes: ['https://www.googleapis.com/auth/firebase.messaging'],
   })
