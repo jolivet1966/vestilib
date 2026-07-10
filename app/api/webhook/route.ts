@@ -61,12 +61,48 @@ export async function POST(req: NextRequest) {
           const bookingDoc  = snap.docs[0]
           const bookingData = bookingDoc.data()
 
-          await bookingDoc.ref.update({
-            status:                'authorized',
-            bookingCode,
-            authorizedAt:          new Date(),
-            stripePaymentIntentId: session.payment_intent ?? null,
-          })
+          // Si la prestation a lieu dans moins de 48h, la reservation est ferme :
+          // on capture immediatement au lieu d'attendre le cron horaire
+          const datePrestation = bookingData.date ? new Date(bookingData.date + 'T00:00:00') : null
+          const dans48h = new Date(Date.now() + 48 * 60 * 60 * 1000)
+          const captureImmediate = !!(datePrestation && datePrestation <= dans48h && session.payment_intent)
+
+          let hostPrivateForEmail: any = {}
+          if (captureImmediate) {
+            try {
+              const { stripe } = await import('@/lib/stripe')
+              await stripe.paymentIntents.capture(session.payment_intent as string)
+
+              const hostPrivateDoc = await adminDb.collection('hosts').doc(bookingData.hostId).collection('private').doc('contact').get()
+              hostPrivateForEmail = hostPrivateDoc.data() ?? {}
+
+              await bookingDoc.ref.update({
+                status:                'paid',
+                bookingCode,
+                authorizedAt:          new Date(),
+                capturedAt:            new Date(),
+                stripePaymentIntentId: session.payment_intent ?? null,
+                hostEmail:             hostPrivateForEmail.email ?? null,
+                hostTelephone:         hostPrivateForEmail.telephone ?? null,
+              })
+              console.log(`[webhook] Reservation a moins de 48h, capture immediate : ${bookingDoc.id} (${bookingCode})`)
+            } catch (captureErr: any) {
+              console.error('[webhook] Echec capture immediate, fallback authorized:', captureErr.message)
+              await bookingDoc.ref.update({
+                status:                'authorized',
+                bookingCode,
+                authorizedAt:          new Date(),
+                stripePaymentIntentId: session.payment_intent ?? null,
+              })
+            }
+          } else {
+            await bookingDoc.ref.update({
+              status:                'authorized',
+              bookingCode,
+              authorizedAt:          new Date(),
+              stripePaymentIntentId: session.payment_intent ?? null,
+            })
+          }
 
           console.log(`[webhook] Booking paye : ${bookingDoc.id} (${bookingCode})`)
 
