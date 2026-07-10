@@ -35,7 +35,7 @@ if (!email || !prenom || !nom || !telephone || !adresse || !codePostal || !ville
 
     // 1. Vérifier si un hôte existe déjà avec cet email
     const existingSnap = await adminDb
-      .collection('hosts')
+      .collectionGroup('private')
       .where('email', '==', email)
       .limit(1)
       .get()

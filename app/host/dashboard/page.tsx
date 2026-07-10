@@ -137,11 +137,11 @@ export default function HostDashboardPage() {
     const unsub = onAuthStateChanged(auth, async user => {
       if (!user) { router.push('/host/login'); return }
       try {
-        const { collection: col, query: q, where: w, getDocs: gd } = await import('firebase/firestore')
+        const { collection: col, query: q, where: w, getDocs: gd, doc: d, getDoc: gd1 } = await import('firebase/firestore')
         const { db: firedb } = await import('@/lib/firebase')
-        const snap = await gd(q(col(firedb, 'hosts'), w('email', '==', user.email)))
-        if (snap.empty) { router.push('/host/login'); return }
-        const hostDoc = snap.docs[0]
+        const snap = await gd1(d(firedb, 'hosts', user.uid))
+        if (!snap.exists()) { router.push('/host/login'); return }
+        const hostDoc = snap
         const hostData = hostDoc.data() as HostData
         setHostId(hostDoc.id); setHost(hostData)
         if (hostData.horaires)       setHoraires(hostData.horaires)
