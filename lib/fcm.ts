@@ -13,7 +13,7 @@ const firebaseConfig = {
   appId:             process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-const VAPID_KEY = 'BImF4fPkGojlV0vGznREfb4st5x-QSvB3Clv8_2dL1gPLo0LOk7TMpq4kkd2QTus9SyMw2-n8wS7vSLNpELQHw'
+const VAPID_KEY = 'BImF4fPkGojlV0vGznREfb4st5x-QSvB3CIv8_2dL1gPLo0LOk7TMpq4kKd2QTus9SYzMw2-n8wS7vSLNpELQHw'
 
 export async function initPushNotifications(userId: string, userEmail: string) {
   if (typeof window === 'undefined') return
