@@ -85,6 +85,19 @@ export async function POST(req: NextRequest, { params }: { params: { convId: str
         reponse: texte,
         hostId: conv.hostId,
       })
+
+      // Notification push au client
+      const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib.fr'
+      await fetch(`${APP_URL}/api/push`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userEmail: conv.clientEmail,
+          title: 'Nouveau message',
+          body: `${host.prenom} vous a repondu`,
+          url: `${APP_URL}/messages`,
+        }),
+      }).catch(err => console.error('[messages POST] Erreur push client:', err.message))
     } else {
       const hostDoc = await adminDb.collection('hosts').doc(conv.hostId).get()
       const host = hostDoc.data()!
@@ -99,6 +112,19 @@ export async function POST(req: NextRequest, { params }: { params: { convId: str
         message: texte,
         messageId: convId,
       })
+
+      // Notification push a l'hote
+      const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib.fr'
+      await fetch(`${APP_URL}/api/push`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userEmail: hostPrivate.email,
+          title: 'Nouveau message',
+          body: `${conv.clientNom} vous a envoye un message`,
+          url: `${APP_URL}/host/dashboard`,
+        }),
+      }).catch(err => console.error('[messages POST] Erreur push hote:', err.message))
     }
 
     return NextResponse.json({ success: true })
