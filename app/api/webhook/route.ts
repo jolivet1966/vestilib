@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
                 stripePaymentIntentId: session.payment_intent ?? null,
                 hostEmail:             hostPrivateForEmail.email ?? null,
                 hostTelephone:         hostPrivateForEmail.telephone ?? null,
+                vuHote:                false,
               })
               console.log(`[webhook] Reservation a moins de 48h, capture immediate : ${bookingDoc.id} (${bookingCode})`)
             } catch (captureErr: any) {

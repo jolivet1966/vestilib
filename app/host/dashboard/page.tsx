@@ -160,6 +160,8 @@ export default function HostDashboardPage() {
         list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         setBookings(list)
         const { updateDoc, doc: docRef } = await import('firebase/firestore')
+        const nonVues = bookSnap.docs.filter(d => d.data().vuHote === false)
+        await Promise.all(nonVues.map(d => updateDoc(docRef(firedb, 'bookings', d.id), { vuHote: true })))
         const msgSnap = await gd(q(col(firedb, 'messages'), w('hostId', '==', hostDoc.id), w('lu', '==', false)))
         await Promise.all(msgSnap.docs.map(d => updateDoc(docRef(firedb, 'messages', d.id), { lu: true })))
         const balRes = await fetch(`/api/host-balance?hostId=${hostDoc.id}`)

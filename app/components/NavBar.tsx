@@ -25,9 +25,10 @@ export default function NavBar() {
       let hoteCount = 0
       let resaCount = 0
       let paiementCount = 0
+      let nouvelleResaCount = 0
 
       const updateBadge = () => {
-        setBadge(clientCount + hoteCount + resaCount + paiementCount)
+        setBadge(clientCount + hoteCount + resaCount + paiementCount + nouvelleResaCount)
         setPaiementEnAttente(paiementCount > 0)
       }
 
@@ -75,6 +76,18 @@ export default function NavBar() {
           snap => { resaCount = snap.size; updateBadge() }
         )
         unsubs.push(resaUnsub)
+
+        const nouvelleResaUnsub = onSnapshot(
+          query(collection(db, 'bookings'),
+            where('hostId', '==', hostId),
+            where('vuHote', '==', false)
+          ),
+          snap => {
+            nouvelleResaCount = snap.docs.filter(d => ['authorized', 'paid'].includes(d.data().status)).length
+            updateBadge()
+          }
+        )
+        unsubs.push(nouvelleResaUnsub)
       }
     })
 
