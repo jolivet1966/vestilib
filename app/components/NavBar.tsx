@@ -11,6 +11,7 @@ export default function NavBar() {
   const router = useRouter()
   const [badge, setBadge] = useState(0)
   const [paiementEnAttente, setPaiementEnAttente] = useState(false)
+  const [nouvelleResa, setNouvelleResa] = useState(false)
 
   useEffect(() => {
     const unsubs: (() => void)[] = []
@@ -19,7 +20,7 @@ export default function NavBar() {
       unsubs.forEach(u => u())
       unsubs.length = 0
 
-      if (!firebaseUser) { setBadge(0); setPaiementEnAttente(false); return }
+      if (!firebaseUser) { setBadge(0); setPaiementEnAttente(false); setNouvelleResa(false); return }
 
       let clientCount = 0
       let hoteCount = 0
@@ -30,6 +31,7 @@ export default function NavBar() {
       const updateBadge = () => {
         setBadge(clientCount + hoteCount + resaCount + paiementCount + nouvelleResaCount)
         setPaiementEnAttente(paiementCount > 0)
+        setNouvelleResa(nouvelleResaCount > 0)
       }
 
       // Écouter conversations non lues en tant que client
@@ -103,6 +105,9 @@ export default function NavBar() {
     if (paiementEnAttente) {
       e.preventDefault()
       router.push('/profil')
+    } else if (nouvelleResa) {
+      e.preventDefault()
+      router.push('/host/dashboard')
     }
   }
 
