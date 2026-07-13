@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
 import { doc, getDoc } from 'firebase/firestore'
 import { TARIFS_VESTILIB, CATEGORIES } from '@/lib/tarifs'
@@ -146,6 +146,27 @@ export default function OnboardHostPage() {
     if (prestations.length === 0) { setError('Selectionnez au moins une prestation.'); return }
     setError(''); setLoading(true)
     try {
+      let uidPourCompte = existingUid ?? undefined
+
+      if (!dejaConnecte) {
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, email, password)
+          uidPourCompte = cred.user.uid
+        } catch (authErr: any) {
+          if (authErr.code === 'auth/email-already-in-use') {
+            setError('Un compte existe deja avec cet email. Connectez-vous plutot.')
+          } else if (authErr.code === 'auth/invalid-email') {
+            setError('Email invalide.')
+          } else if (authErr.code === 'auth/weak-password') {
+            setError('Mot de passe trop faible (6 caracteres minimum).')
+          } else {
+            setError('Erreur lors de la creation du compte. Reessayez.')
+          }
+          setLoading(false)
+          return
+        }
+      }
+
       const res = await fetch('/api/onboard-host', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -154,7 +175,7 @@ export default function OnboardHostPage() {
           adresse, codePostal, ville,
           horaires, prestations,
           capaciteMax, capaciteMaxMoto, capaciteMaxVelo, capaciteMaxDepot,
-          existingUid: existingUid ?? undefined,
+          existingUid: uidPourCompte,
           modeReservation, typeCompte,
         }),
       })
