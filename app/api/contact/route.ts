@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req)
+    const rate = await checkRateLimit('contact', ip, 60)
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: `Merci de patienter ${rate.retryAfterSeconds}s avant un nouvel envoi.` },
+        { status: 429 }
+      )
+    }
+
     const { fromEmail, fromNom, sujet, message } = await req.json()
 
     if (!fromEmail || !fromNom || !sujet || !message) {

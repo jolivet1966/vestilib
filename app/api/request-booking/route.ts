@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/firebase-admin'
 import { sendNotificationHoteDemandeReservation } from '@/lib/emails'
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req)
+    const rate = await checkRateLimit('request-booking', ip, 15)
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: `Merci de patienter ${rate.retryAfterSeconds}s avant une nouvelle demande.` },
+        { status: 429 }
+      )
+    }
+
     const body = await req.json()
     const {
       hostId, customerEmail, date, creneau,
