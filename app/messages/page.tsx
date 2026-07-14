@@ -111,7 +111,12 @@ function MessagesContent() {
     if (!window.confirm('Supprimer ce message ?')) return
     try {
       await fetch(`/api/conversations/${selectedConvId}/messages/${messageId}`, { method: 'DELETE' })
-      setMessages(prev => prev.filter(m => m.id !== messageId))
+      const nouveauxMessages = messages.filter(m => m.id !== messageId)
+      setMessages(nouveauxMessages)
+      if (nouveauxMessages.length === 0) {
+        setSelectedConvId(null)
+        router.push('/messages')
+      }
     } catch {}
   }
 
@@ -223,7 +228,7 @@ function MessagesContent() {
                   )}
                 </div>
               </div>
-              {!selectedConvId && !showNewConv && (
+              {!selectedConvId && !showNewConv && conversations.length > 0 && (
                 <button onClick={() => { setShowNewConv(true); setSelectedConvId(null) }}
                   className="bg-[#F5C84A] text-[#1A3A6B] text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 hover:bg-[#e6b22a] transition-colors active:scale-95">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

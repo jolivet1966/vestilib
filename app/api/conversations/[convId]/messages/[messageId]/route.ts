@@ -15,6 +15,17 @@ export async function DELETE(
       .collection('conversations').doc(convId)
       .collection('messages').doc(messageId)
       .delete()
+
+    const remaining = await adminDb
+      .collection('conversations').doc(convId)
+      .collection('messages')
+      .limit(1)
+      .get()
+
+    if (remaining.empty) {
+      await adminDb.collection('conversations').doc(convId).delete()
+    }
+
     return NextResponse.json({ success: true })
   } catch (err: any) {
     console.error('[message DELETE]', err)
