@@ -110,7 +110,8 @@ function MessagesContent() {
     if (!selectedConvId) return
     if (!window.confirm('Supprimer ce message ?')) return
     try {
-      await fetch(`/api/conversations/${selectedConvId}/messages/${messageId}`, { method: 'DELETE' })
+      const role = conversationsRef.current.find(c => c.id === selectedConvId)?.monRole ?? 'client'
+      await fetch(`/api/conversations/${selectedConvId}/messages/${messageId}?role=${role}`, { method: 'DELETE' })
       const nouveauxMessages = messages.filter(m => m.id !== messageId)
       setMessages(nouveauxMessages)
       if (nouveauxMessages.length === 0 && userEmail) {

@@ -12,11 +12,13 @@ export async function GET(req: NextRequest, { params }: { params: { convId: stri
     const snap = await adminDb.collection('conversations').doc(convId)
       .collection('messages').orderBy('createdAt', 'asc').get()
 
-    const messages = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data(),
-      createdAt: d.data().createdAt?.toDate?.()?.toISOString() ?? null,
-    }))
+    const messages = snap.docs
+      .map(d => ({
+        id: d.id,
+        ...d.data(),
+        createdAt: d.data().createdAt?.toDate?.()?.toISOString() ?? null,
+      }))
+      .filter((m: any) => !(m.hiddenFor ?? []).includes(role))
 
     // Marquer comme lu selon le rôle
     if (role === 'client') {
