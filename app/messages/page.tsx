@@ -113,8 +113,9 @@ function MessagesContent() {
       await fetch(`/api/conversations/${selectedConvId}/messages/${messageId}`, { method: 'DELETE' })
       const nouveauxMessages = messages.filter(m => m.id !== messageId)
       setMessages(nouveauxMessages)
-      if (nouveauxMessages.length === 0) {
+      if (nouveauxMessages.length === 0 && userEmail) {
         setSelectedConvId(null)
+        await chargerConversations(userEmail, hostId)
         router.push('/messages')
       }
     } catch {}
