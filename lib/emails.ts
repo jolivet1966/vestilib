@@ -17,9 +17,9 @@ export async function sendConfirmationUser(params: {
     subject: `Reservation confirmee — ${params.bookingCode}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
-        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
-          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
-          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Pose. Profite. Reviens.</p>
+        <div style="border:1px solid #1A3A6B33;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+          <p style="color:#1A3A6B;font-size:18px;font-weight:500;letter-spacing:2px;margin:0 0 6px;">VESTILIB</p>
+          <p style="color:#999;margin:0;font-size:13px;">Pose. Profite. Reviens.</p>
         </div>
         <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
           <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 16px;">Reservation confirmee !</h2>
@@ -56,9 +56,9 @@ export async function sendNotificationHote(params: {
     subject: `Nouvelle reservation — ${params.bookingCode}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
-        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
-          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
-          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Nouvelle reservation recue</p>
+        <div style="border:1px solid #1A3A6B33;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+          <p style="color:#1A3A6B;font-size:18px;font-weight:500;letter-spacing:2px;margin:0 0 6px;">VESTILIB</p>
+          <p style="color:#999;margin:0;font-size:13px;">Nouvelle reservation recue</p>
         </div>
         <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
           <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 4px;">Bonjour ${params.hostPrenom}</h2>
@@ -90,9 +90,9 @@ export async function sendNotificationHoteDemandeReservation(params: {
     subject: `Demande de reservation — ${params.bookingCode}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
-        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
-          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
-          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Nouvelle demande de reservation</p>
+        <div style="border:1px solid #1A3A6B33;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+          <p style="color:#1A3A6B;font-size:18px;font-weight:500;letter-spacing:2px;margin:0 0 6px;">VESTILIB</p>
+          <p style="color:#999;margin:0;font-size:13px;">Nouvelle demande de reservation</p>
         </div>
         <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
           <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 4px;">Bonjour ${params.hostPrenom}</h2>
@@ -105,7 +105,7 @@ export async function sendNotificationHoteDemandeReservation(params: {
             <tr><td style="padding:8px 0;color:#1A3A6B;font-weight:700;">Montant</td><td style="padding:8px 0;text-align:right;font-weight:700;color:#1A3A6B;">${params.totalAmount}EUR</td></tr>
           </table>
           <div style="text-align:center;margin-top:8px;">
-            <a href="${appUrl}/host/dashboard" style="color:#1A3A6B;text-decoration:none;font-weight:700;font-size:15px;border-bottom:2px solid #F5C84A;padding-bottom:3px;">
+            <a href="${appUrl}/host/dashboard" style="color:#1A3A6B;text-decoration:none;font-weight:400;font-size:13px;">
               Voir dans le dashboard →
             </a>
           </div>
@@ -128,9 +128,9 @@ export async function sendBookingAccepted(params: {
     subject: `Reservation acceptee — ${params.bookingCode}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
-        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
-          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
-          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Votre demande a ete acceptee</p>
+        <div style="border:1px solid #1A3A6B33;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+          <p style="color:#1A3A6B;font-size:18px;font-weight:500;letter-spacing:2px;margin:0 0 6px;">VESTILIB</p>
+          <p style="color:#999;margin:0;font-size:13px;">Votre demande a ete acceptee</p>
         </div>
         <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
           <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 16px;">Bonne nouvelle !</h2>
@@ -167,8 +167,8 @@ export async function sendBookingRefused(params: {
     subject: `Demande non acceptee — ${params.bookingCode}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
-        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
-          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
+        <div style="border:1px solid #1A3A6B33;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+          <p style="color:#1A3A6B;font-size:18px;font-weight:500;letter-spacing:2px;margin:0 0 6px;">VESTILIB</p>
         </div>
         <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
           <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 16px;">Demande non acceptee</h2>
@@ -179,7 +179,7 @@ export async function sendBookingRefused(params: {
             ${params.motifRefus ? `<tr><td style="padding:8px 0;color:#666;">Motif</td><td style="padding:8px 0;text-align:right;">${params.motifRefus}</td></tr>` : ''}
           </table>
           <div style="text-align:center;margin-top:8px;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'}/map" style="color:#1A3A6B;text-decoration:none;font-weight:700;font-size:15px;border-bottom:2px solid #F5C84A;padding-bottom:3px;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'}/map" style="color:#1A3A6B;text-decoration:none;font-weight:400;font-size:13px;">
               Trouver un autre hote →
             </a>
           </div>
@@ -202,8 +202,8 @@ export async function sendMessageToHote(params: {
     subject: `Nouveau message — ${params.sujet}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
-        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
-          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
+        <div style="border:1px solid #1A3A6B33;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+          <p style="color:#1A3A6B;font-size:18px;font-weight:500;letter-spacing:2px;margin:0 0 6px;">VESTILIB</p>
         </div>
         <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
           <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 4px;">Bonjour ${params.hostPrenom}</h2>
@@ -213,7 +213,7 @@ export async function sendMessageToHote(params: {
             <p style="color:#333;margin:0;line-height:1.6;">${params.message}</p>
           </div>
           <div style="text-align:center;margin-top:8px;">
-            <a href="${appUrl}/messages" style="color:#1A3A6B;text-decoration:none;font-weight:700;font-size:15px;border-bottom:2px solid #F5C84A;padding-bottom:3px;">
+            <a href="${appUrl}/messages" style="color:#1A3A6B;text-decoration:none;font-weight:400;font-size:13px;">
               Repondre depuis VESTILIB →
             </a>
           </div>
@@ -234,8 +234,8 @@ export async function sendConfirmationMessage(params: {
     subject: `Votre message a ete envoye a ${params.hostPrenom} ${params.hostNom}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
-        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
-          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
+        <div style="border:1px solid #1A3A6B33;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+          <p style="color:#1A3A6B;font-size:18px;font-weight:500;letter-spacing:2px;margin:0 0 6px;">VESTILIB</p>
         </div>
         <div style="background:white;border-radius:16px;padding:24px;">
           <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 16px;">Message envoye !</h2>
@@ -261,9 +261,9 @@ export async function sendReponseClient(params: {
     subject: `Réponse à votre message — ${params.sujet}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
-        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
-          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
-          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Messagerie sécurisée</p>
+        <div style="border:1px solid #1A3A6B33;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+          <p style="color:#1A3A6B;font-size:18px;font-weight:500;letter-spacing:2px;margin:0 0 6px;">VESTILIB</p>
+          <p style="color:#999;margin:0;font-size:13px;">Messagerie sécurisée</p>
         </div>
         <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
           <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 4px;">Vous avez reçu une réponse</h2>
@@ -273,7 +273,7 @@ export async function sendReponseClient(params: {
             <p style="color:#333;margin:0;line-height:1.6;">${params.reponse}</p>
           </div>
           <div style="text-align:center;margin-top:8px;">
-            <a href=" ${appUrl}/messages?hostId=${params.hostId}" style="color:#1A3A6B;text-decoration:none;font-weight:700;font-size:15px;border-bottom:2px solid #F5C84A;padding-bottom:3px;">
+            <a href=" ${appUrl}/messages?hostId=${params.hostId}" style="color:#1A3A6B;text-decoration:none;font-weight:400;font-size:13px;">
               Voir dans VESTILIB →
             </a>
           </div>
@@ -318,9 +318,9 @@ export async function sendContactMessage(params: {
     subject: 'Nous avons bien reçu votre message',
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
-        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
-          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
-          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Merci de nous avoir contactes</p>
+        <div style="border:1px solid #1A3A6B33;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+          <p style="color:#1A3A6B;font-size:18px;font-weight:500;letter-spacing:2px;margin:0 0 6px;">VESTILIB</p>
+          <p style="color:#999;margin:0;font-size:13px;">Merci de nous avoir contactes</p>
         </div>
         <div style="background:white;border-radius:16px;padding:24px;">
           <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 12px;">Bonjour ${params.fromNom},</h2>
@@ -351,9 +351,9 @@ export async function sendCancellationHote(params: {
     subject: `Reservation annulee — ${params.bookingCode}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
-        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
-          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
-          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Annulation de reservation</p>
+        <div style="border:1px solid #1A3A6B33;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+          <p style="color:#1A3A6B;font-size:18px;font-weight:500;letter-spacing:2px;margin:0 0 6px;">VESTILIB</p>
+          <p style="color:#999;margin:0;font-size:13px;">Annulation de reservation</p>
         </div>
         <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
           <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 4px;">Bonjour ${params.hostPrenom}</h2>
@@ -384,9 +384,9 @@ export async function sendCancellationClient(params: {
     subject: `Reservation annulee — ${params.bookingCode}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
-        <div style="background:#1A3A6B;border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;">
-          <h1 style="color:#F5C84A;font-size:24px;margin:0 0 8px;">VESTILIB</h1>
-          <p style="color:rgba(255,255,255,0.7);margin:0;font-size:14px;">Annulation de reservation</p>
+        <div style="border:1px solid #1A3A6B33;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px;">
+          <p style="color:#1A3A6B;font-size:18px;font-weight:500;letter-spacing:2px;margin:0 0 6px;">VESTILIB</p>
+          <p style="color:#999;margin:0;font-size:13px;">Annulation de reservation</p>
         </div>
         <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
           <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 16px;">Votre reservation a ete annulee</h2>
@@ -397,7 +397,7 @@ export async function sendCancellationClient(params: {
             ${params.creneau ? `<tr><td style="padding:8px 0;color:#666;">Creneau</td><td style="padding:8px 0;text-align:right;">${params.creneau}</td></tr>` : ''}
           </table>
           <div style="text-align:center;margin-top:8px;">
-            <a href="${appUrl}/map" style="color:#1A3A6B;text-decoration:none;font-weight:700;font-size:15px;border-bottom:2px solid #F5C84A;padding-bottom:3px;">
+            <a href="${appUrl}/map" style="color:#1A3A6B;text-decoration:none;font-weight:400;font-size:13px;">
               Trouver un autre hote →
             </a>
           </div>
