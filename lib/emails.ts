@@ -104,9 +104,9 @@ export async function sendNotificationHoteDemandeReservation(params: {
             <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0;">Prestations</td><td style="padding:8px 0;text-align:right;">${params.description}</td></tr>
             <tr><td style="padding:8px 0;color:#1A3A6B;font-weight:700;">Montant</td><td style="padding:8px 0;text-align:right;font-weight:700;color:#1A3A6B;">${params.totalAmount}EUR</td></tr>
           </table>
-          <div style="display:flex;gap:12px;">
-            <a href="${appUrl}/host/dashboard" style="flex:1;display:block;background:#1A3A6B;color:#F5C84A;text-align:center;padding:14px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;">
-              Voir dans le dashboard
+          <div style="text-align:center;margin-top:8px;">
+            <a href="${appUrl}/host/dashboard" style="color:#1A3A6B;text-decoration:none;font-weight:700;font-size:15px;border-bottom:2px solid #F5C84A;padding-bottom:3px;">
+              Voir dans le dashboard →
             </a>
           </div>
         </div>
@@ -142,9 +142,11 @@ export async function sendBookingAccepted(params: {
             <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0;">Creneau</td><td style="padding:8px 0;text-align:right;">${params.creneau}</td></tr>
             <tr><td style="padding:8px 0;color:#1A3A6B;font-weight:700;">Total</td><td style="padding:8px 0;text-align:right;font-weight:700;color:#1A3A6B;">${params.totalAmount}EUR</td></tr>
           </table>
-          <a href="${params.paymentUrl}" style="display:block;background:#1A3A6B;color:#F5C84A;text-align:center;padding:16px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;">
-            Payer maintenant ${params.totalAmount}EUR
-          </a>
+          <div style="text-align:center;margin:8px 0;">
+            <a href="${params.paymentUrl}" style="color:#1A3A6B;text-decoration:none;font-weight:700;font-size:16px;border-bottom:2px solid #F5C84A;padding-bottom:3px;">
+              Payer maintenant ${params.totalAmount}EUR →
+            </a>
+          </div>
           <p style="color:#666;font-size:13px;text-align:center;margin-top:16px;">Vous pouvez consulter le detail de votre reservation dans <a href="https://vestilib-z8oc.vercel.app/profil" style="color:#1A3A6B;font-weight:600;">votre profil VESTILIB</a>.</p>
           <p style="color:#999;font-size:11px;text-align:center;margin-top:12px;">Ce lien de paiement est valable 24h.</p>
         </div>
@@ -176,9 +178,11 @@ export async function sendBookingRefused(params: {
             <tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0;">Creneau</td><td style="padding:8px 0;text-align:right;">${params.creneau}</td></tr>
             ${params.motifRefus ? `<tr><td style="padding:8px 0;color:#666;">Motif</td><td style="padding:8px 0;text-align:right;">${params.motifRefus}</td></tr>` : ''}
           </table>
-          <a href="${process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'}/map" style="display:block;background:#1A3A6B;color:#F5C84A;text-align:center;padding:14px;border-radius:12px;text-decoration:none;font-weight:600;">
-            Trouver un autre hote
-          </a>
+          <div style="text-align:center;margin-top:8px;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'}/map" style="color:#1A3A6B;text-decoration:none;font-weight:700;font-size:15px;border-bottom:2px solid #F5C84A;padding-bottom:3px;">
+              Trouver un autre hote →
+            </a>
+          </div>
         </div>
         <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Nous sommes desoles pour ce desagrement</p>
       </div>
@@ -208,9 +212,11 @@ export async function sendMessageToHote(params: {
             <p style="font-weight:600;color:#1A3A6B;margin:0 0 8px;">Sujet : ${params.sujet}</p>
             <p style="color:#333;margin:0;line-height:1.6;">${params.message}</p>
           </div>
-          <a href="${appUrl}/messages" style="display:block;background:#1A3A6B;color:#F5C84A;text-align:center;padding:14px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;">
-            Repondre depuis VESTILIB
-          </a>
+          <div style="text-align:center;margin-top:8px;">
+            <a href="${appUrl}/messages" style="color:#1A3A6B;text-decoration:none;font-weight:700;font-size:15px;border-bottom:2px solid #F5C84A;padding-bottom:3px;">
+              Repondre depuis VESTILIB →
+            </a>
+          </div>
         </div>
         <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Messagerie securisee</p>
       </div>
@@ -266,9 +272,11 @@ export async function sendReponseClient(params: {
             <p style="font-weight:600;color:#1A3A6B;margin:0 0 8px;">Sujet : ${params.sujet}</p>
             <p style="color:#333;margin:0;line-height:1.6;">${params.reponse}</p>
           </div>
-          <a href=" ${appUrl}/messages?hostId=${params.hostId}"style="display:block;background:#1A3A6B;color:#F5C84A;text-align:center;padding:14px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;">
-            Voir dans VESTILIB
-          </a>
+          <div style="text-align:center;margin-top:8px;">
+            <a href=" ${appUrl}/messages?hostId=${params.hostId}" style="color:#1A3A6B;text-decoration:none;font-weight:700;font-size:15px;border-bottom:2px solid #F5C84A;padding-bottom:3px;">
+              Voir dans VESTILIB →
+            </a>
+          </div>
         </div>
         <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Messagerie sécurisée · Aucune coordonnée partagée</p>
       </div>
@@ -388,9 +396,11 @@ export async function sendCancellationClient(params: {
             ${dateStr ? `<tr><td style="padding:8px 0;color:#666;border-bottom:1px solid #f0f0f0;">Date</td><td style="padding:8px 0;text-align:right;">${dateStr}</td></tr>` : ''}
             ${params.creneau ? `<tr><td style="padding:8px 0;color:#666;">Creneau</td><td style="padding:8px 0;text-align:right;">${params.creneau}</td></tr>` : ''}
           </table>
-          <a href="${appUrl}/map" style="display:block;background:#1A3A6B;color:#F5C84A;text-align:center;padding:14px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px;">
-            Trouver un autre hote
-          </a>
+          <div style="text-align:center;margin-top:8px;">
+            <a href="${appUrl}/map" style="color:#1A3A6B;text-decoration:none;font-weight:700;font-size:15px;border-bottom:2px solid #F5C84A;padding-bottom:3px;">
+              Trouver un autre hote →
+            </a>
+          </div>
         </div>
         <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Nous sommes desoles pour ce desagrement</p>
       </div>
