@@ -143,7 +143,7 @@ export async function sendBookingAccepted(params: {
             <tr><td style="padding:8px 0;color:#1A3A6B;font-weight:700;">Total</td><td style="padding:8px 0;text-align:right;font-weight:700;color:#1A3A6B;">${params.totalAmount}EUR</td></tr>
           </table>
           <div style="text-align:center;margin:8px 0;">
-            <a href="${params.paymentUrl}" style="color:#1A3A6B;text-decoration:none;font-weight:700;font-size:16px;border-bottom:2px solid #F5C84A;padding-bottom:3px;">
+            <a href="${params.paymentUrl}" style="color:#1A3A6B;text-decoration:none;font-weight:400;font-size:14px;">
               Payer maintenant ${params.totalAmount}EUR →
             </a>
           </div>
@@ -266,15 +266,13 @@ export async function sendReponseClient(params: {
           <p style="color:#999;margin:0;font-size:13px;">Messagerie sécurisée</p>
         </div>
         <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
-          <h2 style="color:#1A3A6B;font-size:18px;margin:0 0 4px;">Vous avez reçu une réponse</h2>
           <p style="color:#666;font-size:14px;margin:0 0 20px;"><strong>${params.fromPrenom}</strong> a répondu à votre message.</p>
           <div style="background:#F5C84A20;border-left:4px solid #F5C84A;padding:16px;border-radius:0 8px 8px 0;margin-bottom:20px;">
-            <p style="font-weight:600;color:#1A3A6B;margin:0 0 8px;">Sujet : ${params.sujet}</p>
             <p style="color:#333;margin:0;line-height:1.6;">${params.reponse}</p>
           </div>
           <div style="text-align:center;margin-top:8px;">
             <a href=" ${appUrl}/messages?hostId=${params.hostId}" style="color:#1A3A6B;text-decoration:none;font-weight:400;font-size:13px;">
-              Voir dans VESTILIB →
+              Répondre →
             </a>
           </div>
         </div>
