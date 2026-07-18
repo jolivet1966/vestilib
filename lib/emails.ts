@@ -2,6 +2,7 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY!)
 const FROM = 'VESTILIB <noreply@vestilib.fr>'
+const NO_REPLY = 'no-reply@vestilib.fr' // adresse claire, non surveillée, pour dissuader la réponse directe
 
 // ─── Confirmation utilisateur paiement immediat ───────
 export async function sendConfirmationUser(params: {
@@ -198,7 +199,9 @@ export async function sendMessageToHote(params: {
 }) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'
   await resend.emails.send({
-    from: FROM, to: params.toHote,
+    from: FROM,
+    to: params.toHote,
+    reply_to: NO_REPLY,
     subject: `Nouveau message — ${params.sujet}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
@@ -213,10 +216,11 @@ export async function sendMessageToHote(params: {
             <p style="color:#333;margin:0;line-height:1.6;">${params.message}</p>
           </div>
           <div style="text-align:center;margin-top:8px;">
-            <a href="${appUrl}/messages" style="color:#1A3A6B;text-decoration:none;font-weight:400;font-size:13px;">
-              Repondre depuis VESTILIB →
+            <a href="${appUrl}/messages" style="display:inline-block;background:#1A3A6B;color:#F5C84A;text-decoration:none;font-weight:600;font-size:14px;padding:12px 24px;border-radius:8px;">
+              Répondre sur VESTILIB
             </a>
           </div>
+          <p style="color:#999;font-size:11px;text-align:center;margin-top:16px;">⚠️ Ne répondez pas directement à cet email, votre réponse ne sera pas transmise. Utilisez le bouton ci-dessus.</p>
         </div>
         <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Messagerie securisee</p>
       </div>
@@ -257,7 +261,9 @@ export async function sendReponseClient(params: {
 }) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'
   await resend.emails.send({
-    from: FROM, to: params.to,
+    from: FROM,
+    to: params.to,
+    reply_to: NO_REPLY,
     subject: `Réponse à votre message — ${params.sujet}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 16px;background:#f9f9f9;">
@@ -268,6 +274,20 @@ export async function sendReponseClient(params: {
         <div style="background:white;border-radius:16px;padding:24px;margin-bottom:16px;">
           <p style="color:#666;font-size:14px;margin:0 0 20px;"><strong>${params.fromPrenom}</strong> a répondu à votre message.</p>
           <div style="background:#F5C84A20;border-left:4px solid #F5C84A;padding:16px;border-radius:0 8px 8px 0;margin-bottom:20px;">
+            <p style="color:#333;margin:0;line-height:1.6;">${params.reponse}</p>
+          </div>
+          <div style="text-align:center;margin-top:8px;">
+            <a href="${appUrl}/messages?hostId=${params.hostId}" style="display:inline-block;background:#1A3A6B;color:#F5C84A;text-decoration:none;font-weight:600;font-size:14px;padding:12px 24px;border-radius:8px;">
+              Répondre sur VESTILIB
+            </a>
+          </div>
+          <p style="color:#999;font-size:11px;text-align:center;margin-top:16px;">⚠️ Ne répondez pas directement à cet email, votre réponse ne sera pas transmise. Utilisez le bouton ci-dessus.</p>
+        </div>
+        <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Messagerie sécurisée · Aucune coordonnée partagée</p>
+      </div>
+    `,
+  })
+} style="background:#F5C84A20;border-left:4px solid #F5C84A;padding:16px;border-radius:0 8px 8px 0;margin-bottom:20px;">
             <p style="color:#333;margin:0;line-height:1.6;">${params.reponse}</p>
           </div>
           <div style="text-align:center;margin-top:8px;">
