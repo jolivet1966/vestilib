@@ -34,7 +34,6 @@ export default function NavBar() {
         setNouvelleResa(nouvelleResaCount > 0)
       }
 
-      // Écouter conversations non lues en tant que client
       const clientUnsub = onSnapshot(
         query(collection(db, 'conversations'),
           where('clientEmail', '==', firebaseUser.email),
@@ -44,7 +43,6 @@ export default function NavBar() {
       )
       unsubs.push(clientUnsub)
 
-      // Écouter réservations acceptées en attente de paiement (côté client)
       const paiementUnsub = onSnapshot(
         query(collection(db, 'bookings'),
           where('customerEmail', '==', firebaseUser.email),
@@ -54,7 +52,6 @@ export default function NavBar() {
       )
       unsubs.push(paiementUnsub)
 
-      // Vérifier si hôte
       const { getDoc: gd, doc: d } = await import('firebase/firestore')
       const hostSnap = await gd(d(db, 'hosts', firebaseUser.uid))
 
@@ -112,34 +109,34 @@ export default function NavBar() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-lg z-50">
-      <div className="max-w-lg mx-auto grid grid-cols-3">
+    <nav className="fixed bottom-0 left-0 right-0 md:sticky md:top-0 md:bottom-auto bg-white border-t md:border-t-0 md:border-b border-gray-100 shadow-lg md:shadow-sm z-50">
+      <div className="max-w-lg mx-auto grid grid-cols-3 md:max-w-none md:flex md:justify-center md:gap-10 md:py-1">
 
-        <Link href="/map" className={`flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/map')}`}>
+        <Link href="/map" className={`flex flex-col md:flex-row items-center justify-center py-3 md:py-2 md:px-4 gap-1 md:gap-2 md:rounded-xl transition-colors ${actif('/map')}`}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
-          <span className="text-[10px] font-medium">Rechercher</span>
+          <span className="text-[10px] md:text-sm font-medium">Rechercher</span>
         </Link>
 
         <Link href="/messages" onClick={handleMessagesClick}
-          className={`relative flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/messages')}`}>
+          className={`relative flex flex-col md:flex-row items-center justify-center py-3 md:py-2 md:px-4 gap-1 md:gap-2 md:rounded-xl transition-colors ${actif('/messages')}`}>
           {badge > 0 && (
-            <span className="absolute top-2 right-6 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[9px] font-bold">
+            <span className="absolute top-2 right-6 md:right-2 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-[9px] font-bold">
               {badge}
             </span>
           )}
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
-          <span className="text-[10px] font-medium">Messages</span>
+          <span className="text-[10px] md:text-sm font-medium">Messages</span>
         </Link>
 
-        <Link href="/profil" className={`flex flex-col items-center justify-center py-3 gap-1 transition-colors ${actif('/profil')}`}>
+        <Link href="/profil" className={`flex flex-col md:flex-row items-center justify-center py-3 md:py-2 md:px-4 gap-1 md:gap-2 md:rounded-xl transition-colors ${actif('/profil')}`}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
           </svg>
-          <span className="text-[10px] font-medium">Profil</span>
+          <span className="text-[10px] md:text-sm font-medium">Profil</span>
         </Link>
 
       </div>
