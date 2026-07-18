@@ -287,19 +287,6 @@ export async function sendReponseClient(params: {
       </div>
     `,
   })
-} style="background:#F5C84A20;border-left:4px solid #F5C84A;padding:16px;border-radius:0 8px 8px 0;margin-bottom:20px;">
-            <p style="color:#333;margin:0;line-height:1.6;">${params.reponse}</p>
-          </div>
-          <div style="text-align:center;margin-top:8px;">
-            <a href=" ${appUrl}/messages?hostId=${params.hostId}" style="color:#1A3A6B;text-decoration:none;font-weight:400;font-size:13px;">
-              Répondre →
-            </a>
-          </div>
-        </div>
-        <p style="color:#999;font-size:12px;text-align:center;">VESTILIB · Messagerie sécurisée · Aucune coordonnée partagée</p>
-      </div>
-    `,
-  })
 }
 // ─── Contact formulaire "Nous contacter" ──────────────
 export async function sendContactMessage(params: {
