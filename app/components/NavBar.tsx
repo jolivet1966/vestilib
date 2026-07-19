@@ -109,7 +109,7 @@ export default function NavBar() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 md:sticky md:top-0 md:bottom-auto bg-white border-t md:border-t-0 md:border-b border-gray-100 shadow-lg md:shadow-sm z-50">
+    <nav className="fixed bottom-0 left-0 right-0 md:top-0 md:bottom-auto bg-white border-t md:border-t-0 md:border-b border-gray-100 shadow-lg md:shadow-sm z-50">
       <div className="max-w-lg mx-auto grid grid-cols-3 md:max-w-none md:flex md:justify-center md:gap-10 md:py-1">
 
         <Link href="/map" className={`flex flex-col md:flex-row items-center justify-center py-3 md:py-2 md:px-4 gap-1 md:gap-2 md:rounded-xl transition-colors ${actif('/map')}`}>
