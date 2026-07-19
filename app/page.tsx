@@ -68,7 +68,7 @@ function HomeContent() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans overflow-x-hidden pb-24">
+    <div className="min-h-screen bg-gray-50 font-sans overflow-x-hidden pb-24 md:pb-6">
 
       {/* Popup connecté */}
       {connecte && (
@@ -165,45 +165,50 @@ function HomeContent() {
       )}
 
       {/* Hero */}
-      <section className="px-4 pt-4 pb-6">
-        <div className="bg-gradient-to-br from-[#1A3A6B] to-[#0C2447] rounded-3xl p-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-[#F5C84A]/10 rounded-full -translate-y-10 translate-x-10" />
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-6" />
-          <div className="relative z-10">
-            <span className="inline-flex items-center gap-1.5 bg-[#F5C84A]/20 text-[#F5C84A] text-xs font-semibold px-3 py-1 rounded-full mb-4">
-              <span className="w-1.5 h-1.5 bg-[#F5C84A] rounded-full"></span>
-              Disponible partout en France
-            </span>
-            <h1 className="text-white font-black text-2xl leading-tight mb-3">
-              À la plage ou à la ville,<br/>libérez-vous<br/>de vos affaires.
-            </h1>
-            <p className="text-white/60 text-sm leading-relaxed mb-6">
-              Déposez casque, sac ou équipement en toute sécurité chez un hôte près de vous.
-            </p>
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <p className="text-[#F5C84A] font-black text-lg">2 min</p>
-                <p className="text-white/40 text-[10px]">pour réserver</p>
+      <section className="px-4 pt-4 pb-6 md:max-w-5xl md:mx-auto md:px-8 md:pt-10">
+        <div className="bg-gradient-to-br from-[#1A3A6B] to-[#0C2447] md:bg-none md:bg-white md:border md:border-gray-100 rounded-3xl p-6 md:p-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-[#F5C84A]/10 rounded-full -translate-y-10 translate-x-10 md:hidden" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-6 md:hidden" />
+          <div className="relative z-10 md:grid md:grid-cols-2 md:gap-10 md:items-center">
+            <div>
+              <span className="inline-flex items-center gap-1.5 bg-[#F5C84A]/20 md:bg-[#1A3A6B]/8 text-[#F5C84A] md:text-[#1A3A6B] text-xs font-semibold px-3 py-1 rounded-full mb-4">
+                <span className="w-1.5 h-1.5 bg-[#F5C84A] md:bg-[#1A3A6B] rounded-full"></span>
+                Disponible partout en France
+              </span>
+              <h1 className="text-white md:text-[#1A3A6B] font-black text-2xl md:text-4xl leading-tight mb-3">
+                À la plage ou à la ville,<br/>libérez-vous<br/>de vos affaires.
+              </h1>
+              <p className="text-white/60 md:text-gray-500 text-sm md:text-base leading-relaxed mb-6 md:max-w-md">
+                Déposez casque, sac ou équipement en toute sécurité chez un hôte près de vous.
+              </p>
+              <div className="flex items-center gap-4 md:gap-8">
+                <div className="text-center md:text-left">
+                  <p className="text-[#F5C84A] md:text-[#1A3A6B] font-black text-lg md:text-xl">2 min</p>
+                  <p className="text-white/40 md:text-gray-400 text-[10px] md:text-xs">pour réserver</p>
+                </div>
+                <div className="w-px h-8 bg-white/10 md:bg-gray-200" />
+                <div className="text-center md:text-left">
+                  <p className="text-[#F5C84A] md:text-[#1A3A6B] font-black text-lg md:text-xl">100%</p>
+                  <p className="text-white/40 md:text-gray-400 text-[10px] md:text-xs">sécurisé</p>
+                </div>
+                <div className="w-px h-8 bg-white/10 md:bg-gray-200" />
+                <div className="text-center md:text-left">
+                  <p className="text-[#F5C84A] md:text-[#1A3A6B] font-black text-lg md:text-xl">0€</p>
+                  <p className="text-white/40 md:text-gray-400 text-[10px] md:text-xs">d'inscription</p>
+                </div>
               </div>
-              <div className="w-px h-8 bg-white/10" />
-              <div className="text-center">
-                <p className="text-[#F5C84A] font-black text-lg">100%</p>
-                <p className="text-white/40 text-[10px]">sécurisé</p>
-              </div>
-              <div className="w-px h-8 bg-white/10" />
-              <div className="text-center">
-                <p className="text-[#F5C84A] font-black text-lg">0€</p>
-                <p className="text-white/40 text-[10px]">d'inscription</p>
-              </div>
+            </div>
+            <div className="hidden md:flex bg-gray-50 border border-gray-100 rounded-2xl h-64 items-center justify-center text-gray-300 text-sm">
+              Illustration à venir
             </div>
           </div>
         </div>
       </section>
 
       {/* CTAs */}
-      <section className="px-4 pb-6 space-y-3">
+      <section className="px-4 pb-6 space-y-3 md:max-w-5xl md:mx-auto md:px-8 md:pb-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
         <Link href="/map"
-          className="flex items-center gap-4 w-full bg-[#1A3A6B] px-5 py-4 rounded-2xl shadow-lg shadow-[#1A3A6B]/20 active:scale-95 transition-all">
+          className="flex items-center gap-4 w-full bg-[#1A3A6B] px-5 py-4 md:py-6 rounded-2xl shadow-lg shadow-[#1A3A6B]/20 active:scale-95 md:hover:scale-[1.02] transition-all">
           <div className="w-10 h-10 bg-[#F5C84A]/20 rounded-xl flex items-center justify-center flex-shrink-0">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5C84A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
@@ -217,7 +222,7 @@ function HomeContent() {
         </Link>
 
         <button onClick={() => setPopup(true)}
-          className="flex items-center gap-4 w-full bg-white border border-gray-100 px-5 py-4 rounded-2xl shadow-sm active:scale-95 transition-all">
+          className="flex items-center gap-4 w-full bg-white border border-gray-100 px-5 py-4 md:py-6 rounded-2xl shadow-sm active:scale-95 md:hover:scale-[1.02] transition-all">
           <div className="w-10 h-10 bg-[#1A3A6B]/5 rounded-xl flex items-center justify-center flex-shrink-0">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A3A6B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
@@ -234,7 +239,7 @@ function HomeContent() {
       </section>
 
       {/* Comment ça marche — timeline */}
-      <section className="px-4 pb-6">
+      <section className="px-4 pb-6 md:max-w-5xl md:mx-auto md:px-8 md:pb-10">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-1">Comment ça marche</p>
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
           {[
