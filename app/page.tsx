@@ -267,9 +267,9 @@ function HomeContent() {
       </section>
 
       {/* Avantages — liste horizontale */}
-      <section className="px-4 pb-8">
+      <section className="px-4 pb-8 md:max-w-5xl md:mx-auto md:px-8 md:pb-10">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-1">Pourquoi VESTILIB</p>
-        <div className="space-y-2">
+        <div className="space-y-2 md:grid md:grid-cols-2 md:gap-3 md:space-y-0">
           {[
             { icon: '🎒', titre: 'Tout type d\'affaires', desc: 'Casque, sac, vélo, équipement sportif' },
             { icon: '⚡', titre: 'Ultra rapide', desc: 'Réservation confirmée en 30 secondes' },
