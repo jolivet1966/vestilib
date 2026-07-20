@@ -191,16 +191,6 @@ function MessagesContent() {
   return (
     <div className="min-h-screen bg-[#F8F9FC] pb-24">
 
-      {/* Lien retour desktop, hors bandeau */}
-      <div className="hidden md:flex justify-end px-6 pt-4 max-w-5xl mx-auto">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-gray-400 text-xs hover:text-gray-600 transition-colors">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-          Accueil
-        </Link>
-      </div>
-
       {/* HEADER */}
       <div className="bg-[#1A3A6B] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10"
