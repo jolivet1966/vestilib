@@ -191,13 +191,23 @@ function MessagesContent() {
   return (
     <div className="min-h-screen bg-[#F8F9FC] pb-24">
 
+      {/* Lien retour desktop, hors bandeau */}
+      <div className="hidden md:flex justify-end px-6 pt-4 max-w-5xl mx-auto">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-gray-400 text-xs hover:text-gray-600 transition-colors">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+          Accueil
+        </Link>
+      </div>
+
       {/* HEADER */}
       <div className="bg-[#1A3A6B] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #F5C84A 0%, transparent 60%)' }} />
-        <div className="relative px-4 pt-10 pb-5">
+        <div className="relative px-4 pt-10 md:pt-5 pb-5 md:pb-4">
           <div className="max-w-lg mx-auto">
-            <Link href="/" className="inline-flex items-center gap-1.5 text-white/50 text-xs mb-4 hover:text-white/80 transition-colors">
+            <Link href="/" className="inline-flex items-center gap-1.5 text-white/50 text-xs mb-4 md:hidden hover:text-white/80 transition-colors">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 5l-7 7 7 7"/>
               </svg>
@@ -218,7 +228,7 @@ function MessagesContent() {
                     {showNewConv ? 'Nouveau message' : selectedConvId ? interlocuteur ?? 'Conversation' : 'Messages'}
                   </h1>
                   {!selectedConvId && !showNewConv && (
-                    <p className="text-white/50 text-xs mt-0.5">
+                    <p className="text-white/50 text-xs mt-0.5 md:hidden">
                       {conversations.length} conversation{conversations.length > 1 ? 's' : ''}
                       {nbNonLus > 0 && ` · ${nbNonLus} non lu${nbNonLus > 1 ? 's' : ''}`}
                     </p>
