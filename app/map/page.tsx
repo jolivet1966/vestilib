@@ -130,11 +130,11 @@ export default function MapPage() {
           <span className="text-[#F5C84A] font-black tracking-widest text-sm">VESTILIB</span>
         </Link>
         <div className="flex-1 relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 md:text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
           <input ref={inputRef} type="text" placeholder="Ville, adresse, événement..."
-            className="w-full bg-white/15 text-white placeholder-white/40 border border-white/20 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:bg-white/25 transition-colors" />
+            className="w-full bg-white/15 md:bg-white text-white md:text-gray-700 placeholder-white/40 md:placeholder-gray-400 border border-white/20 md:border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:bg-white/25 md:focus:bg-white transition-colors" />
         </div>
       </div>
 
