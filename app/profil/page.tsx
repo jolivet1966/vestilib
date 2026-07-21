@@ -267,6 +267,7 @@ export default function ProfilPage() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FC] pb-28">
+      <div className="hidden md:block h-16" />
 
       {/* HEADER */}
       <div className="bg-[#1A3A6B] relative overflow-hidden">

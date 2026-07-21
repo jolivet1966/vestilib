@@ -117,6 +117,7 @@ export default function MapPage() {
 
   return (
     <div className="flex flex-col bg-gray-50" style={{ height: '100dvh' }}>
+      <div className="hidden md:block h-16 flex-shrink-0" />
 
       {/* Header */}
       <div className="bg-[#1A3A6B] px-4 py-3 flex items-center gap-3 flex-shrink-0 shadow-lg">
