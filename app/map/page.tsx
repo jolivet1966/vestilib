@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
+import NavBar from '@/app/components/NavBar'
 import { TARIFS_VESTILIB } from '@/lib/tarifs'
 
 interface Host {
@@ -259,6 +260,7 @@ export default function MapPage() {
           )}
         </div>
       </div>
+      <NavBar />
     </div>
   )
 }
