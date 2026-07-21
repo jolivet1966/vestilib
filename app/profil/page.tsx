@@ -5,6 +5,7 @@ import { onAuthStateChanged, signOut, updatePassword, EmailAuthProvider, reauthe
 import { auth, db } from '@/lib/firebase'
 import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore'
 import Link from 'next/link'
+import NavBar from '@/app/components/NavBar'
 
 interface UserData {
   id: string; prenom: string; nom: string; email: string; telephone: string
@@ -271,9 +272,9 @@ export default function ProfilPage() {
       <div className="bg-[#1A3A6B] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #F5C84A 0%, transparent 60%)' }} />
-        <div className="relative px-4 pt-10 pb-8">
+        <div className="relative px-4 pt-10 md:pt-5 pb-8 md:pb-4">
           <div className="max-w-lg mx-auto">
-            <Link href="/" className="inline-flex items-center gap-1.5 text-white/50 text-xs mb-6 hover:text-white/80 transition-colors">
+            <Link href="/" className="inline-flex items-center gap-1.5 text-white/50 text-xs mb-6 md:hidden hover:text-white/80 transition-colors">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 5l-7 7 7 7"/>
               </svg>
@@ -853,6 +854,7 @@ export default function ProfilPage() {
           </>
         )}
       </div>
+      <NavBar />
     </div>
   )
 }
