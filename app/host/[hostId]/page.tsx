@@ -108,13 +108,13 @@ useEffect(() => {
   }, [hostId])
   if (authChecked && !isConnected) {
     return (
-      <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center gap-4 px-6 text-center">
+      <div className="min-h-screen bg-[#1E3A8A] flex flex-col items-center justify-center gap-4 px-6 text-center">
         <div className="w-16 h-16 bg-[#F5C84A]/20 rounded-2xl flex items-center justify-center text-3xl mb-2">🔐</div>
         <h1 className="text-xl font-bold text-white">Connexion requise</h1>
         <p className="text-sm text-white/50 max-w-xs">Pour réserver un point de dépôt, vous devez avoir un compte VESTILIB.</p>
         <div className="flex flex-col gap-3 w-full max-w-xs mt-4">
           <Link href={`/user/login?redirect=/host/${hostId}`}
-            className="w-full bg-[#F5C84A] text-[#1A3A6B] font-bold py-3.5 rounded-2xl text-center">
+            className="w-full bg-[#F5C84A] text-[#1E3A8A] font-bold py-3.5 rounded-2xl text-center">
             Se connecter
           </Link>
           <Link href={`/user/register?redirect=/host/${hostId}`}
@@ -129,14 +129,14 @@ useEffect(() => {
 
   if (loading || !authChecked) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-[#1A3A6B] border-t-transparent rounded-full animate-spin" />
+      <div className="w-10 h-10 border-4 border-[#1E3A8A] border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
   if (error || !host) return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
       <p className="text-gray-500">{error || 'Hôte introuvable'}</p>
-      <Link href="/map" className="text-[#1A3A6B] text-sm underline">Retour à la carte</Link>
+      <Link href="/map" className="text-[#1E3A8A] text-sm underline">Retour à la carte</Link>
     </div>
   )
 
@@ -145,7 +145,7 @@ useEffect(() => {
       <div className="text-5xl mb-2">🔒</div>
       <h1 className="text-xl font-bold text-gray-900">Point de dépôt fermé</h1>
       <p className="text-sm text-gray-400">Cet hôte a temporairement fermé son offre VESTILIB.</p>
-      <Link href="/map" className="bg-[#1A3A6B] text-[#F5C84A] font-semibold px-8 py-3 rounded-xl">
+      <Link href="/map" className="bg-[#1E3A8A] text-[#F5C84A] font-semibold px-8 py-3 rounded-xl">
         Trouver un autre hôte
       </Link>
     </div>
@@ -292,7 +292,7 @@ useEffect(() => {
     <div className="min-h-screen bg-gray-50 pb-10">
 
       {/* Header */}
-      <div className="bg-[#1A3A6B] px-4 py-3 flex items-center gap-3 sticky top-0 z-10 shadow-md">
+      <div className="bg-[#1E3A8A] px-4 py-3 flex items-center gap-3 sticky top-0 z-10 shadow-md">
         <Link href="/map" className="text-white/50 hover:text-white transition-colors">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
@@ -328,17 +328,17 @@ useEffect(() => {
             {JOURS_ORDER.map(jour => {
               const h = host.horaires?.[jour]
               return (
-                <div key={jour} className={`text-center rounded-lg p-1.5 ${h?.ouvert ? 'bg-[#1A3A6B]/5' : 'bg-gray-50'}`}>
+                <div key={jour} className={`text-center rounded-lg p-1.5 ${h?.ouvert ? 'bg-[#1E3A8A]/5' : 'bg-gray-50'}`}>
                   <p className="text-[9px] font-semibold text-gray-400 mb-0.5">{JOURS_LABELS[jour]}</p>
                   {h?.ouvert ? (
-                    <><p className="text-[8px] text-[#1A3A6B] font-medium leading-tight">{h.ouverture}</p><p className="text-[8px] text-[#1A3A6B] leading-tight">{h.fermeture}</p></>
+                    <><p className="text-[8px] text-[#1E3A8A] font-medium leading-tight">{h.ouverture}</p><p className="text-[8px] text-[#1E3A8A] leading-tight">{h.fermeture}</p></>
                   ) : <p className="text-[9px] text-gray-300 mt-1">—</p>}
                 </div>
               )
             })}
           </div>
         </div>
-        <Link href={`/messages?hostId=${host.id}`} className="flex items-center justify-center gap-1.5 text-[#1A3A6B]/60 text-xs py-2 hover:text-[#1A3A6B] transition-colors w-full">
+        <Link href={`/messages?hostId=${host.id}`} className="flex items-center justify-center gap-1.5 text-[#1E3A8A]/60 text-xs py-2 hover:text-[#1E3A8A] transition-colors w-full">
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
   Contacter l&apos;hote
 </Link>
@@ -348,7 +348,7 @@ useEffect(() => {
         <div className="flex gap-2 mb-5">
           {[{n:1,label:'Prestations'},{n:2,label:'Date & Heure'},{n:3,label:'Paiement'}].map(s => (
             <div key={s.n} className={`flex-1 text-center py-2.5 rounded-xl text-xs font-semibold border transition-all ${
-              etape === s.n ? 'bg-[#1A3A6B] text-[#F5C84A] border-[#1A3A6B] shadow-sm' :
+              etape === s.n ? 'bg-[#1E3A8A] text-[#F5C84A] border-[#1E3A8A] shadow-sm' :
               etape > s.n  ? 'bg-green-500 text-white border-green-500' :
               'bg-white text-gray-300 border-gray-100'
             }`}>
@@ -375,12 +375,12 @@ useEffect(() => {
                           onClick={() => !selected && toggleTarif(tarif.id)}
                           className={`flex items-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer ${
                             selected
-                              ? 'border-[#1A3A6B] bg-white shadow-sm'
+                              ? 'border-[#1E3A8A] bg-white shadow-sm'
                               : 'border-gray-100 bg-white hover:border-gray-200'
                           }`}>
                           {/* Checkbox visuel */}
                           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                            selected ? 'bg-[#1A3A6B] border-[#1A3A6B]' : 'border-gray-300'
+                            selected ? 'bg-[#1E3A8A] border-[#1E3A8A]' : 'border-gray-300'
                           }`}
                             onClick={e => { e.stopPropagation(); toggleTarif(tarif.id) }}>
                             {selected && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -400,14 +400,14 @@ useEffect(() => {
                                   className="w-7 h-7 rounded-full bg-gray-100 text-gray-600 font-bold text-base flex items-center justify-center hover:bg-gray-200 active:scale-90 transition-all">
                                   −
                                 </button>
-                                <span className="text-sm font-bold text-[#1A3A6B] w-4 text-center">{qty}</span>
+                                <span className="text-sm font-bold text-[#1E3A8A] w-4 text-center">{qty}</span>
                                 <button onClick={e => { e.stopPropagation(); updateQty(tarif.id, 1) }}
-                                  className="w-7 h-7 rounded-full bg-[#1A3A6B] text-[#F5C84A] font-bold text-base flex items-center justify-center hover:bg-[#0C2447] active:scale-90 transition-all">
+                                  className="w-7 h-7 rounded-full bg-[#1E3A8A] text-[#F5C84A] font-bold text-base flex items-center justify-center hover:bg-[#0C2447] active:scale-90 transition-all">
                                   +
                                 </button>
                               </div>
                             )}
-                            <span className={`text-base font-black min-w-[48px] text-right ${tarif.prix < 0 ? 'text-green-500' : 'text-[#1A3A6B]'}`}>
+                            <span className={`text-base font-black min-w-[48px] text-right ${tarif.prix < 0 ? 'text-green-500' : 'text-[#1E3A8A]'}`}>
                               {tarif.prix < 0 ? `-${Math.abs(tarif.prix)}€` : `${tarif.prix}€`}
                             </span>
                           </div>
@@ -442,7 +442,7 @@ useEffect(() => {
 
             {/* Récap total */}
             {total > 0 && !hasDepot && (
-              <div className="bg-[#1A3A6B] rounded-2xl p-4">
+              <div className="bg-[#1E3A8A] rounded-2xl p-4">
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-white/60 text-xs">{nbArticles} article{nbArticles > 1 ? 's' : ''} sélectionné{nbArticles > 1 ? 's' : ''}</p>
@@ -456,7 +456,7 @@ useEffect(() => {
             {!hasDepot && (
               <button onClick={() => { if (total <= 0 || capaciteDepasse) return; setEtape(2) }}
                 disabled={total <= 0 || capaciteDepasse}
-                className="w-full bg-[#1A3A6B] text-[#F5C84A] font-bold py-4 rounded-2xl hover:bg-[#0C2447] disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 text-sm shadow-lg shadow-[#1A3A6B]/20">
+                className="w-full bg-[#1E3A8A] text-[#F5C84A] font-bold py-4 rounded-2xl hover:bg-[#0C2447] disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 text-sm shadow-lg shadow-[#1E3A8A]/20">
                 Continuer — Choisir la date →
               </button>
             )}
@@ -467,14 +467,14 @@ useEffect(() => {
         {etape === 2 && (
           <div className="space-y-4">
             <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-              <p className="text-sm font-bold text-[#1A3A6B] mb-3">Choisissez la date</p>
+              <p className="text-sm font-bold text-[#1E3A8A] mb-3">Choisissez la date</p>
               <div className="grid grid-cols-2 gap-2">
                 {dates.map(d => (
                   <button key={d.date}
                     onClick={() => { setSelectedDate(d.date); setSelectedJour(d.jour); setSelectedCreneau(''); setCapacites({}) }}
                     className={`p-3.5 rounded-xl border text-left transition-all active:scale-95 ${
                       selectedDate === d.date
-                        ? 'border-[#1A3A6B] bg-[#1A3A6B] shadow-sm'
+                        ? 'border-[#1E3A8A] bg-[#1E3A8A] shadow-sm'
                         : 'border-gray-100 hover:border-gray-200 bg-gray-50'
                     }`}>
                     <p className={`text-sm font-bold ${selectedDate === d.date ? 'text-[#F5C84A]' : 'text-gray-800'}`}>{d.label}</p>
@@ -486,14 +486,14 @@ useEffect(() => {
 
             {selectedDate && creneaux.length > 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-                <p className="text-sm font-bold text-[#1A3A6B] mb-3">Choisissez un créneau</p>
+                <p className="text-sm font-bold text-[#1E3A8A] mb-3">Choisissez un créneau</p>
                 <div className="grid grid-cols-3 gap-2">
                   {creneaux.map(c => (
                     <button key={c}
                       onClick={() => { setSelectedCreneau(c); verifierCapacite(selectedDate, c) }}
                       className={`py-3 px-2 rounded-xl border text-xs font-semibold transition-all active:scale-95 ${
                         selectedCreneau === c
-                          ? 'border-[#1A3A6B] bg-[#1A3A6B] text-[#F5C84A]'
+                          ? 'border-[#1E3A8A] bg-[#1E3A8A] text-[#F5C84A]'
                           : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-gray-200'
                       }`}>
                       {c}
@@ -523,22 +523,22 @@ useEffect(() => {
             {/* Autre créneau */}
             {!autreCreneauMode ? (
               <button onClick={() => setAutreCreneauMode(true)}
-                className="w-full border border-dashed border-[#1A3A6B]/30 text-[#1A3A6B] font-semibold py-3 rounded-2xl text-sm hover:bg-[#1A3A6B]/5 transition-all">
+                className="w-full border border-dashed border-[#1E3A8A]/30 text-[#1E3A8A] font-semibold py-3 rounded-2xl text-sm hover:bg-[#1E3A8A]/5 transition-all">
                 + Demander un autre créneau
               </button>
             ) : (
-              <div className="bg-white rounded-2xl border border-[#1A3A6B]/20 p-4 shadow-sm space-y-3">
-                <p className="text-sm font-bold text-[#1A3A6B]">Demander un créneau personnalisé</p>
+              <div className="bg-white rounded-2xl border border-[#1E3A8A]/20 p-4 shadow-sm space-y-3">
+                <p className="text-sm font-bold text-[#1E3A8A]">Demander un créneau personnalisé</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium text-gray-500 block mb-1">Heure de début</label>
                     <input type="time" value={autreCreneauDebut} onChange={e => setAutreCreneauDebut(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A]" />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-500 block mb-1">Heure de fin</label>
                     <input type="time" value={autreCreneauFin} onChange={e => setAutreCreneauFin(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A]" />
                   </div>
                 </div>
                 {autreCreneauDebut && autreCreneauFin && (() => {
@@ -547,8 +547,8 @@ useEffect(() => {
                   const dureeMin = (hF * 60 + mF) - (hD * 60 + mD)
                   const tarif = dureeMin <= 240 ? '4h' : '8h'
                   return dureeMin > 0 ? (
-                    <div className="bg-[#1A3A6B]/5 rounded-xl p-3">
-                      <p className="text-xs text-[#1A3A6B] font-medium">
+                    <div className="bg-[#1E3A8A]/5 rounded-xl p-3">
+                      <p className="text-xs text-[#1E3A8A] font-medium">
                         Durée : {Math.floor(dureeMin/60)}h{dureeMin%60 > 0 ? dureeMin%60 : ''} → Tarif <strong>{tarif}</strong> appliqué
                       </p>
                     </div>
@@ -559,13 +559,13 @@ useEffect(() => {
                   <textarea value={autreCreneauMessage} onChange={e => setAutreCreneauMessage(e.target.value)}
                     placeholder="Ex: Arrivée après un concert, besoin de déposer casque et blouson..."
                     rows={3}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] resize-none" />
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] resize-none" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-500 block mb-1">Votre email *</label>
                   <input type="email" value={customerEmail} onChange={e => setCustomerEmail(e.target.value)}
                     placeholder="vous@email.com"
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A]" />
                 </div>
                 {autreCrenauMsg && <p className="text-sm text-center font-medium text-emerald-600">{autreCrenauMsg}</p>}
                 <div className="flex gap-2">
@@ -605,7 +605,7 @@ useEffect(() => {
                       } catch { setAutreCreneauMsg('Erreur réseau.') }
                       finally { setSendingAutreCreneau(false) }
                     }}
-                    className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-bold py-2.5 rounded-xl text-sm hover:bg-[#0C2447] disabled:opacity-40 transition-colors">
+                    className="flex-1 bg-[#1E3A8A] text-[#F5C84A] font-bold py-2.5 rounded-xl text-sm hover:bg-[#0C2447] disabled:opacity-40 transition-colors">
                     {sendingAutreCreneau ? 'Envoi...' : 'Envoyer la demande'}
                   </button>
                 </div>
@@ -620,7 +620,7 @@ useEffect(() => {
               </button>
               <button onClick={() => { if (!selectedDate || !selectedCreneau || isAnyComplet) return; setEtape(3) }}
                 disabled={!selectedDate || !selectedCreneau || isAnyComplet}
-                className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-bold py-4 rounded-2xl hover:bg-[#0C2447] disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg shadow-[#1A3A6B]/20">
+                className="flex-1 bg-[#1E3A8A] text-[#F5C84A] font-bold py-4 rounded-2xl hover:bg-[#0C2447] disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg shadow-[#1E3A8A]/20">
                 Continuer →
               </button>
             </div>
@@ -632,7 +632,7 @@ useEffect(() => {
           <div className="space-y-4">
             {/* Récap commande */}
             <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-              <p className="text-sm font-bold text-[#1A3A6B] mb-3">Récapitulatif</p>
+              <p className="text-sm font-bold text-[#1E3A8A] mb-3">Récapitulatif</p>
               <div className="space-y-2 mb-3">
                 {Object.entries(selectedTarifs).map(([id, qty]) => {
                   const t = TARIFS_VESTILIB.find(t => t.id === id)
@@ -671,7 +671,7 @@ useEffect(() => {
                 )}
               </div>
 
-              <div className="bg-[#1A3A6B] rounded-xl p-3 mt-3 flex justify-between items-center">
+              <div className="bg-[#1E3A8A] rounded-xl p-3 mt-3 flex justify-between items-center">
                 <span className="text-white/70 text-sm">Total à payer</span>
                 <span className="text-[#F5C84A] font-black text-xl">{total.toFixed(2)}€</span>
               </div>
@@ -682,7 +682,7 @@ useEffect(() => {
               <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Votre email de confirmation *</label>
               <input type="email" value={customerEmail} onChange={e => setCustomerEmail(e.target.value)}
                 placeholder="vous@email.com"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors" />
             </div>
 
             {/* Mode paiement */}
@@ -720,7 +720,7 @@ useEffect(() => {
                 ← Retour
               </button>
               <button onClick={payer} disabled={paying || !customerEmail}
-                className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-black py-4 rounded-2xl hover:bg-[#0C2447] disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg shadow-[#1A3A6B]/20 text-sm">
+                className="flex-1 bg-[#1E3A8A] text-[#F5C84A] font-black py-4 rounded-2xl hover:bg-[#0C2447] disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95 shadow-lg shadow-[#1E3A8A]/20 text-sm">
                 {paying ? '⏳ Chargement...' : host.modeReservation === 'validation' ? 'Envoyer la demande' : `Payer ${total.toFixed(2)}€`}
               </button>
             </div>

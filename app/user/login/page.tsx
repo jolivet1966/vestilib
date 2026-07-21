@@ -53,7 +53,7 @@ export default function UserLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1A3A6B] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#1E3A8A] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#F5C84A] tracking-widest mb-1">VESTILIB</h1>
@@ -70,20 +70,20 @@ export default function UserLoginPage() {
                   <label className="text-xs text-gray-500 block mb-1">Email</label>
                   <input type="email" value={email} onChange={e => setEmail(e.target.value)}
                     placeholder="jean@email.com" onKeyDown={e => e.key === 'Enter' && connecter()}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors" />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-xs text-gray-500">Mot de passe</label>
                     <button type="button" onClick={() => { setShowReset(true); setResetEmail(email); setResetMsg('') }}
-                      className="text-xs text-[#1A3A6B] hover:underline font-medium">
+                      className="text-xs text-[#1E3A8A] hover:underline font-medium">
                       Mot de passe oublie ?
                     </button>
                   </div>
                   <div className="relative">
                     <input type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
                       placeholder="••••••••" onKeyDown={e => e.key === 'Enter' && connecter()}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors pr-20" />
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors pr-20" />
                     <button type="button" onClick={() => setShowPwd(!showPwd)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
                       {showPwd ? 'Masquer' : 'Afficher'}
@@ -93,12 +93,12 @@ export default function UserLoginPage() {
               </div>
               {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
               <button onClick={connecter} disabled={loading}
-                className="mt-5 w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
+                className="mt-5 w-full bg-[#1E3A8A] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
                 {loading ? 'Connexion...' : 'Se connecter'}
               </button>
               <p className="text-xs text-gray-400 text-center mt-4">
                 Pas encore de compte ?{' '}
-                <Link href="/user/register" className="text-[#1A3A6B] font-medium hover:underline">S inscrire</Link>
+                <Link href="/user/register" className="text-[#1E3A8A] font-medium hover:underline">S inscrire</Link>
               </p>
             </>
           ) : (
@@ -112,7 +112,7 @@ export default function UserLoginPage() {
                 <input type="email" value={resetEmail} onChange={e => setResetEmail(e.target.value)}
                   placeholder="jean@email.com"
                   onKeyDown={e => e.key === 'Enter' && reinitialiserMotDePasse()}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors" />
               </div>
               {resetMsg && (
                 <p className={`mt-3 text-sm rounded-lg px-3 py-2 ${
@@ -122,7 +122,7 @@ export default function UserLoginPage() {
                 </p>
               )}
               <button onClick={reinitialiserMotDePasse} disabled={resetLoading}
-                className="mt-5 w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
+                className="mt-5 w-full bg-[#1E3A8A] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
                 {resetLoading ? 'Envoi...' : 'Envoyer le lien'}
               </button>
               <button onClick={() => { setShowReset(false); setResetMsg('') }}

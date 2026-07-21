@@ -254,7 +254,7 @@ const repondreReservation = async (bookingId: string, action: 'accept' | 'refuse
   if (loading) return (
     <div className="min-h-screen bg-[#F8F9FC] flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 border-4 border-[#1A3A6B] border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-[#1E3A8A] border-t-transparent rounded-full animate-spin" />
         <p className="text-sm text-gray-400">Chargement...</p>
       </div>
     </div>
@@ -299,7 +299,7 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
       <div className="hidden md:block h-16" />
 
       {/* HEADER */}
-      <div className="bg-[#1A3A6B] relative overflow-hidden">
+      <div className="bg-[#1E3A8A] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #F5C84A 0%, transparent 60%)' }} />
         <div className="relative px-4 pt-8 md:pt-5 pb-5 md:pb-4 max-w-2xl mx-auto">
@@ -350,7 +350,7 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
           {TABS.map(t => (
             <button key={t.key} onClick={() => setTab(t.key as any)}
               className={`flex-1 min-w-[80px] py-3 text-xs font-semibold border-b-2 transition-all flex flex-col items-center gap-1 ${
-                tab === t.key ? 'border-[#1A3A6B] text-[#1A3A6B]' : 'border-transparent text-gray-400 hover:text-gray-600'
+                tab === t.key ? 'border-[#1E3A8A] text-[#1E3A8A]' : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}>
               {t.icon}
               {t.label}
@@ -387,7 +387,7 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
                       <div className="p-4">
                         <div className="flex items-start justify-between gap-2 mb-3">
                           <div>
-                            <p className="font-mono font-bold text-[#1A3A6B] text-base">{booking.bookingCode || '—'}</p>
+                            <p className="font-mono font-bold text-[#1E3A8A] text-base">{booking.bookingCode || '—'}</p>
                             {booking.customerEmail && <p className="text-xs text-gray-400 mt-0.5">{booking.customerEmail}</p>}
                           </div>
                           <div className="flex items-center gap-2">
@@ -462,7 +462,7 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
                               <div className="space-y-2">
                                 <input type="text" value={motifRefus} onChange={e => setMotifRefus(e.target.value)}
                                   placeholder="Motif du refus (optionnel)"
-                                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#1A3A6B]" />
+                                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#1E3A8A]" />
                                 <div className="flex gap-2">
                                   <button onClick={() => repondreReservation(booking.id, 'refuse')} disabled={responding}
                                     className="flex-1 bg-red-600 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-red-700 disabled:opacity-50 transition-colors">
@@ -499,7 +499,7 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
                     <div className="flex items-center justify-between px-1 mb-2">
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Archives ({bookingsArchivees.length})</p>
                       <button onClick={() => setShowArchives(!showArchives)}
-                        className="text-xs text-[#1A3A6B] font-semibold hover:underline flex items-center gap-1">
+                        className="text-xs text-[#1E3A8A] font-semibold hover:underline flex items-center gap-1">
                         {showArchives ? 'Masquer' : 'Voir'}
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
                           className={`transition-transform ${showArchives ? 'rotate-180' : ''}`}>
@@ -529,7 +529,7 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
                             </div>
                             <div className="flex items-center gap-1.5">
                               <button onClick={() => desarchiverBooking(booking.id)} title="Restaurer"
-                                className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 hover:border-[#1A3A6B] flex items-center justify-center transition-colors">
+                                className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 hover:border-[#1E3A8A] flex items-center justify-center transition-colors">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
                                   <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.76"/>
                                 </svg>
@@ -558,7 +558,7 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
             {balance ? (
               <>
                 {/* Résumé solde */}
-                <div className="bg-[#1A3A6B] rounded-2xl p-5 shadow-md relative overflow-hidden">
+                <div className="bg-[#1E3A8A] rounded-2xl p-5 shadow-md relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-[#F5C84A]/10 rounded-full -translate-y-8 translate-x-8" />
                   <div className="grid grid-cols-2 gap-4 relative">
                     <div className="text-center">
@@ -597,11 +597,11 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
                   </div>
                 )}
 
-                <div className="bg-[#1A3A6B]/5 rounded-2xl p-4 border border-[#1A3A6B]/10 flex items-start gap-3">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A3A6B" strokeWidth="2" className="flex-shrink-0 mt-0.5">
+                <div className="bg-[#1E3A8A]/5 rounded-2xl p-4 border border-[#1E3A8A]/10 flex items-start gap-3">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E3A8A" strokeWidth="2" className="flex-shrink-0 mt-0.5">
                     <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                   </svg>
-                  <p className="text-xs text-[#1A3A6B] font-medium">Les virements sont effectues automatiquement chaque lundi via Stripe Connect.</p>
+                  <p className="text-xs text-[#1E3A8A] font-medium">Les virements sont effectues automatiquement chaque lundi via Stripe Connect.</p>
                 </div>
               </>
             ) : (
@@ -634,7 +634,7 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
                     <div className="flex items-center gap-2 mb-2">
                       <input type="checkbox" checked={horaires[jour]?.ouvert ?? false}
                         onChange={e => updateHoraire(jour, 'ouvert', e.target.checked)}
-                        className="w-4 h-4 accent-[#1A3A6B] flex-shrink-0" />
+                        className="w-4 h-4 accent-[#1E3A8A] flex-shrink-0" />
                       <span className={`text-sm font-semibold ${horaires[jour]?.ouvert ? 'text-gray-800' : 'text-gray-400'}`}>
                         {JOURS_LABELS[jour]}
                       </span>
@@ -643,11 +643,11 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
                       <div className="flex items-center gap-2 ml-6">
                         <input type="time" value={horaires[jour]?.ouverture ?? '09:00'}
                           onChange={e => updateHoraire(jour, 'ouverture', e.target.value)}
-                          className="flex-1 border border-gray-200 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
+                          className="flex-1 border border-gray-200 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:border-[#1E3A8A] bg-gray-50" />
                         <span className="text-gray-300 text-xs font-bold flex-shrink-0">—</span>
                         <input type="time" value={horaires[jour]?.fermeture ?? '19:00'}
                           onChange={e => updateHoraire(jour, 'fermeture', e.target.value)}
-                          className="flex-1 border border-gray-200 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
+                          className="flex-1 border border-gray-200 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:border-[#1E3A8A] bg-gray-50" />
                       </div>
                     ) : (
                       <p className="text-xs text-gray-300 italic ml-6">Ferme</p>
@@ -672,19 +672,19 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
                         {tarifs.map(tarif => (
                           <label key={tarif.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
                             prestations.includes(tarif.id)
-                              ? 'border-[#1A3A6B] bg-[#1A3A6B]/5'
+                              ? 'border-[#1E3A8A] bg-[#1E3A8A]/5'
                               : 'border-gray-100 hover:border-gray-200 bg-gray-50/50'
                           }`}>
                             <div className="flex items-center gap-3">
                               <input type="checkbox" checked={prestations.includes(tarif.id)}
                                 onChange={() => togglePrestation(tarif.id)}
-                                className="w-4 h-4 accent-[#1A3A6B] flex-shrink-0" />
+                                className="w-4 h-4 accent-[#1E3A8A] flex-shrink-0" />
                               <div>
                                 <p className="text-sm font-semibold text-gray-800">{tarif.label}</p>
                                 <p className="text-xs text-gray-400">{tarif.description}</p>
                               </div>
                             </div>
-                            <span className={`text-sm font-bold flex-shrink-0 ml-2 ${tarif.prix < 0 ? 'text-emerald-600' : 'text-[#1A3A6B]'}`}>
+                            <span className={`text-sm font-bold flex-shrink-0 ml-2 ${tarif.prix < 0 ? 'text-emerald-600' : 'text-[#1E3A8A]'}`}>
                               {tarif.prix < 0 ? `-${Math.abs(tarif.prix)}` : tarif.prix}€
                             </span>
                           </label>
@@ -723,7 +723,7 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
               </div>
             )}
             <button onClick={sauvegarderServices} disabled={saving}
-              className="w-full bg-[#1A3A6B] text-[#F5C84A] font-bold py-3 rounded-2xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
+              className="w-full bg-[#1E3A8A] text-[#F5C84A] font-bold py-3 rounded-2xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
               {saving ? 'Sauvegarde...' : 'Sauvegarder mes services'}
             </button>
           </div>
@@ -777,17 +777,17 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
                     <label className="text-xs font-medium text-gray-500 block mb-1.5">Date de debut</label>
                     <input type="date" value={dateDebut} onChange={e => setDateDebut(e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] bg-gray-50" />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-500 block mb-1.5">Date de fin</label>
                     <input type="date" value={dateFin} onChange={e => setDateFin(e.target.value)}
                       min={dateDebut || new Date().toISOString().split('T')[0]}
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] bg-gray-50" />
                   </div>
                 </div>
                 <button onClick={ajouterPeriodeFermeture} disabled={!dateDebut}
-                  className="w-full bg-[#1A3A6B] text-[#F5C84A] px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-[#0C2447] disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+                  className="w-full bg-[#1E3A8A] text-[#F5C84A] px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-[#0C2447] disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M12 5v14M5 12h14"/>
                   </svg>
@@ -826,7 +826,7 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
               </div>
             )}
             <button onClick={sauvegarderDispo} disabled={savingDispo}
-              className="w-full bg-[#1A3A6B] text-[#F5C84A] font-bold py-3 rounded-2xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
+              className="w-full bg-[#1E3A8A] text-[#F5C84A] font-bold py-3 rounded-2xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
               {savingDispo ? 'Sauvegarde...' : 'Sauvegarder la disponibilite'}
             </button>
           </div>
@@ -850,11 +850,11 @@ function CapaciteSelector({ label, value, onChange, unite }: {
           -
         </button>
         <div className="flex-1 text-center">
-          <p className="text-2xl font-black text-[#1A3A6B] leading-none">{value}</p>
+          <p className="text-2xl font-black text-[#1E3A8A] leading-none">{value}</p>
           <p className="text-xs text-gray-400 mt-1">{unite} max / creneau</p>
         </div>
         <button onClick={() => onChange(value + 1)}
-          className="w-10 h-10 rounded-xl bg-[#1A3A6B] text-[#F5C84A] text-xl flex items-center justify-center hover:bg-[#0C2447] transition-colors font-bold">
+          className="w-10 h-10 rounded-xl bg-[#1E3A8A] text-[#F5C84A] text-xl flex items-center justify-center hover:bg-[#0C2447] transition-colors font-bold">
           +
         </button>
       </div>

@@ -40,7 +40,7 @@ function HomeContent() {
   }
 
   if (splash) return (
-    <div className="min-h-screen bg-[#1A3A6B] flex flex-col items-center justify-center relative overflow-hidden" style={{ animation: 'fadeIn 0.4s ease-out' }}>
+    <div className="min-h-screen bg-[#1E3A8A] flex flex-col items-center justify-center relative overflow-hidden" style={{ animation: 'fadeIn 0.4s ease-out' }}>
       <div className="absolute top-0 right-0 w-64 h-64 bg-[#F5C84A]/5 rounded-full -translate-y-20 translate-x-20" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#F5C84A]/5 rounded-full translate-y-24 -translate-x-24" />
       <div className="relative z-10 flex flex-col items-center gap-6">
@@ -76,10 +76,10 @@ function HomeContent() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
             <div className="text-4xl mb-4">👋</div>
-            <h2 className="text-base font-bold text-[#1A3A6B] mb-2">Vous êtes connecté !</h2>
+            <h2 className="text-base font-bold text-[#1E3A8A] mb-2">Vous êtes connecté !</h2>
             <p className="text-sm text-gray-500 mb-6">Bienvenue sur VESTILIB.</p>
             <button onClick={() => setConnecte(false)}
-              className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
+              className="w-full bg-[#1E3A8A] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
               Continuer
             </button>
           </div>
@@ -91,10 +91,10 @@ function HomeContent() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl text-center">
             <div className="text-4xl mb-4">✅</div>
-            <h2 className="text-base font-bold text-[#1A3A6B] mb-2">Compte supprimé</h2>
+            <h2 className="text-base font-bold text-[#1E3A8A] mb-2">Compte supprimé</h2>
             <p className="text-sm text-gray-500 mb-6">Votre compte a bien été supprimé. Merci d'avoir utilisé VESTILIB.</p>
             <button onClick={() => setCompteSuprime(false)}
-              className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
+              className="w-full bg-[#1E3A8A] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
               Fermer
             </button>
           </div>
@@ -106,14 +106,14 @@ function HomeContent() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-6">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
             <div className="text-3xl mb-4 text-center">🏠</div>
-            <h2 className="text-base font-bold text-[#1A3A6B] text-center mb-2">Proposer un point de dépôt</h2>
+            <h2 className="text-base font-bold text-[#1E3A8A] text-center mb-2">Proposer un point de dépôt</h2>
             <p className="text-sm text-gray-500 text-center mb-6">
               {isConnected
                 ? 'Vous êtes connecté. Accédez à votre profil pour devenir hôte.'
                 : 'Pour proposer un point de dépôt, connectez-vous ou créez votre compte.'}
             </p>
             <button onClick={handlePopupOk}
-              className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
+              className="w-full bg-[#1E3A8A] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
               Accéder à mon profil
             </button>
             <button onClick={() => setPopup(false)}
@@ -127,23 +127,23 @@ function HomeContent() {
       {/* Header compact */}
       <header className="bg-white px-5 py-3 flex items-center justify-between border-b border-gray-100 sticky top-0 z-10">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-[#1A3A6B] rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-[#1E3A8A] rounded-lg flex items-center justify-center">
             <svg width="22" height="22" viewBox="0 0 44 44" fill="none">
               <path d="M6 8 L22 36 L38 8" stroke="#F5C84A" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
               <path d="M16 8 Q22 4 28 8" stroke="#F5C84A" strokeWidth="3" strokeLinecap="round" fill="none"/>
               <circle cx="22" cy="4" r="2" fill="#F5C84A"/>
             </svg>
           </div>
-          <p className="text-[#1A3A6B] font-black text-base tracking-widest">VESTILIB</p>
+          <p className="text-[#1E3A8A] font-black text-base tracking-widest">VESTILIB</p>
         </div>
         {!isConnected ? (
           <Link href="/user/login"
-            className="text-xs font-semibold text-[#1A3A6B] bg-[#1A3A6B]/5 px-4 py-2 rounded-xl">
+            className="text-xs font-semibold text-[#1E3A8A] bg-[#1E3A8A]/5 px-4 py-2 rounded-xl">
             Connexion
           </Link>
         ) : (
           <Link href="/profil"
-            className="text-xs font-semibold text-[#1A3A6B] bg-[#1A3A6B]/5 px-4 py-2 rounded-xl">
+            className="text-xs font-semibold text-[#1E3A8A] bg-[#1E3A8A]/5 px-4 py-2 rounded-xl">
             Mon profil
           </Link>
         )}
@@ -167,16 +167,16 @@ function HomeContent() {
 
       {/* Hero */}
       <section className="px-4 pt-4 pb-6 md:max-w-5xl md:mx-auto md:px-8 md:pt-10">
-        <div className="bg-gradient-to-br from-[#1A3A6B] to-[#0C2447] md:bg-none md:bg-white md:border md:border-gray-100 rounded-3xl p-6 md:p-12 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-[#1E3A8A] to-[#0C2447] md:bg-none md:bg-white md:border md:border-gray-100 rounded-3xl p-6 md:p-12 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-40 h-40 bg-[#F5C84A]/10 rounded-full -translate-y-10 translate-x-10 md:hidden" />
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-6 md:hidden" />
           <div className="relative z-10 md:grid md:grid-cols-2 md:gap-10 md:items-center">
             <div>
-              <span className="inline-flex items-center gap-1.5 bg-[#F5C84A]/20 md:bg-[#1A3A6B]/8 text-[#F5C84A] md:text-[#1A3A6B] text-xs font-semibold px-3 py-1 rounded-full mb-4">
-                <span className="w-1.5 h-1.5 bg-[#F5C84A] md:bg-[#1A3A6B] rounded-full"></span>
+              <span className="inline-flex items-center gap-1.5 bg-[#F5C84A]/20 md:bg-[#1E3A8A]/8 text-[#F5C84A] md:text-[#1E3A8A] text-xs font-semibold px-3 py-1 rounded-full mb-4">
+                <span className="w-1.5 h-1.5 bg-[#F5C84A] md:bg-[#1E3A8A] rounded-full"></span>
                 Disponible partout en France
               </span>
-              <h1 className="text-white md:text-[#1A3A6B] font-black text-2xl md:text-4xl leading-tight mb-3">
+              <h1 className="text-white md:text-[#1E3A8A] font-black text-2xl md:text-4xl leading-tight mb-3">
                 À la plage ou à la ville,<br/>libérez-vous<br/>de vos affaires.
               </h1>
               <p className="text-white/60 md:text-gray-500 text-sm md:text-base leading-relaxed mb-6 md:max-w-md">
@@ -184,17 +184,17 @@ function HomeContent() {
               </p>
               <div className="flex items-center gap-4 md:gap-8">
                 <div className="text-center md:text-left">
-                  <p className="text-[#F5C84A] md:text-[#1A3A6B] font-black text-lg md:text-xl">2 min</p>
+                  <p className="text-[#F5C84A] md:text-[#1E3A8A] font-black text-lg md:text-xl">2 min</p>
                   <p className="text-white/40 md:text-gray-400 text-[10px] md:text-xs">pour réserver</p>
                 </div>
                 <div className="w-px h-8 bg-white/10 md:bg-gray-200" />
                 <div className="text-center md:text-left">
-                  <p className="text-[#F5C84A] md:text-[#1A3A6B] font-black text-lg md:text-xl">100%</p>
+                  <p className="text-[#F5C84A] md:text-[#1E3A8A] font-black text-lg md:text-xl">100%</p>
                   <p className="text-white/40 md:text-gray-400 text-[10px] md:text-xs">sécurisé</p>
                 </div>
                 <div className="w-px h-8 bg-white/10 md:bg-gray-200" />
                 <div className="text-center md:text-left">
-                  <p className="text-[#F5C84A] md:text-[#1A3A6B] font-black text-lg md:text-xl">0€</p>
+                  <p className="text-[#F5C84A] md:text-[#1E3A8A] font-black text-lg md:text-xl">0€</p>
                   <p className="text-white/40 md:text-gray-400 text-[10px] md:text-xs">d'inscription</p>
                 </div>
               </div>
@@ -209,7 +209,7 @@ function HomeContent() {
       {/* CTAs */}
       <section className="px-4 pb-6 space-y-3 md:max-w-5xl md:mx-auto md:px-8 md:pb-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
         <Link href="/map"
-          className="flex items-center gap-4 w-full bg-[#1A3A6B] px-5 py-4 md:py-6 rounded-2xl shadow-lg shadow-[#1A3A6B]/20 active:scale-95 md:hover:scale-[1.02] transition-all">
+          className="flex items-center gap-4 w-full bg-[#1E3A8A] px-5 py-4 md:py-6 rounded-2xl shadow-lg shadow-[#1E3A8A]/20 active:scale-95 md:hover:scale-[1.02] transition-all">
           <div className="w-10 h-10 bg-[#F5C84A]/20 rounded-xl flex items-center justify-center flex-shrink-0">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5C84A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
@@ -224,13 +224,13 @@ function HomeContent() {
 
         <button onClick={() => setPopup(true)}
           className="flex items-center gap-4 w-full bg-white border border-gray-100 px-5 py-4 md:py-6 rounded-2xl shadow-sm active:scale-95 md:hover:scale-[1.02] transition-all">
-          <div className="w-10 h-10 bg-[#1A3A6B]/5 rounded-xl flex items-center justify-center flex-shrink-0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A3A6B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <div className="w-10 h-10 bg-[#1E3A8A]/5 rounded-xl flex items-center justify-center flex-shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E3A8A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
           </div>
           <div className="flex-1 text-left">
-            <p className="text-[#1A3A6B] font-bold text-sm">Proposer un point de dépôt</p>
+            <p className="text-[#1E3A8A] font-bold text-sm">Proposer un point de dépôt</p>
             <p className="text-gray-400 text-xs mt-0.5">Générez des revenus</p>
           </div>
           <span className="text-gray-300 text-xl">›</span>
@@ -250,7 +250,7 @@ function HomeContent() {
           ].map((e, i, arr) => (
             <div key={e.step} className={`flex items-start gap-4 px-5 py-4 ${i < arr.length - 1 ? 'border-b border-gray-50' : ''}`}>
               <div className="flex flex-col items-center gap-1 flex-shrink-0 pt-0.5">
-                <div className="w-8 h-8 bg-[#1A3A6B] rounded-xl flex items-center justify-center">
+                <div className="w-8 h-8 bg-[#1E3A8A] rounded-xl flex items-center justify-center">
                   <span className="text-[#F5C84A] font-black text-xs">{e.step}</span>
                 </div>
                 {i < arr.length - 1 && <div className="w-px h-6 bg-gray-100" />}
@@ -258,7 +258,7 @@ function HomeContent() {
               <div className="pb-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-base">{e.icon}</span>
-                  <p className="text-sm font-bold text-[#1A3A6B]">{e.titre}</p>
+                  <p className="text-sm font-bold text-[#1E3A8A]">{e.titre}</p>
                 </div>
                 <p className="text-xs text-gray-500 leading-relaxed">{e.desc}</p>
               </div>
@@ -278,11 +278,11 @@ function HomeContent() {
             { icon: '🔒', titre: 'Paiement sécurisé', desc: '100% protégé, remboursement garanti' },
           ].map((a, i) => (
             <div key={i} className="flex items-center gap-4 bg-white border border-gray-100 rounded-2xl px-4 py-3.5 shadow-sm">
-              <div className="w-10 h-10 bg-[#1A3A6B] rounded-xl flex items-center justify-center flex-shrink-0 text-lg">
+              <div className="w-10 h-10 bg-[#1E3A8A] rounded-xl flex items-center justify-center flex-shrink-0 text-lg">
                 {a.icon}
               </div>
               <div>
-                <p className="text-sm font-bold text-[#1A3A6B]">{a.titre}</p>
+                <p className="text-sm font-bold text-[#1E3A8A]">{a.titre}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{a.desc}</p>
               </div>
             </div>

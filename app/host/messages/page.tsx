@@ -93,13 +93,13 @@ export default function HostMessagesPage() {
 
   if (loading) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-[#1A3A6B] border-t-transparent rounded-full animate-spin" />
+      <div className="w-10 h-10 border-4 border-[#1E3A8A] border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
   return (
     <div className="min-h-screen bg-gray-50 pb-6">
-      <div className="bg-[#1A3A6B] px-4 py-3 flex items-center gap-3">
+      <div className="bg-[#1E3A8A] px-4 py-3 flex items-center gap-3">
         <Link href="/host/dashboard" className="text-[#F5C84A]/70 hover:text-[#F5C84A] text-sm">Dashboard</Link>
         <span className="text-white/30">|</span>
         <span className="text-[#F5C84A] font-bold tracking-widest">Messages</span>
@@ -121,7 +121,7 @@ export default function HostMessagesPage() {
                 <div key={msg.id} className={`flex ${msg.auteur === 'hote' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
                     msg.auteur === 'hote'
-                      ? 'bg-[#1A3A6B] text-white'
+                      ? 'bg-[#1E3A8A] text-white'
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     <p className="text-sm">{msg.texte}</p>
@@ -140,9 +140,9 @@ export default function HostMessagesPage() {
                   placeholder="Votre réponse..."
                   rows={2}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); envoyerReponse() } }}
-                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#1A3A6B] resize-none" />
+                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#1E3A8A] resize-none" />
                 <button onClick={envoyerReponse} disabled={sending || !texte}
-                  className="bg-[#1A3A6B] text-[#F5C84A] font-bold px-4 rounded-xl disabled:opacity-50">
+                  className="bg-[#1E3A8A] text-[#F5C84A] font-bold px-4 rounded-xl disabled:opacity-50">
                   ➤
                 </button>
               </div>
@@ -160,7 +160,7 @@ export default function HostMessagesPage() {
               </div>
             ) : conversations.map(conv => (
               <div key={conv.id} onClick={() => setSelectedConvId(conv.id)}
-                className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm cursor-pointer hover:border-[#1A3A6B]/20 transition-colors">
+                className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm cursor-pointer hover:border-[#1E3A8A]/20 transition-colors">
                 <div className="flex items-start justify-between mb-1">
                   <p className="text-sm font-semibold text-gray-800">{conv.clientNom}</p>
                   {!conv.luHote && <span className="w-2 h-2 bg-red-500 rounded-full mt-1" />}

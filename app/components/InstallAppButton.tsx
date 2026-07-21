@@ -43,8 +43,8 @@ export default function InstallAppButton() {
   return (
     <>
       <button onClick={handleClick}
-        className="flex items-center gap-3 w-full bg-white border-2 border-[#1A3A6B] px-5 py-4 rounded-2xl active:scale-95 transition-all">
-        <div className="w-10 h-10 bg-[#1A3A6B] rounded-xl flex items-center justify-center flex-shrink-0">
+        className="flex items-center gap-3 w-full bg-white border-2 border-[#1E3A8A] px-5 py-4 rounded-2xl active:scale-95 transition-all">
+        <div className="w-10 h-10 bg-[#1E3A8A] rounded-xl flex items-center justify-center flex-shrink-0">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5C84A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="7 10 12 15 17 10" />
@@ -52,7 +52,7 @@ export default function InstallAppButton() {
           </svg>
         </div>
         <div className="text-left flex-1">
-          <p className="text-[#1A3A6B] font-bold text-sm">Installer l'application</p>
+          <p className="text-[#1E3A8A] font-bold text-sm">Installer l'application</p>
           <p className="text-gray-400 text-xs">Accès rapide depuis votre écran d'accueil</p>
         </div>
       </button>
@@ -62,23 +62,23 @@ export default function InstallAppButton() {
           onClick={() => setShowIosModal(false)}>
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="text-3xl mb-4 text-center">📲</div>
-            <h2 className="text-base font-bold text-[#1A3A6B] text-center mb-4">Installer VESTILIB</h2>
+            <h2 className="text-base font-bold text-[#1E3A8A] text-center mb-4">Installer VESTILIB</h2>
             <div className="space-y-3 mb-6">
               <div className="flex items-center gap-3">
-                <span className="w-6 h-6 bg-[#1A3A6B]/10 text-[#1A3A6B] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
+                <span className="w-6 h-6 bg-[#1E3A8A]/10 text-[#1E3A8A] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
                 <p className="text-sm text-gray-600">Appuyez sur l'icône <strong>Partager</strong> en bas de Safari</p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="w-6 h-6 bg-[#1A3A6B]/10 text-[#1A3A6B] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+                <span className="w-6 h-6 bg-[#1E3A8A]/10 text-[#1E3A8A] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
                 <p className="text-sm text-gray-600">Sélectionnez <strong>Sur l'écran d'accueil</strong></p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="w-6 h-6 bg-[#1A3A6B]/10 text-[#1A3A6B] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
+                <span className="w-6 h-6 bg-[#1E3A8A]/10 text-[#1E3A8A] rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
                 <p className="text-sm text-gray-600">Appuyez sur <strong>Ajouter</strong></p>
               </div>
             </div>
             <button onClick={() => setShowIosModal(false)}
-              className="w-full bg-[#1A3A6B] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
+              className="w-full bg-[#1E3A8A] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
               Compris
             </button>
           </div>

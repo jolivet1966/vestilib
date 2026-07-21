@@ -189,7 +189,7 @@ export default function OnboardHostPage() {
 
   if (checkingAuth) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-[#1A3A6B] border-t-transparent rounded-full animate-spin" />
+      <div className="w-10 h-10 border-4 border-[#1E3A8A] border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
@@ -198,7 +198,7 @@ export default function OnboardHostPage() {
       <div className="w-full max-w-lg">
 
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-[#1A3A6B] tracking-widest mb-1">VESTILIB</h1>
+          <h1 className="text-2xl font-bold text-[#1E3A8A] tracking-widest mb-1">VESTILIB</h1>
           <p className="text-sm text-gray-400">Inscription hote</p>
           {dejaConnecte && (
             <p className="text-xs text-green-600 bg-green-50 rounded-full px-3 py-1 inline-block mt-2">
@@ -212,12 +212,12 @@ export default function OnboardHostPage() {
             <div key={n} className="flex items-center gap-2 flex-1">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 transition-colors ${
                 etape > n ? 'bg-green-500 text-white' :
-                etape === n ? 'bg-[#1A3A6B] text-[#F5C84A]' :
+                etape === n ? 'bg-[#1E3A8A] text-[#F5C84A]' :
                 'bg-gray-200 text-gray-400'
               }`}>
                 {etape > n ? 'ok' : n}
               </div>
-              <span className={`text-xs font-medium hidden sm:block ${etape === n ? 'text-[#1A3A6B]' : 'text-gray-400'}`}>
+              <span className={`text-xs font-medium hidden sm:block ${etape === n ? 'text-[#1E3A8A]' : 'text-gray-400'}`}>
                 {n === 1 ? 'Identite' : n === 2 ? 'Horaires' : 'Prestations'}
               </span>
               {n < 3 && <div className={`flex-1 h-0.5 ${etape > n ? 'bg-green-500' : 'bg-gray-200'}`} />}
@@ -236,12 +236,12 @@ export default function OnboardHostPage() {
                   <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Vous etes</label>
                   <div className="grid grid-cols-2 gap-2">
                     <button type="button" onClick={() => setTypeCompte('individual')}
-                      className={`p-3 rounded-xl border text-left transition-colors ${typeCompte === 'individual' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
+                      className={`p-3 rounded-xl border text-left transition-colors ${typeCompte === 'individual' ? 'border-[#1E3A8A] bg-[#1E3A8A]/5' : 'border-gray-100'}`}>
                       <p className="text-sm font-semibold text-gray-800">Particulier</p>
                       <p className="text-xs text-gray-400">Personne physique</p>
                     </button>
                     <button type="button" onClick={() => setTypeCompte('company')}
-                      className={`p-3 rounded-xl border text-left transition-colors ${typeCompte === 'company' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
+                      className={`p-3 rounded-xl border text-left transition-colors ${typeCompte === 'company' ? 'border-[#1E3A8A] bg-[#1E3A8A]/5' : 'border-gray-100'}`}>
                       <p className="text-sm font-semibold text-gray-800">Entreprise</p>
                       <p className="text-xs text-gray-400">Personne morale</p>
                     </button>
@@ -270,25 +270,25 @@ export default function OnboardHostPage() {
                   <label className="text-xs text-gray-500 block mb-1">Adresse (saisir pour autocompletion)</label>
                   <input ref={adresseRef} type="text" value={adresse} onChange={e => setAdresse(e.target.value)}
                     placeholder="12 rue de la Paix, Montpellier..."
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-gray-500 block mb-1">Code postal</label>
                     <input type="text" value={codePostal} onChange={e => setCodePostal(e.target.value)}
                       placeholder="34000"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors" />
                   </div>
                   <div>
                     <label className="text-xs text-gray-500 block mb-1">Ville</label>
                     <input type="text" value={ville} onChange={e => setVille(e.target.value)}
                       placeholder="Montpellier"
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors" />
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors" />
                   </div>
                 </div>
               </div>
               {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
-              <button onClick={validerEtape1} className="mt-6 w-full bg-[#1A3A6B] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
+              <button onClick={validerEtape1} className="mt-6 w-full bg-[#1E3A8A] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
                 Continuer
               </button>
             </div>
@@ -304,7 +304,7 @@ export default function OnboardHostPage() {
                     <div className="flex items-center gap-2 mb-2">
                       <input type="checkbox" checked={horaires[jour].ouvert}
                         onChange={e => updateHoraire(jour, 'ouvert', e.target.checked)}
-                        className="w-4 h-4 accent-[#1A3A6B] flex-shrink-0" />
+                        className="w-4 h-4 accent-[#1E3A8A] flex-shrink-0" />
                       <span className={`text-sm font-semibold ${horaires[jour].ouvert ? 'text-gray-800' : 'text-gray-400'}`}>
                         {JOURS_LABELS[jour]}
                       </span>
@@ -313,11 +313,11 @@ export default function OnboardHostPage() {
                       <div className="flex items-center gap-2 ml-6">
                         <input type="time" value={horaires[jour].ouverture}
                           onChange={e => updateHoraire(jour, 'ouverture', e.target.value)}
-                          className="flex-1 border border-gray-200 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
+                          className="flex-1 border border-gray-200 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:border-[#1E3A8A] bg-gray-50" />
                         <span className="text-gray-300 text-xs font-bold flex-shrink-0">—</span>
                         <input type="time" value={horaires[jour].fermeture}
                           onChange={e => updateHoraire(jour, 'fermeture', e.target.value)}
-                          className="flex-1 border border-gray-200 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:border-[#1A3A6B] bg-gray-50" />
+                          className="flex-1 border border-gray-200 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:border-[#1E3A8A] bg-gray-50" />
                       </div>
                     ) : (
                       <p className="text-xs text-gray-300 italic ml-6">Ferme</p>
@@ -330,7 +330,7 @@ export default function OnboardHostPage() {
                 <button onClick={() => setEtape(1)} className="flex-1 border border-gray-200 text-gray-600 font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors">
                   Retour
                 </button>
-                <button onClick={validerEtape2} className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
+                <button onClick={validerEtape2} className="flex-1 bg-[#1E3A8A] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] transition-colors">
                   Continuer
                 </button>
               </div>
@@ -351,18 +351,18 @@ export default function OnboardHostPage() {
                       <div className="space-y-2">
                         {tarifs.map(tarif => (
                           <label key={tarif.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${
-                            prestations.includes(tarif.id) ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100 hover:border-gray-200'
+                            prestations.includes(tarif.id) ? 'border-[#1E3A8A] bg-[#1E3A8A]/5' : 'border-gray-100 hover:border-gray-200'
                           }`}>
                             <div className="flex items-center gap-3">
                               <input type="checkbox" checked={prestations.includes(tarif.id)}
                                 onChange={() => togglePrestation(tarif.id)}
-                                className="w-4 h-4 accent-[#1A3A6B]" />
+                                className="w-4 h-4 accent-[#1E3A8A]" />
                               <div>
                                 <p className="text-sm font-medium text-gray-800">{tarif.label}</p>
                                 <p className="text-xs text-gray-400">{tarif.description}</p>
                               </div>
                             </div>
-                            <span className={`text-sm font-semibold flex-shrink-0 ml-2 ${tarif.prix < 0 ? 'text-green-600' : 'text-[#1A3A6B]'}`}>
+                            <span className={`text-sm font-semibold flex-shrink-0 ml-2 ${tarif.prix < 0 ? 'text-green-600' : 'text-[#1E3A8A]'}`}>
                               {tarif.prix < 0 ? `-${Math.abs(tarif.prix)}` : `${tarif.prix}`}EUR
                             </span>
                           </label>
@@ -374,8 +374,8 @@ export default function OnboardHostPage() {
               </div>
 
               {prestations.length > 0 && (
-                <div className="mt-4 bg-[#1A3A6B]/5 rounded-xl p-3">
-                  <p className="text-xs text-[#1A3A6B] font-medium">
+                <div className="mt-4 bg-[#1E3A8A]/5 rounded-xl p-3">
+                  <p className="text-xs text-[#1E3A8A] font-medium">
                     {prestations.length} prestation{prestations.length > 1 ? 's' : ''} selectionnee{prestations.length > 1 ? 's' : ''}
                   </p>
                 </div>
@@ -405,12 +405,12 @@ export default function OnboardHostPage() {
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => setModeReservation('immediat')}
-                    className={`p-3 rounded-xl border text-left transition-colors ${modeReservation === 'immediat' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
+                    className={`p-3 rounded-xl border text-left transition-colors ${modeReservation === 'immediat' ? 'border-[#1E3A8A] bg-[#1E3A8A]/5' : 'border-gray-100'}`}>
                     <p className="text-sm font-semibold text-gray-800">Immediat</p>
                     <p className="text-xs text-gray-400">Paiement direct sans validation</p>
                   </button>
                   <button type="button" onClick={() => setModeReservation('validation')}
-                    className={`p-3 rounded-xl border text-left transition-colors ${modeReservation === 'validation' ? 'border-[#1A3A6B] bg-[#1A3A6B]/5' : 'border-gray-100'}`}>
+                    className={`p-3 rounded-xl border text-left transition-colors ${modeReservation === 'validation' ? 'border-[#1E3A8A] bg-[#1E3A8A]/5' : 'border-gray-100'}`}>
                     <p className="text-sm font-semibold text-gray-800">Sur validation</p>
                     <p className="text-xs text-gray-400">Vous acceptez avant paiement</p>
                   </button>
@@ -430,7 +430,7 @@ export default function OnboardHostPage() {
                   Retour
                 </button>
                 <button onClick={soumettre} disabled={loading}
-                  className="flex-1 bg-[#1A3A6B] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+                  className="flex-1 bg-[#1E3A8A] text-[#F5C84A] font-medium py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
                   {loading ? 'Creation...' : 'Creer mon compte'}
                 </button>
               </div>
@@ -456,11 +456,11 @@ function CapaciteSelector({ label, value, onChange, unite }: {
         <button onClick={() => onChange(Math.max(1, value - 1))}
           className="w-9 h-9 rounded-full bg-white border border-gray-200 text-gray-600 text-lg flex items-center justify-center hover:bg-gray-100">-</button>
         <div className="flex-1 text-center">
-          <p className="text-3xl font-black text-[#1A3A6B]">{value}</p>
+          <p className="text-3xl font-black text-[#1E3A8A]">{value}</p>
           <p className="text-xs text-gray-400">{unite} max / creneau</p>
         </div>
         <button onClick={() => onChange(value + 1)}
-          className="w-9 h-9 rounded-full bg-[#1A3A6B] text-[#F5C84A] text-lg flex items-center justify-center hover:bg-[#0C2447]">+</button>
+          className="w-9 h-9 rounded-full bg-[#1E3A8A] text-[#F5C84A] text-lg flex items-center justify-center hover:bg-[#0C2447]">+</button>
       </div>
     </div>
   )
@@ -478,7 +478,7 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: {
       <div className="relative">
         <input type={inputType} value={value} onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1A3A6B] transition-colors pr-10" />
+          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors pr-10" />
         {type === 'password' && (
           <button type="button" onClick={() => setShowPwd(!showPwd)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
