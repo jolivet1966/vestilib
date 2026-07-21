@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import NavBar from '@/app/components/NavBar'
@@ -198,8 +199,8 @@ function HomeContent() {
                 </div>
               </div>
             </div>
-            <div className="hidden md:flex bg-gray-50 border border-gray-100 rounded-2xl h-64 items-center justify-center text-gray-300 text-sm">
-              Illustration à venir
+            <div className="hidden md:block relative rounded-2xl overflow-hidden h-64">
+              <Image src="/hero-photo.png" alt="Deposez vos affaires en toute securite chez un hote VESTILIB" fill className="object-cover" priority />
             </div>
           </div>
         </div>
