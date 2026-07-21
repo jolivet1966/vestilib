@@ -5,6 +5,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { TARIFS_VESTILIB, CATEGORIES } from '@/lib/tarifs'
 import type { Horaires, JourHoraire } from '@/types'
+import NavBar from '@/app/components/NavBar'
 
 interface Booking {
   id: string; bookingCode: string; totalAmount: number
@@ -295,12 +296,13 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
 
   return (
     <div className="min-h-screen bg-[#F8F9FC]">
+      <div className="hidden md:block h-16" />
 
       {/* HEADER */}
       <div className="bg-[#1A3A6B] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #F5C84A 0%, transparent 60%)' }} />
-        <div className="relative px-4 pt-8 pb-5 max-w-2xl mx-auto">
+        <div className="relative px-4 pt-8 md:pt-5 pb-5 md:pb-4 max-w-2xl mx-auto">
           <div className="flex items-start justify-between mb-4">
             <div>
               <p className="text-[#F5C84A] font-black tracking-widest text-sm">VESTILIB</p>
@@ -831,6 +833,7 @@ authorized:        { label: 'Paiement autorisé', color: 'text-violet-700', bg: 
         )}
 
       </div>
+      <NavBar />
     </div>
   )
 }
