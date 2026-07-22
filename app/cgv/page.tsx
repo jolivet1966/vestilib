@@ -2,14 +2,14 @@ export default function CGVPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <div className="bg-[#272757] px-4 pt-10 pb-6">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg md:max-w-2xl mx-auto">
           <p className="text-[#F5C84A] text-xs font-semibold uppercase tracking-wider mb-1">Vestilib</p>
           <h1 className="text-white text-2xl font-black">Conditions Générales de Vente</h1>
           <p className="text-white/50 text-sm mt-1">En vigueur au 1er janvier 2025</p>
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-lg md:max-w-2xl mx-auto px-4 md:px-8 py-6 md:py-10 space-y-6">
 
         <Section titre="1. Objet">
           <p>Les présentes Conditions Générales de Vente (CGV) régissent les relations contractuelles entre la plateforme VESTILIB (ci-après « la Plateforme ») et toute personne physique utilisant ses services en qualité de client ou d'hôte (ci-après « l'Utilisateur »).</p>
