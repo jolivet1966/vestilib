@@ -184,17 +184,17 @@ function HomeContent() {
               </p>
               <div className="flex items-center gap-4 md:gap-8">
                 <div className="text-center md:text-left">
-                  <p className="text-[#F5C84A] md:text-[#272757] font-black text-lg md:text-xl">2 min</p>
+                  <p style={{ fontFamily: "'Archivo', sans-serif" }} className="text-[#F5C84A] md:text-[#272757] font-bold text-lg md:text-xl">2 min</p>
                   <p className="text-white/40 md:text-gray-400 text-[10px] md:text-xs">pour réserver</p>
                 </div>
                 <div className="w-px h-8 bg-white/10 md:bg-gray-200" />
                 <div className="text-center md:text-left">
-                  <p className="text-[#F5C84A] md:text-[#272757] font-black text-lg md:text-xl">100%</p>
+                  <p style={{ fontFamily: "'Archivo', sans-serif" }} className="text-[#F5C84A] md:text-[#272757] font-bold text-lg md:text-xl">100%</p>
                   <p className="text-white/40 md:text-gray-400 text-[10px] md:text-xs">sécurisé</p>
                 </div>
                 <div className="w-px h-8 bg-white/10 md:bg-gray-200" />
                 <div className="text-center md:text-left">
-                  <p className="text-[#F5C84A] md:text-[#272757] font-black text-lg md:text-xl">0€</p>
+                  <p style={{ fontFamily: "'Archivo', sans-serif" }} className="text-[#F5C84A] md:text-[#272757] font-bold text-lg md:text-xl">0€</p>
                   <p className="text-white/40 md:text-gray-400 text-[10px] md:text-xs">d'inscription</p>
                 </div>
               </div>
