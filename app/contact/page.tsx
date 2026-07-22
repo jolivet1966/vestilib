@@ -52,7 +52,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <div className="bg-[#272757] px-4 pt-10 pb-6">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg md:max-w-xl mx-auto">
           <button onClick={() => router.back()} className="text-white/70 text-sm mb-3">← Retour</button>
           <p className="text-[#F5C84A] text-xs font-semibold uppercase tracking-wider mb-1">Vestilib</p>
           <h1 className="text-white text-2xl font-black">Nous contacter</h1>
@@ -60,7 +60,7 @@ export default function ContactPage() {
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="max-w-lg md:max-w-xl mx-auto px-4 md:px-8 py-6 md:py-10">
         {sent ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm text-center space-y-3">
             <div className="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mx-auto">
