@@ -2,14 +2,14 @@ export default function ConfidentialitePage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <div className="bg-[#272757] px-4 pt-10 pb-6">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg md:max-w-2xl mx-auto">
           <p className="text-[#F5C84A] text-xs font-semibold uppercase tracking-wider mb-1">Vestilib</p>
           <h1 className="text-white text-2xl font-black">Politique de Confidentialité</h1>
           <p className="text-white/50 text-sm mt-1">En vigueur au 1er janvier 2025</p>
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-lg md:max-w-2xl mx-auto px-4 md:px-8 py-6 md:py-10 space-y-6">
 
         <Section titre="1. Responsable du traitement">
           <p>VESTILIB est responsable du traitement de vos données personnelles collectées via la plateforme accessible à l'adresse vestilib-z8oc.vercel.app.</p>
