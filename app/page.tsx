@@ -176,7 +176,7 @@ function HomeContent() {
                 <span className="w-1.5 h-1.5 bg-[#F5C84A] md:bg-[#272757] rounded-full"></span>
                 Disponible partout en France
               </span>
-              <h1 className="text-white md:text-[#272757] font-black text-2xl md:text-4xl leading-tight mb-3">
+              <h1 style={{ fontFamily: "'Archivo', sans-serif" }} className="text-white md:text-[#272757] font-bold text-2xl md:text-4xl leading-tight mb-3">
                 À la plage ou à la ville,<br/>libérez-vous<br/>de vos affaires.
               </h1>
               <p className="text-white/60 md:text-gray-500 text-sm md:text-base leading-relaxed mb-6 md:max-w-md">
