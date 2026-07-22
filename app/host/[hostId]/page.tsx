@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { TARIFS_VESTILIB, CATEGORIES, REMISE_INFO } from '@/lib/tarifs'
+import NavBar from '@/app/components/NavBar'
 
 interface JourHoraire { ouvert: boolean; ouverture: string; fermeture: string }
 interface Host {
@@ -291,8 +292,10 @@ useEffect(() => {
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
 
+      <div className="hidden md:block h-16" />
+
       {/* Header */}
-      <div className="bg-[#272757] px-4 py-3 flex items-center gap-3 sticky top-0 z-10 shadow-md">
+      <div className="bg-[#272757] px-4 py-3 flex items-center gap-3 sticky top-0 z-10 shadow-md md:hidden">
         <Link href="/map" className="text-white/50 hover:text-white transition-colors">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
@@ -732,6 +735,7 @@ useEffect(() => {
           </div>
         )}
       </div>
+      <NavBar />
     </div>
   )
 }
