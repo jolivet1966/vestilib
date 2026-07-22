@@ -14,10 +14,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr">
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#1E3A8A" />
+        <meta name="theme-color" content="#272757" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className="bg-[#1E3A8A] min-h-screen font-sans antialiased">
+      <body className="bg-[#272757] min-h-screen font-sans antialiased">
         <InstallBanner />
         {children}
         <PushInit />

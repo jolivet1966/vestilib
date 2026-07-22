@@ -38,7 +38,7 @@ export default function HostLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1E3A8A] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#272757] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
 
         <div className="text-center mb-8">
@@ -57,7 +57,7 @@ export default function HostLoginPage() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="votre@email.com"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#272757] transition-colors"
                 onKeyDown={e => e.key === 'Enter' && handleLogin()}
               />
             </div>
@@ -68,7 +68,7 @@ export default function HostLoginPage() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#272757] transition-colors"
                 onKeyDown={e => e.key === 'Enter' && handleLogin()}
               />
             </div>
@@ -81,14 +81,14 @@ export default function HostLoginPage() {
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full bg-[#1E3A8A] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors"
+            className="w-full bg-[#272757] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors"
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
 
           <p className="text-xs text-gray-400 text-center mt-4">
             Pas encore de compte ?{' '}
-            <Link href="/host/onboard" className="text-[#1E3A8A] font-medium hover:underline">
+            <Link href="/host/onboard" className="text-[#272757] font-medium hover:underline">
               Créer un compte hôte
             </Link>
           </p>

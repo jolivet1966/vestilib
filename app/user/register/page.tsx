@@ -48,7 +48,7 @@ export default function UserRegisterPage() {
   }
 
   if (succes) return (
-    <div className="min-h-screen bg-[#1E3A8A] flex flex-col items-center justify-center gap-4">
+    <div className="min-h-screen bg-[#272757] flex flex-col items-center justify-center gap-4">
       <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center text-white text-3xl font-bold">ok</div>
       <p className="text-[#F5C84A] font-bold text-xl">Vous etes inscrit !</p>
       <p className="text-white/50 text-sm">Redirection vers la carte...</p>
@@ -56,7 +56,7 @@ export default function UserRegisterPage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#1E3A8A] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#272757] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-[#F5C84A] tracking-widest mb-1">VESTILIB</h1>
@@ -76,7 +76,7 @@ export default function UserRegisterPage() {
               <div className="relative">
                 <input type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
                   placeholder="Min. 6 caracteres"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors pr-20" />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#272757] transition-colors pr-20" />
                 <button type="button" onClick={() => setShowPwd(!showPwd)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
                   {showPwd ? 'Masquer' : 'Afficher'}
@@ -88,7 +88,7 @@ export default function UserRegisterPage() {
               <div className="relative">
                 <input type={showPwd2 ? 'text' : 'password'} value={password2} onChange={e => setPassword2(e.target.value)}
                   placeholder="Repetez le mot de passe"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors pr-20" />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#272757] transition-colors pr-20" />
                 <button type="button" onClick={() => setShowPwd2(!showPwd2)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
                   {showPwd2 ? 'Masquer' : 'Afficher'}
@@ -98,12 +98,12 @@ export default function UserRegisterPage() {
           </div>
           {error && <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
           <button onClick={inscrire} disabled={loading}
-            className="mt-5 w-full bg-[#1E3A8A] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
+            className="mt-5 w-full bg-[#272757] text-[#F5C84A] font-semibold py-3 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors">
             {loading ? 'Creation...' : 'Creer mon compte'}
           </button>
           <p className="text-xs text-gray-400 text-center mt-4">
             Deja un compte ?{' '}
-            <Link href="/user/login" className="text-[#1E3A8A] font-medium hover:underline">Se connecter</Link>
+            <Link href="/user/login" className="text-[#272757] font-medium hover:underline">Se connecter</Link>
           </p>
         </div>
         <p className="text-white/20 text-xs text-center mt-6">VESTILIB · Inscription securisee</p>
@@ -119,7 +119,7 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: {
     <div>
       <label className="text-xs text-gray-500 block mb-1">{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] transition-colors" />
+        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#272757] transition-colors" />
     </div>
   )
 }

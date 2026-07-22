@@ -166,7 +166,7 @@ function MessagesContent() {
   if (loading) return (
     <div className="min-h-screen bg-[#F8F9FC] flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 border-4 border-[#1E3A8A] border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-[#272757] border-t-transparent rounded-full animate-spin" />
         <p className="text-sm text-gray-400">Chargement...</p>
       </div>
     </div>
@@ -193,7 +193,7 @@ function MessagesContent() {
       <div className="hidden md:block h-16" />
 
       {/* HEADER */}
-      <div className="bg-[#1E3A8A] relative overflow-hidden">
+      <div className="bg-[#272757] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #F5C84A 0%, transparent 60%)' }} />
         <div className="relative px-4 pt-10 md:pt-5 pb-5 md:pb-4">
@@ -233,7 +233,7 @@ function MessagesContent() {
               </div>
               {!selectedConvId && !showNewConv && conversations.length > 0 && (
                 <button onClick={() => { setShowNewConv(true); setSelectedConvId(null) }}
-                  className="bg-[#F5C84A] text-[#1E3A8A] text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 hover:bg-[#e6b22a] transition-colors active:scale-95">
+                  className="bg-[#F5C84A] text-[#272757] text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 hover:bg-[#e6b22a] transition-colors active:scale-95">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M12 5v14M5 12h14"/>
                   </svg>
@@ -256,7 +256,7 @@ function MessagesContent() {
                   Filtrer par departement
                 </label>
                 <select onChange={e => setFiltreDepart(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] bg-white text-gray-700">
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#272757] bg-white text-gray-700">
                   <option value="">Tous les departements</option>
                   {(Array.from(new Set(hosts.map(h => h.codePostal?.slice(0, 2)).filter(Boolean))) as string[]).sort().map(dep => (
                     <option key={dep} value={dep}>{dep}</option>
@@ -268,7 +268,7 @@ function MessagesContent() {
                   Choisir un hote
                 </label>
                 <select value={selectedHostId} onChange={e => setSelectedHostId(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] bg-white text-gray-700">
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#272757] bg-white text-gray-700">
                   <option value="">Selectionnez un hote</option>
                   {hosts.filter(h => !filtreDepart || h.codePostal?.startsWith(filtreDepart)).map(h => (
                     <option key={h.id} value={h.id}>{h.prenom} {h.nom} — {h.ville}</option>
@@ -282,7 +282,7 @@ function MessagesContent() {
                 <textarea value={texte} onChange={e => setTexte(e.target.value)}
                   placeholder="Ecrivez votre message ici..."
                   rows={4}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-3 text-sm focus:outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]/20 resize-none transition-all" />
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-3 text-sm focus:outline-none focus:border-[#272757] focus:ring-1 focus:ring-[#272757]/20 resize-none transition-all" />
               </div>
               {error && (
                 <div className="bg-red-50 border border-red-100 rounded-xl px-3 py-2">
@@ -295,7 +295,7 @@ function MessagesContent() {
                   Annuler
                 </button>
                 <button onClick={envoyerNouveauMessage} disabled={sending || !texte || !selectedHostId}
-                  className="flex-1 bg-[#1E3A8A] text-[#F5C84A] font-bold py-2.5 rounded-xl text-sm disabled:opacity-50 hover:bg-[#0C2447] transition-colors flex items-center justify-center gap-2">
+                  className="flex-1 bg-[#272757] text-[#F5C84A] font-bold py-2.5 rounded-xl text-sm disabled:opacity-50 hover:bg-[#0C2447] transition-colors flex items-center justify-center gap-2">
                   {sending ? (
                     <><div className="w-4 h-4 border-2 border-[#F5C84A] border-t-transparent rounded-full animate-spin" /> Envoi...</>
                   ) : (
@@ -343,7 +343,7 @@ function MessagesContent() {
                       )}
                       <div className={`max-w-[75%] ${isMine ? 'items-end' : 'items-start'} flex flex-col`}>
                         <div className={`rounded-2xl px-4 py-2.5 ${
-                          isMine ? 'bg-[#1E3A8A] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                          isMine ? 'bg-[#272757] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                         }`}>
                           <p className="text-sm leading-relaxed">{msg.texte}</p>
                         </div>
@@ -372,10 +372,10 @@ function MessagesContent() {
                   placeholder="Ecrivez un message..."
                   rows={1}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); envoyerReponse() } }}
-                  className="flex-1 border border-gray-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]/20 resize-none bg-white transition-all"
+                  className="flex-1 border border-gray-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#272757] focus:ring-1 focus:ring-[#272757]/20 resize-none bg-white transition-all"
                   style={{ maxHeight: '100px', overflowY: 'auto' }} />
                 <button onClick={envoyerReponse} disabled={sending || !texte}
-                  className="w-10 h-10 bg-[#1E3A8A] text-[#F5C84A] rounded-2xl flex items-center justify-center disabled:opacity-40 hover:bg-[#0C2447] transition-colors active:scale-95 flex-shrink-0">
+                  className="w-10 h-10 bg-[#272757] text-[#F5C84A] rounded-2xl flex items-center justify-center disabled:opacity-40 hover:bg-[#0C2447] transition-colors active:scale-95 flex-shrink-0">
                   {sending ? (
                     <div className="w-4 h-4 border-2 border-[#F5C84A] border-t-transparent rounded-full animate-spin" />
                   ) : (
@@ -406,7 +406,7 @@ function MessagesContent() {
                 <p className="text-sm font-semibold text-gray-600 mb-1">Aucune conversation</p>
                 <p className="text-xs text-gray-400 mb-4">Contactez un hote pour commencer</p>
                 <button onClick={() => setShowNewConv(true)}
-                  className="inline-flex items-center gap-2 bg-[#1E3A8A] text-[#F5C84A] font-bold text-sm py-2.5 px-5 rounded-xl hover:bg-[#0C2447] transition-colors">
+                  className="inline-flex items-center gap-2 bg-[#272757] text-[#F5C84A] font-bold text-sm py-2.5 px-5 rounded-xl hover:bg-[#0C2447] transition-colors">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M12 5v14M5 12h14"/>
                   </svg>
@@ -416,11 +416,11 @@ function MessagesContent() {
             ) : conversations.map(conv => {
               const nonLu = conv.monRole === 'hote' ? !conv.luHote : !conv.luClient
               const nom = conv.monRole === 'hote' ? conv.clientNom : conv.hostNom
-              const couleurAvatar = conv.monRole === 'hote' ? 'bg-emerald-100 text-emerald-700' : 'bg-[#1E3A8A]/10 text-[#1E3A8A]'
+              const couleurAvatar = conv.monRole === 'hote' ? 'bg-emerald-100 text-emerald-700' : 'bg-[#272757]/10 text-[#272757]'
               return (
                 <div key={conv.id} onClick={() => setSelectedConvId(conv.id)}
                   className={`bg-white rounded-2xl border cursor-pointer transition-all active:scale-[0.98] ${
-                    nonLu ? 'border-[#1E3A8A]/20 shadow-md' : 'border-gray-100 shadow-sm hover:border-gray-200'
+                    nonLu ? 'border-[#272757]/20 shadow-md' : 'border-gray-100 shadow-sm hover:border-gray-200'
                   }`}>
                   <div className="p-4 flex items-center gap-3">
                     <div className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 font-bold text-sm ${couleurAvatar}`}>
@@ -437,10 +437,10 @@ function MessagesContent() {
                         <p className={`text-xs truncate flex-1 ${nonLu ? 'text-gray-600 font-medium' : 'text-gray-400'}`}>
                           {conv.lastMessage || 'Aucun message'}
                         </p>
-                        {nonLu && <span className="w-2 h-2 bg-[#1E3A8A] rounded-full flex-shrink-0" />}
+                        {nonLu && <span className="w-2 h-2 bg-[#272757] rounded-full flex-shrink-0" />}
                       </div>
                       <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full mt-1 inline-block ${
-                        conv.monRole === 'hote' ? 'bg-emerald-100 text-emerald-700' : 'bg-[#1E3A8A]/8 text-[#1E3A8A]'
+                        conv.monRole === 'hote' ? 'bg-emerald-100 text-emerald-700' : 'bg-[#272757]/8 text-[#272757]'
                       }`}>
                         {conv.monRole === 'hote' ? 'Hote' : 'Client'}
                       </span>
@@ -490,7 +490,7 @@ export default function MessagesPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-[#F8F9FC] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#1E3A8A] border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-[#272757] border-t-transparent rounded-full animate-spin" />
       </div>
     }>
       <MessagesContent />

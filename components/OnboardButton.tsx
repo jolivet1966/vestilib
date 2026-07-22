@@ -54,7 +54,7 @@ export default function OnboardButton({
         onClick={handleOnboard}
         disabled={loading}
         className="
-          bg-[#1E3A8A] text-[#F5C84A] font-medium text-sm
+          bg-[#272757] text-[#F5C84A] font-medium text-sm
           px-6 py-3 rounded-xl
           hover:bg-[#0C2447] active:scale-95
           disabled:opacity-50 disabled:cursor-not-allowed

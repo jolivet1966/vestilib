@@ -47,17 +47,17 @@ function SuccessContent() {
   }, [sessionId])
 
   if (loading) return (
-    <div className="min-h-screen bg-[#1E3A8A] flex flex-col items-center justify-center gap-4">
+    <div className="min-h-screen bg-[#272757] flex flex-col items-center justify-center gap-4">
       <div className="w-10 h-10 border-4 border-[#F5C84A] border-t-transparent rounded-full animate-spin" />
       <p className="text-[#F5C84A] text-sm font-medium">Confirmation en cours...</p>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-[#1E3A8A] flex flex-col items-center justify-center px-6 text-center">
+    <div className="min-h-screen bg-[#272757] flex flex-col items-center justify-center px-6 text-center">
 
       {/* Icône */}
-      <div className="w-20 h-20 bg-[#F5C84A] rounded-full flex items-center justify-center text-[#1E3A8A] text-4xl font-bold mb-6 shadow-lg">
+      <div className="w-20 h-20 bg-[#F5C84A] rounded-full flex items-center justify-center text-[#272757] text-4xl font-bold mb-6 shadow-lg">
         ✓
       </div>
 
@@ -93,7 +93,7 @@ function SuccessContent() {
 
       <Link
         href="/"
-        className="bg-[#F5C84A] text-[#1E3A8A] font-semibold rounded-full px-8 py-3 text-sm hover:bg-yellow-300 transition-colors"
+        className="bg-[#F5C84A] text-[#272757] font-semibold rounded-full px-8 py-3 text-sm hover:bg-yellow-300 transition-colors"
       >
         Retour à l'accueil
       </Link>
@@ -117,7 +117,7 @@ function Row({ label, value }: { label: string; value: string }) {
 export default function PaySuccessPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#1E3A8A] flex items-center justify-center">
+      <div className="min-h-screen bg-[#272757] flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-[#F5C84A] border-t-transparent rounded-full animate-spin" />
       </div>
     }>

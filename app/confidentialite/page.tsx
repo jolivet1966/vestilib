@@ -1,7 +1,7 @@
 export default function ConfidentialitePage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      <div className="bg-[#1E3A8A] px-4 pt-10 pb-6">
+      <div className="bg-[#272757] px-4 pt-10 pb-6">
         <div className="max-w-lg mx-auto">
           <p className="text-[#F5C84A] text-xs font-semibold uppercase tracking-wider mb-1">Vestilib</p>
           <h1 className="text-white text-2xl font-black">Politique de Confidentialité</h1>
@@ -97,7 +97,7 @@ export default function ConfidentialitePage() {
 function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-      <h2 className="text-sm font-bold text-[#1E3A8A] mb-3">{titre}</h2>
+      <h2 className="text-sm font-bold text-[#272757] mb-3">{titre}</h2>
       <div className="text-xs text-gray-600 leading-relaxed">{children}</div>
     </div>
   )

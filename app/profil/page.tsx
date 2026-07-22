@@ -242,7 +242,7 @@ export default function ProfilPage() {
   if (loading) return (
     <div className="min-h-screen bg-[#F8F9FC] flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 border-4 border-[#1E3A8A] border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-[#272757] border-t-transparent rounded-full animate-spin" />
         <p className="text-sm text-gray-400">Chargement du profil...</p>
       </div>
     </div>
@@ -270,7 +270,7 @@ export default function ProfilPage() {
       <div className="hidden md:block h-16" />
 
       {/* HEADER */}
-      <div className="bg-[#1E3A8A] relative overflow-hidden">
+      <div className="bg-[#272757] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10"
           style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #F5C84A 0%, transparent 60%)' }} />
         <div className="relative px-4 pt-10 md:pt-5 pb-8 md:pb-4">
@@ -284,10 +284,10 @@ export default function ProfilPage() {
             <div className="flex items-center gap-4">
               <div className="relative flex-shrink-0">
                 <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#F5C84A] to-[#e6b22a] flex items-center justify-center shadow-lg">
-                  <span className="text-[#1E3A8A] text-2xl font-black">{initiales}</span>
+                  <span className="text-[#272757] text-2xl font-black">{initiales}</span>
                 </div>
                 {isHote && (
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-md border-2 border-[#1E3A8A]">
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-md border-2 border-[#272757]">
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
                       <path d="M20 6L9 17l-5-5"/>
                     </svg>
@@ -326,7 +326,7 @@ export default function ProfilPage() {
         <div className="max-w-lg mx-auto flex">
           <button onClick={() => setMenu('utilisateur')}
             className={`flex-1 py-3.5 text-sm font-semibold border-b-2 transition-all flex items-center justify-center gap-2 ${
-              menu === 'utilisateur' ? 'border-[#1E3A8A] text-[#1E3A8A]' : 'border-transparent text-gray-400 hover:text-gray-600'
+              menu === 'utilisateur' ? 'border-[#272757] text-[#272757]' : 'border-transparent text-gray-400 hover:text-gray-600'
             }`}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
@@ -336,7 +336,7 @@ export default function ProfilPage() {
           {isHote && (
             <button onClick={() => setMenu('hote')}
               className={`flex-1 py-3.5 text-sm font-semibold border-b-2 transition-all flex items-center justify-center gap-2 ${
-                menu === 'hote' ? 'border-[#1E3A8A] text-[#1E3A8A]' : 'border-transparent text-gray-400 hover:text-gray-600'
+                menu === 'hote' ? 'border-[#272757] text-[#272757]' : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
@@ -370,7 +370,7 @@ export default function ProfilPage() {
                         <div className="p-4">
                           <div className="flex items-start justify-between gap-2 mb-3">
                             <div>
-                              <p className="font-mono font-bold text-[#1E3A8A] text-base">{r.bookingCode}</p>
+                              <p className="font-mono font-bold text-[#272757] text-base">{r.bookingCode}</p>
                               {r.date && (
                                 <p className="text-xs text-gray-500 mt-0.5">
                                   {new Date(r.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
@@ -387,7 +387,7 @@ export default function ProfilPage() {
                             <p className="text-sm font-bold text-gray-800">{r.totalAmount} EUR</p>
                             {r.status === 'accepted' && r.paymentUrl && (
                               <a href={r.paymentUrl}
-                                className="bg-[#1E3A8A] text-[#F5C84A] font-bold text-xs py-2 px-4 rounded-xl hover:bg-[#0C2447] active:scale-95 transition-all">
+                                className="bg-[#272757] text-[#F5C84A] font-bold text-xs py-2 px-4 rounded-xl hover:bg-[#0C2447] active:scale-95 transition-all">
                                Payer maintenant
               </a>
             )}
@@ -437,7 +437,7 @@ export default function ProfilPage() {
                       <div className="p-4">
                         <div className="flex items-start justify-between gap-2 mb-3">
                           <div>
-                            <p className="font-mono font-bold text-[#1E3A8A] text-base">{r.bookingCode}</p>
+                            <p className="font-mono font-bold text-[#272757] text-base">{r.bookingCode}</p>
                             {r.date && (
                               <p className="text-xs text-gray-500 mt-0.5">
                                 {new Date(r.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
@@ -458,8 +458,8 @@ export default function ProfilPage() {
                           </div>
                         </div>
                         {(r.hostEmail || r.hostTelephone) && (
-                          <div className="bg-[#1E3A8A]/5 rounded-xl p-3 border border-[#1E3A8A]/10">
-                            <p className="text-xs font-bold text-[#1E3A8A] mb-2 flex items-center gap-1.5">
+                          <div className="bg-[#272757]/5 rounded-xl p-3 border border-[#272757]/10">
+                            <p className="text-xs font-bold text-[#272757] mb-2 flex items-center gap-1.5">
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                               </svg>
@@ -468,14 +468,14 @@ export default function ProfilPage() {
                             <div className="space-y-1.5">
                               {r.hostEmail && (
                                 <a href={`mailto:${r.hostEmail}`}
-                                  className="flex items-center gap-2 text-xs text-[#1E3A8A] font-medium hover:underline">
+                                  className="flex items-center gap-2 text-xs text-[#272757] font-medium hover:underline">
                                   <span className="w-6 h-6 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">✉️</span>
                                   {r.hostEmail}
                                 </a>
                               )}
                               {r.hostTelephone ? (
                                 <a href={`tel:${r.hostTelephone}`}
-                                  className="flex items-center gap-2 text-xs text-[#1E3A8A] font-medium hover:underline">
+                                  className="flex items-center gap-2 text-xs text-[#272757] font-medium hover:underline">
                                   <span className="w-6 h-6 bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">📞</span>
                                   {r.hostTelephone}
                                 </a>
@@ -500,7 +500,7 @@ export default function ProfilPage() {
               <section ref={archivesRef}>
                 <div className="flex items-center justify-between px-1 mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-[#1E3A8A]/50">
+                    <span className="text-[#272757]/50">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
                         <line x1="10" y1="12" x2="14" y2="12"/>
@@ -509,7 +509,7 @@ export default function ProfilPage() {
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Archives</p>
                   </div>
                   <button onClick={toggleArchivees}
-                    className="text-xs text-[#1E3A8A] font-semibold hover:underline flex items-center gap-1">
+                    className="text-xs text-[#272757] font-semibold hover:underline flex items-center gap-1">
                     {showArchivees ? 'Masquer' : `Voir (${resasPayeesArchivees.length})`}
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
                       className={`transition-transform ${showArchivees ? 'rotate-180' : ''}`}>
@@ -551,7 +551,7 @@ export default function ProfilPage() {
                         <div className="flex items-center gap-1.5 flex-shrink-0 ml-3">
                           <button onClick={() => desarchiverResa(r.id)}
                             title="Restaurer"
-                            className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 hover:border-[#1E3A8A] hover:bg-blue-50 flex items-center justify-center transition-colors">
+                            className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 hover:border-[#272757] hover:bg-blue-50 flex items-center justify-center transition-colors">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2">
                               <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.76"/>
                             </svg>
@@ -584,7 +584,7 @@ export default function ProfilPage() {
                 <p className="text-sm font-semibold text-gray-700 mb-1">Aucune reservation</p>
                 <p className="text-xs text-gray-400 mb-4">Trouvez un hote pres de vous pour deposer vos bagages</p>
                 <Link href="/map"
-                  className="inline-flex items-center gap-2 bg-[#1E3A8A] text-[#F5C84A] font-semibold text-sm py-2.5 px-5 rounded-xl hover:bg-[#0C2447] transition-colors">
+                  className="inline-flex items-center gap-2 bg-[#272757] text-[#F5C84A] font-semibold text-sm py-2.5 px-5 rounded-xl hover:bg-[#0C2447] transition-colors">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                   </svg>
@@ -615,7 +615,7 @@ export default function ProfilPage() {
                         Annuler
                       </button>
                       <button onClick={sauvegarderInfos} disabled={savingInfo}
-                        className="flex-1 bg-[#1E3A8A] text-[#F5C84A] font-bold py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
+                        className="flex-1 bg-[#272757] text-[#F5C84A] font-bold py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
                         {savingInfo ? 'Sauvegarde...' : 'Enregistrer'}
                       </button>
                     </div>
@@ -629,7 +629,7 @@ export default function ProfilPage() {
                     </div>
                     <div className="px-4 py-3 border-t border-gray-50">
                       <button onClick={() => setEditMode(true)}
-                        className="w-full text-center text-sm font-semibold text-[#1E3A8A] hover:text-[#0C2447] transition-colors py-1">
+                        className="w-full text-center text-sm font-semibold text-[#272757] hover:text-[#0C2447] transition-colors py-1">
                         Modifier mes informations
                       </button>
                     </div>
@@ -640,14 +640,14 @@ export default function ProfilPage() {
 
             {/* DEVENIR HOTE */}
             {!isHote && (
-              <div className="bg-gradient-to-br from-[#1E3A8A] to-[#0C2447] rounded-2xl p-5 shadow-md">
+              <div className="bg-gradient-to-br from-[#272757] to-[#0C2447] rounded-2xl p-5 shadow-md">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 bg-[#F5C84A]/20 rounded-xl flex items-center justify-center flex-shrink-0 text-xl">🏠</div>
                   <div className="flex-1">
                     <p className="text-white font-bold text-sm mb-1">Proposer un point de depot</p>
                     <p className="text-white/60 text-xs mb-3">Rejoignez le reseau VESTILIB et generez des revenus supplementaires.</p>
                     <Link href="/host/onboard"
-                      className="inline-flex items-center gap-2 bg-[#F5C84A] text-[#1E3A8A] font-bold text-sm py-2.5 px-4 rounded-xl hover:bg-[#e6b22a] transition-colors active:scale-95">
+                      className="inline-flex items-center gap-2 bg-[#F5C84A] text-[#272757] font-bold text-sm py-2.5 px-4 rounded-xl hover:bg-[#e6b22a] transition-colors active:scale-95">
                       Devenir hote
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -670,7 +670,7 @@ export default function ProfilPage() {
                   className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E3A8A" strokeWidth="2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#272757" strokeWidth="2">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                       </svg>
                     </div>
@@ -690,7 +690,7 @@ export default function ProfilPage() {
                     <Field label="Nouveau mot de passe" value={newPwd} onChange={setNewPwd} type="password" />
                     {pwdMsg && <p className="text-sm text-center font-medium text-emerald-600">{pwdMsg}</p>}
                     <button onClick={changerMotDePasse} disabled={savingPwd || !oldPwd || !newPwd}
-                      className="w-full bg-[#1E3A8A] text-[#F5C84A] font-bold py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
+                      className="w-full bg-[#272757] text-[#F5C84A] font-bold py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
                       {savingPwd ? 'Mise a jour...' : 'Changer le mot de passe'}
                     </button>
                   </div>
@@ -750,7 +750,7 @@ export default function ProfilPage() {
                   <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                 </svg>
               } label="Mes gains" />
-              <div className="bg-[#1E3A8A] rounded-2xl p-5 shadow-md overflow-hidden relative">
+              <div className="bg-[#272757] rounded-2xl p-5 shadow-md overflow-hidden relative">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#F5C84A]/10 rounded-full -translate-y-8 translate-x-8" />
                 <div className="grid grid-cols-3 gap-3 relative">
                   <div className="text-center">
@@ -826,7 +826,7 @@ export default function ProfilPage() {
                         Annuler
                       </button>
                       <button onClick={sauvegarderTelephoneHote} disabled={savingTelHote}
-                        className="flex-1 bg-[#1E3A8A] text-[#F5C84A] font-bold py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
+                        className="flex-1 bg-[#272757] text-[#F5C84A] font-bold py-2.5 rounded-xl hover:bg-[#0C2447] disabled:opacity-50 transition-colors text-sm">
                         {savingTelHote ? 'Sauvegarde...' : 'Enregistrer'}
                       </button>
                     </div>
@@ -837,7 +837,7 @@ export default function ProfilPage() {
                       valueColor={telephoneHote ? 'text-gray-800' : 'text-amber-600'} />
                     <div className="px-4 py-3 border-t border-gray-50">
                       <button onClick={() => setEditTelHote(true)}
-                        className="w-full text-center text-sm font-semibold text-[#1E3A8A] hover:text-[#0C2447] transition-colors py-1">
+                        className="w-full text-center text-sm font-semibold text-[#272757] hover:text-[#0C2447] transition-colors py-1">
                         {telephoneHote ? 'Modifier mon telephone' : 'Ajouter mon telephone'}
                       </button>
                     </div>
@@ -863,7 +863,7 @@ export default function ProfilPage() {
 function SectionTitle({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <div className="flex items-center gap-2 px-1 mb-2">
-      <span className="text-[#1E3A8A]/50">{icon}</span>
+      <span className="text-[#272757]/50">{icon}</span>
       <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{label}</p>
     </div>
   )
@@ -902,7 +902,7 @@ function Field({ label, value, onChange, type = 'text' }: { label: string; value
     <div>
       <label className="text-xs font-medium text-gray-500 block mb-1.5">{label}</label>
       <input type={type} value={value} onChange={e => onChange(e.target.value)}
-        className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]/20 transition-all" />
+        className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#272757] focus:ring-1 focus:ring-[#272757]/20 transition-all" />
     </div>
   )
 }
