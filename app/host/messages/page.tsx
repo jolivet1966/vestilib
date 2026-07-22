@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
+import NavBar from '@/app/components/NavBar'
 
 interface Conversation {
   id: string; hostId: string; hostNom: string
@@ -99,7 +100,9 @@ export default function HostMessagesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-6">
-      <div className="bg-[#272757] px-4 py-3 flex items-center gap-3">
+      <div className="hidden md:block h-16" />
+
+      <div className="bg-[#272757] px-4 py-3 flex items-center gap-3 md:hidden">
         <Link href="/host/dashboard" className="text-[#F5C84A]/70 hover:text-[#F5C84A] text-sm">Dashboard</Link>
         <span className="text-white/30">|</span>
         <span className="text-[#F5C84A] font-bold tracking-widest">Messages</span>
@@ -171,6 +174,7 @@ export default function HostMessagesPage() {
           </div>
         )}
       </div>
+      <NavBar />
     </div>
   )
 }
