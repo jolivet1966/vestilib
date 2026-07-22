@@ -53,7 +53,7 @@ function HomeContent() {
           </svg>
         </div>
         <div className="text-center" style={{ animation: 'fadeInText 0.5s ease-out 0.15s both' }}>
-          <p className="text-[#F5C84A] font-black text-5xl tracking-[0.3em] drop-shadow-lg">VESTILIB</p>
+          <p style={{ fontFamily: "'Archivo', sans-serif" }} className="text-[#F5C84A] font-bold text-5xl tracking-[0.3em] drop-shadow-lg">VESTILIB</p>
           <p className="text-white/50 text-sm tracking-[0.2em] mt-2 font-light">POSE · PROFITE · REVIENS</p>
         </div>
         <div className="mt-8 w-48 h-0.5 bg-white/10 rounded-full overflow-hidden" style={{ animation: 'fadeInText 0.5s ease-out 0.15s both' }}>
