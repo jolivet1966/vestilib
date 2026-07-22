@@ -53,7 +53,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-gray-50 pb-24">
       <div className="bg-[#272757] px-4 pt-10 pb-6">
         <div className="max-w-lg md:max-w-xl mx-auto">
-          <button onClick={() => router.back()} className="text-white/70 text-sm mb-3">← Retour</button>
+          
           <p className="text-[#F5C84A] text-xs font-semibold uppercase tracking-wider mb-1">Vestilib</p>
           <h1 className="text-white text-2xl font-black">Nous contacter</h1>
           <p className="text-white/50 text-sm mt-1">Notre équipe vous répond par email dans les plus brefs délais</p>
