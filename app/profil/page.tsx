@@ -224,18 +224,23 @@ export default function ProfilPage() {
     const firebaseUser = auth.currentUser
     if (!firebaseUser || !userData) return
     try {
-      try { await deleteDoc(doc(db, 'users', userData.id)) } catch {}
-      if (hostId) {
-        try { await deleteDoc(doc(db, 'hosts', hostId)) } catch {}
+      const idToken = await firebaseUser.getIdToken()
+      const res = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        if (data.error === 'auth/requires-recent-login') {
+          alert('Pour des raisons de securite, veuillez vous deconnecter puis vous reconnecter avant de supprimer votre compte.')
+        } else {
+          alert(`Erreur : ${data.error}`)
+        }
+        return
       }
-      await firebaseUser.delete()
       router.push('/?compte=supprime')
     } catch (e: any) {
-      if (e.code === 'auth/requires-recent-login') {
-        alert('Pour des raisons de securite, veuillez vous deconnecter puis vous reconnecter avant de supprimer votre compte.')
-      } else {
-        alert(`Erreur : ${e.code} — ${e.message}`)
-      }
+      alert(`Erreur : ${e.message}`)
     }
   }
 
