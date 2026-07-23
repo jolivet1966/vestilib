@@ -79,8 +79,12 @@ export async function POST(req: NextRequest) {
 
       case 'payout.paid': {
         const payout = event.data.object as Stripe.Payout
+        if (!event.account) {
+          console.warn(`[webhook-connect] payout.paid sans event.account, ignore : ${payout.id}`)
+          break
+        }
         await adminDb.collection('payouts').add({
-          stripeAccountId: event.account ?? null,
+          stripeAccountId: event.account,
           payoutId:        payout.id,
           amount:          payout.amount / 100,
           arrivalDate:     new Date(payout.arrival_date * 1000),

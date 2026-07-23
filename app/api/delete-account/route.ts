@@ -50,8 +50,9 @@ export async function POST(req: NextRequest) {
     try { await adminDb.collection('pushTokens').doc(uid).delete() } catch {}
 
     // 6. Donnees de versement
-    if (hostId) {
-      try { await adminDb.collection('payouts').doc(hostId).delete() } catch {}
+    if (hostId && hostData?.stripeAccountId) {
+      const payoutsSnap = await adminDb.collection('payouts').where('stripeAccountId', '==', hostData.stripeAccountId).get()
+      for (const p of payoutsSnap.docs) await p.ref.delete()
     }
 
     // 7. Sous-collection privee + compte Stripe Connect + document hote
