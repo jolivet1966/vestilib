@@ -276,6 +276,8 @@ function HomeContent() {
             { icon: '⚡', titre: 'Ultra rapide', desc: 'Réservation confirmée en 30 secondes' },
             { icon: '🤝', titre: 'Hôtes vérifiés', desc: 'Identité validée via Stripe Connect' },
             { icon: '🔒', titre: 'Paiement sécurisé', desc: '100% protégé, remboursement garanti' },
+            { icon: '💰', titre: 'Revenus garantis pour les hôtes', desc: 'Un complément de revenu simple et sécurisé' },
+            { icon: '🛍️', titre: 'Nouvelle clientèle pour les commerçants', desc: 'Attirez de nouveaux visiteurs dans votre commerce' },
           ].map((a, i) => (
             <div key={i} className="flex items-center gap-4 bg-white border border-gray-100 rounded-2xl px-4 py-3.5 shadow-sm">
               <div className="w-10 h-10 bg-[#272757] rounded-xl flex items-center justify-center flex-shrink-0 text-lg">
