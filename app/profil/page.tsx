@@ -238,6 +238,7 @@ export default function ProfilPage() {
         }
         return
       }
+      await signOut(auth)
       router.push('/?compte=supprime')
     } catch (e: any) {
       alert(`Erreur : ${e.message}`)
