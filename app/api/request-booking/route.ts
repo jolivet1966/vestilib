@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/firebase-admin'
 import { sendNotificationHoteDemandeReservation } from '@/lib/emails'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
+import { calculerTotalSecurise } from '@/lib/tarifs'
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,12 +18,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const {
       hostId, customerEmail, date, creneau,
-      prestations, totalAmount, hostEarns, description,
+      prestations, description,
     } = body
 
-    if (!hostId || !customerEmail || !date || !creneau) {
+    if (!hostId || !customerEmail || !date || !creneau || !prestations || !Array.isArray(prestations) || prestations.length === 0) {
       return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 })
     }
+    const { total: totalAmount, hostEarns } = calculerTotalSecurise(prestations)
 
     // Recuperer les infos hote
     const hostDoc = await adminDb.collection('hosts').doc(hostId).get()
