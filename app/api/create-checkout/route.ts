@@ -12,12 +12,14 @@
 import { NextRequest, NextResponse }  from 'next/server'
 import { createCheckoutSession }      from '@/lib/stripe'
 import { adminDb }                    from '@/lib/firebase-admin'
+import { calculerTotalSecurise }      from '@/lib/tarifs'
 import type { CreateCheckoutInput }   from '@/types'
 
 export async function POST(req: NextRequest) {
   try {
     const body: CreateCheckoutInput = await req.json()
-const { hostId, amountEuros, description, customerEmail, date, creneau, prestations } = body  
+const { hostId, description, customerEmail, date, creneau, prestations } = body
+    const { total: amountEuros } = calculerTotalSecurise(prestations ?? [])  
     if (!hostId || !amountEuros || !description) {
       return NextResponse.json(
         { error: 'Champs requis : hostId, amountEuros, description' },

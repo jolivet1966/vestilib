@@ -47,3 +47,41 @@ export function getTarifsByCategorie(categorie: string): Tarif[] {
 export function getTarifById(id: string): Tarif | undefined {
   return TARIFS_VESTILIB.find(t => t.id === id)
 }
+
+// Calcul securise du montant total a partir des prestations demandees.
+// Ne jamais faire confiance a un montant envoye par le client : toujours recalculer ici.
+export interface PrestationDemandee {
+  tarifId: string
+  quantite: number
+}
+
+export function calculerTotalSecurise(prestations: PrestationDemandee[]): { total: number; hostEarns: number } {
+  const quantites: Record<string, number> = {}
+  for (const p of prestations) {
+    if (!p.tarifId || !p.quantite || p.quantite <= 0) continue
+    if (!TARIFS_VESTILIB.find(t => t.id === p.tarifId)) continue
+    quantites[p.tarifId] = (quantites[p.tarifId] ?? 0) + p.quantite
+  }
+
+  const ids4h = ['4h-casque', '4h-blouson', '4h-sac']
+  const ids8h = ['8h-casque', '8h-blouson', '8h-sac']
+
+  const nb4h = ids4h.reduce((s, id) => s + (quantites[id] ?? 0), 0)
+  const nb8h = ids8h.reduce((s, id) => s + (quantites[id] ?? 0), 0)
+
+  let sum = 0
+  ids4h.forEach(id => { sum += (quantites[id] ?? 0) * 4 })
+  if (nb4h >= 4) sum -= Math.floor(nb4h / 4) * 4
+
+  ids8h.forEach(id => { sum += (quantites[id] ?? 0) * 6 })
+  if (nb8h >= 4) sum -= Math.floor(nb8h / 4) * 6
+
+  ;['douche', 'parking-moto', 'parking-velo', 'depot-24h', 'depot-7j'].forEach(id => {
+    const t = TARIFS_VESTILIB.find(t => t.id === id)
+    if (t && (quantites[id] ?? 0) > 0) sum += t.prix * (quantites[id] ?? 0)
+  })
+
+  const total = Math.max(sum, 0)
+  const hostEarns = Math.round(total * 0.7 * 100) / 100
+  return { total, hostEarns }
+}
