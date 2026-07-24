@@ -43,16 +43,20 @@ export async function POST(req: NextRequest) {
           // Onboarding terminé → migrer vers hosts
           const pendingDoc = pendingSnap.docs[0]
           const hostData = pendingDoc.data()
+          const { email, telephone, ...publicData } = hostData
 
           const hostId = hostData.uid ?? pendingDoc.id
           await adminDb.collection('hosts').doc(hostId).set({
-            ...hostData,
+            ...publicData,
             stripeOnboardingComplete: true,
             stripePayoutsEnabled: true,
             visible: true,
           })
+          await adminDb.collection('hosts').doc(hostId).collection('private').doc('contact').set({
+            email, telephone,
+          })
           await pendingDoc.ref.delete()
-          console.log(`[webhook-connect] Hote migre de pending vers hosts : ${hostId}`)
+          console.log(`[webhook-connect] Hote migre de pending vers hosts (email/telephone en prive) : ${hostId}`)
         } else {
           // Hôte déjà dans hosts → mise à jour simple
           const snap = await adminDb

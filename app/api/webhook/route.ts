@@ -61,6 +61,11 @@ export async function POST(req: NextRequest) {
           const bookingDoc  = snap.docs[0]
           const bookingData = bookingDoc.data()
 
+          if (bookingData.status === 'paid' || bookingData.status === 'authorized') {
+            console.log(`[webhook] checkout.session.completed deja traite pour booking ${bookingDoc.id}, ignore`)
+            break
+          }
+
           // Si la prestation a lieu dans moins de 48h, la reservation est ferme :
           // on capture immediatement au lieu d'attendre le cron horaire
           const datePrestation = bookingData.date ? new Date(bookingData.date + 'T00:00:00') : null
@@ -230,54 +235,7 @@ export async function POST(req: NextRequest) {
         break
       }
 
-      case 'account.updated': {
-        const account = event.data.object as Stripe.Account
-
-        // Vérifier d'abord dans hosts_pending
-        const pendingSnap = await adminDb
-          .collection('hosts_pending')
-          .where('stripeAccountId', '==', account.id)
-          .limit(1)
-          .get()
-
-        if (!pendingSnap.empty && account.payouts_enabled) {
-          // Onboarding terminé → migrer vers hosts
-          const pendingDoc = pendingSnap.docs[0]
-          const hostData = pendingDoc.data()
-          const { email, telephone, ...publicData } = hostData
-
-          const hostId = hostData.uid ?? pendingDoc.id
-          await adminDb.collection('hosts').doc(hostId).set({
-            ...publicData,
-            stripeOnboardingComplete: true,
-            stripePayoutsEnabled: true,
-            visible: true,
-          })
-          await adminDb.collection('hosts').doc(hostId).collection('private').doc('contact').set({
-            email, telephone,
-          })
-          await pendingDoc.ref.delete()
-          console.log(`[webhook] Hôte migré de pending vers hosts : ${hostId}`)
-        } else {
-          // Hôte déjà dans hosts → mise à jour simple
-          const snap = await adminDb
-            .collection('hosts')
-            .where('stripeAccountId', '==', account.id)
-            .limit(1)
-            .get()
-
-          if (!snap.empty) {
-            await snap.docs[0].ref.update({
-              stripeOnboardingComplete: account.details_submitted,
-              stripePayoutsEnabled:     account.payouts_enabled ?? false,
-              visible:                  account.payouts_enabled ?? false,
-            })
-            console.log(`[webhook] Compte hote mis a jour : ${account.id}`)
-          }
-        }
-        break
-      }
-
+      
       case 'payout.paid': {
         const payout = event.data.object as Stripe.Payout
         if (!event.account) {
