@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminDb } from '@/lib/firebase-admin'
 import { stripe } from '@/lib/stripe'
+import { sendPush } from '@/lib/push'
 
 export const dynamic = 'force-dynamic'
 
@@ -86,6 +87,23 @@ export async function GET(req: NextRequest) {
             }
           } catch (emailErr: any) {
             console.error('[cron] Erreur email:', emailErr.message)
+          }
+
+          if (booking.customerEmail) {
+            await sendPush({
+              userEmail: booking.customerEmail,
+              title: 'Reservation confirmee',
+              body: `Votre reservation ${booking.bookingCode ?? ''} est confirmee !`,
+              url: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'}/profil`,
+            })
+          }
+          if (hostPrivate.email) {
+            await sendPush({
+              userEmail: hostPrivate.email,
+              title: 'Nouvelle reservation',
+              body: `Vous avez recu une nouvelle reservation (${booking.bookingCode ?? ''}).`,
+              url: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'}/host/dashboard`,
+            })
           }
 
         } catch (err: any) {

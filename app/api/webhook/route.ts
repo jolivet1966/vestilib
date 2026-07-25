@@ -6,17 +6,7 @@ export const dynamic = 'force-dynamic'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib-z8oc.vercel.app'
 
-async function sendPush(params: { userEmail?: string; userId?: string; title: string; body: string; url?: string }) {
-  try {
-    await fetch(`${APP_URL}/api/push`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(params),
-    })
-  } catch (err: any) {
-    console.error('[webhook] Erreur push:', err.message)
-  }
-}
+import { sendPush } from '@/lib/push'
 
 export async function POST(req: NextRequest) {
   const payload   = Buffer.from(await req.arrayBuffer())
