@@ -222,9 +222,10 @@ export default function HostDashboardPage() {
   const annulerReservation = async (bookingId: string) => {
   if (!window.confirm('Confirmer l\'annulation ? Cette action est irréversible.')) return
   try {
+    const idToken = await auth.currentUser?.getIdToken()
     const res = await fetch('/api/cancel-booking', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
       body: JSON.stringify({ bookingId, cancelledBy: 'hote' }),
     })
     const data = await res.json()

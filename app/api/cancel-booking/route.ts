@@ -1,10 +1,15 @@
 // app/api/cancel-booking/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase-admin'
+import { adminDb, adminAuth } from '@/lib/firebase-admin'
 import { stripe } from '@/lib/stripe'
 
 export async function POST(req: NextRequest) {
   try {
+    const authHeader = req.headers.get('authorization') || ''
+    const idToken = authHeader.replace('Bearer ', '')
+    if (!idToken) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    const decoded = await adminAuth.verifyIdToken(idToken)
+
     const { bookingId, cancelledBy } = await req.json()
 
     if (!bookingId || !cancelledBy) {
@@ -17,6 +22,13 @@ export async function POST(req: NextRequest) {
     }
 
     const booking = bookingDoc.data()!
+
+    if (cancelledBy === 'client' && booking.customerEmail !== decoded.email) {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+    }
+    if (cancelledBy === 'hote' && booking.hostId !== decoded.uid) {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+    }
 
     // Vérifier que la réservation est annulable
     if (!['authorized', 'accepted', 'awaiting_approval'].includes(booking.status)) {
