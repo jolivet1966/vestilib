@@ -43,12 +43,14 @@ function MessagesContent() {
 
   const chargerConversations = async (email: string, hId: string | null) => {
     const toutes: Conversation[] = []
-    const resClient = await fetch(`/api/conversations?clientEmail=${encodeURIComponent(email)}`)
+    const idToken = await auth.currentUser?.getIdToken()
+    const headers = { 'Authorization': `Bearer ${idToken}` }
+    const resClient = await fetch(`/api/conversations?clientEmail=${encodeURIComponent(email)}`, { headers })
     const dataClient = await resClient.json()
     const convsClient = (dataClient.conversations ?? []).map((c: any) => ({ ...c, monRole: 'client' }))
     toutes.push(...convsClient)
     if (hId) {
-      const resHote = await fetch(`/api/conversations?hostId=${hId}`)
+      const resHote = await fetch(`/api/conversations?hostId=${hId}`, { headers })
       const dataHote = await resHote.json()
       const convsHote = (dataHote.conversations ?? []).map((c: any) => ({ ...c, monRole: 'hote' }))
       convsHote.forEach((c: any) => {
@@ -126,9 +128,10 @@ function MessagesContent() {
     if (!texte || !selectedHostId || !userEmail) return
     setSending(true); setError('')
     try {
+      const idToken = await auth.currentUser?.getIdToken()
       const res = await fetch('/api/conversations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
         body: JSON.stringify({ hostId: selectedHostId, clientEmail: userEmail, clientNom: userNom, texte }),
       })
       const data = await res.json()

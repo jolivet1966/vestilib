@@ -1,6 +1,6 @@
 // app/api/conversations/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase-admin'
+import { adminDb, adminAuth } from '@/lib/firebase-admin'
 
 // GET — récupérer les conversations d'un utilisateur
 export async function GET(req: NextRequest) {
@@ -9,6 +9,18 @@ export async function GET(req: NextRequest) {
   const clientEmail = searchParams.get('clientEmail')
 
   try {
+    const authHeader = req.headers.get('authorization') || ''
+    const idToken = authHeader.replace('Bearer ', '')
+    if (!idToken) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    const decoded = await adminAuth.verifyIdToken(idToken)
+
+    if (hostId && decoded.uid !== hostId) {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+    }
+    if (clientEmail && decoded.email !== clientEmail) {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+    }
+
     let snap
     if (hostId) {
       snap = await adminDb.collection('conversations')
@@ -47,10 +59,28 @@ export async function GET(req: NextRequest) {
 // POST — créer ou récupérer une conversation existante
 export async function POST(req: NextRequest) {
   try {
+    const authHeader = req.headers.get('authorization') || ''
+    const idToken = authHeader.replace('Bearer ', '')
+    if (!idToken) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    const decoded = await adminAuth.verifyIdToken(idToken)
+
+    const { checkRateLimit, getClientIp } = await import('@/lib/rateLimit')
+    const ip = getClientIp(req)
+    const rate = await checkRateLimit('conversations-post', ip, 10)
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: `Merci de patienter ${rate.retryAfterSeconds}s avant un nouveau message.` },
+        { status: 429 }
+      )
+    }
+
     const { hostId, clientEmail, clientNom, texte } = await req.json()
 
     if (!hostId || !clientEmail || !clientNom || !texte) {
       return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 })
+    }
+    if (decoded.email !== clientEmail) {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 })
     }
 
     // Vérifier restrictions coordonnées
