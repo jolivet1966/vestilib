@@ -1,17 +1,28 @@
 // app/api/onboard-host/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createConnectAccount }      from '@/lib/stripe'
-import { adminDb }                   from '@/lib/firebase-admin'
+import { adminDb, adminAuth }        from '@/lib/firebase-admin'
 import type { OnboardHostInput }     from '@/types'
 
 export async function POST(req: NextRequest) {
   try {
-    const body: OnboardHostInput & { existingUid?: string } = await req.json()
+    const authHeader = req.headers.get('authorization') || ''
+    const idToken = authHeader.replace('Bearer ', '')
+    let existingUid: string | undefined = undefined
+    if (idToken) {
+      try {
+        const decoded = await adminAuth.verifyIdToken(idToken)
+        existingUid = decoded.uid
+      } catch {
+        return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+      }
+    }
+
+    const body: OnboardHostInput = await req.json()
     const {
       email, prenom, nom, telephone,
       adresse, codePostal, ville,
       horaires, prestations,
-      existingUid,
       typeCompte = 'individual',
       modeReservation = 'immediat',
       capaciteMax      = 20,

@@ -167,15 +167,16 @@ export default function OnboardHostPage() {
         }
       }
 
+      const idToken = await auth.currentUser?.getIdToken()
       const res = await fetch('/api/onboard-host', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': idToken ? `Bearer ${idToken}` : '' },
         body: JSON.stringify({
           email, prenom, nom, telephone,
           adresse, codePostal, ville,
           horaires, prestations,
           capaciteMax, capaciteMaxMoto, capaciteMaxVelo, capaciteMaxDepot,
-          existingUid: uidPourCompte,
+          
           modeReservation, typeCompte,
         }),
       })
