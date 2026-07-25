@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       .where('hostId',  '==', hostId)
       .where('date',    '==', date)
       .where('creneau', '==', creneau)
-      .where('status',  'in', ['paid', 'pending'])
+      .where('status',  'in', ['pending', 'authorized', 'paid', 'awaiting_approval', 'accepted'])
       .get()
 
     const articlesReserves = snap.docs.reduce((sum, doc) => {
