@@ -36,11 +36,21 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'hostId ou clientEmail requis' }, { status: 400 })
     }
 
-    const conversations = await Promise.all(snap.docs.map(async d => {
+    const role = hostId ? 'hote' : 'client'
+
+    const conversationsAvecNull = await Promise.all(snap.docs.map(async d => {
       const data = d.data()
       const msgsSnap = await adminDb.collection('conversations').doc(d.id)
-        .collection('messages').orderBy('createdAt', 'desc').limit(1).get()
-      const lastMsg = msgsSnap.docs[0]?.data()
+        .collection('messages').orderBy('createdAt', 'desc').get()
+
+      const messagesVisibles = msgsSnap.docs.filter(m => {
+        const hiddenFor: string[] = m.data().hiddenFor ?? []
+        return !hiddenFor.includes(role)
+      })
+
+      if (messagesVisibles.length === 0) return null
+
+      const lastMsg = messagesVisibles[0].data()
       return {
         id: d.id,
         ...data,
@@ -48,6 +58,8 @@ export async function GET(req: NextRequest) {
         lastMessageAt: lastMsg?.createdAt ?? data.updatedAt,
       }
     }))
+
+    const conversations = conversationsAvecNull.filter(c => c !== null)
 
     return NextResponse.json({ conversations })
   } catch (err: any) {
