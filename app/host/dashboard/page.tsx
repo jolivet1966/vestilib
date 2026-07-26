@@ -186,8 +186,9 @@ export default function HostDashboardPage() {
     if (!hostId) return
     setSaving(true); setSaveMsg('')
     try {
+      const idTokenUpdate = await auth.currentUser?.getIdToken()
       const res = await fetch('/api/update-host', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idTokenUpdate}` },
         body: JSON.stringify({ hostId, horaires, prestations, capaciteMax, capaciteMaxMoto, capaciteMaxVelo, capaciteMaxDepot }),
       })
       const data = await res.json()

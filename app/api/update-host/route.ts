@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase-admin'
+import { adminDb, adminAuth } from '@/lib/firebase-admin'
 
 export async function POST(req: NextRequest) {
   try {
+    const authHeader = req.headers.get('authorization') || ''
+    const idToken = authHeader.replace('Bearer ', '')
+    if (!idToken) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    const decoded = await adminAuth.verifyIdToken(idToken)
+
     const body = await req.json()
     const { hostId, horaires, prestations, capaciteMax, capaciteMaxMoto, capaciteMaxVelo, capaciteMaxDepot } = body
 
@@ -10,6 +15,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'hostId requis' }, { status: 400 })
     }
 
+    if (decoded.uid !== hostId) {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+    }
     const now = new Date().toISOString().split('T')[0]
     const bookSnap = await adminDb
       .collection('bookings')
