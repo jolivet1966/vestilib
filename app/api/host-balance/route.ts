@@ -1,12 +1,20 @@
 // app/api/host-balance/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase-admin'
+import { adminDb, adminAuth } from '@/lib/firebase-admin'
 
 export async function GET(req: NextRequest) {
   try {
+    const authHeader = req.headers.get('authorization') || ''
+    const idToken = authHeader.replace('Bearer ', '')
+    if (!idToken) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    const decoded = await adminAuth.verifyIdToken(idToken)
+
     const hostId = req.nextUrl.searchParams.get('hostId')
     if (!hostId) {
       return NextResponse.json({ error: 'hostId requis' }, { status: 400 })
+    }
+    if (decoded.uid !== hostId) {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 })
     }
 
     const hostDoc = await adminDb.collection('hosts').doc(hostId).get()

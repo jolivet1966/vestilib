@@ -165,7 +165,8 @@ export default function HostDashboardPage() {
         await Promise.all(nonVues.map(d => updateDoc(docRef(firedb, 'bookings', d.id), { vuHote: true })))
         const msgSnap = await gd(q(col(firedb, 'messages'), w('hostId', '==', hostDoc.id), w('lu', '==', false)))
         await Promise.all(msgSnap.docs.map(d => updateDoc(docRef(firedb, 'messages', d.id), { lu: true })))
-        const balRes = await fetch(`/api/host-balance?hostId=${hostDoc.id}`)
+        const idTokenBal = await firebaseUser.getIdToken()
+        const balRes = await fetch(`/api/host-balance?hostId=${hostDoc.id}`, { headers: { 'Authorization': `Bearer ${idTokenBal}` } })
         if (balRes.ok) setBalance(await balRes.json())
       } catch (err) { console.error(err) }
       finally { setLoading(false) }

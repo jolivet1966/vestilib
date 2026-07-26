@@ -146,7 +146,8 @@ export default function ProfilPage() {
             .filter(d => d.data().status === 'paid')
             .reduce((s, d) => s + (d.data().hostEarns ?? 0), 0)
           setTotalGagne(total)
-          const balRes = await fetch(`/api/host-balance?hostId=${hostDocId}`)
+          const idTokenBal = await firebaseUser.getIdToken()
+          const balRes = await fetch(`/api/host-balance?hostId=${hostDocId}`, { headers: { 'Authorization': `Bearer ${idTokenBal}` } })
           if (balRes.ok) setBalance(await balRes.json())
         }
 
