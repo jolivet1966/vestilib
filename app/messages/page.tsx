@@ -88,10 +88,10 @@ function MessagesContent() {
       const role = conv?.monRole ?? 'client'
       // Marquer comme lu
       try {
+        const idTokenLu = await auth.currentUser?.getIdToken()
         await fetch(`/api/conversations/${selectedConvId}/lu`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role }),
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idTokenLu}` },
         })
       } catch {}
       const idTokenLoad = await auth.currentUser?.getIdToken()
