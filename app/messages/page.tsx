@@ -94,7 +94,8 @@ function MessagesContent() {
           body: JSON.stringify({ role }),
         })
       } catch {}
-      const res = await fetch(`/api/conversations/${selectedConvId}/messages?role=${role}`)
+      const idTokenLoad = await auth.currentUser?.getIdToken()
+      const res = await fetch(`/api/conversations/${selectedConvId}/messages?role=${role}`, { headers: { 'Authorization': `Bearer ${idTokenLoad}` } })
       const data = await res.json()
       setMessages(data.messages ?? [])
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
@@ -113,7 +114,8 @@ function MessagesContent() {
     if (!window.confirm('Supprimer ce message ?')) return
     try {
       const role = conversationsRef.current.find(c => c.id === selectedConvId)?.monRole ?? 'client'
-      await fetch(`/api/conversations/${selectedConvId}/messages/${messageId}?role=${role}`, { method: 'DELETE' })
+      const idTokenDel = await auth.currentUser?.getIdToken()
+      await fetch(`/api/conversations/${selectedConvId}/messages/${messageId}?role=${role}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${idTokenDel}` } })
       const nouveauxMessages = messages.filter(m => m.id !== messageId)
       setMessages(nouveauxMessages)
       if (nouveauxMessages.length === 0 && userEmail) {
@@ -150,15 +152,16 @@ function MessagesContent() {
     try {
       const conv = conversationsRef.current.find(c => c.id === selectedConvId)
       const auteur = conv?.monRole ?? 'client'
+      const idTokenSend = await auth.currentUser?.getIdToken()
       const res = await fetch(`/api/conversations/${selectedConvId}/messages`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texte, auteur, clientNom: userNom }),
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idTokenSend}` },
+        body: JSON.stringify({ texte, clientNom: userNom }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? 'Erreur'); return }
       setTexte('')
-      const res2 = await fetch(`/api/conversations/${selectedConvId}/messages?role=${auteur}`)
+      const res2 = await fetch(`/api/conversations/${selectedConvId}/messages?role=${auteur}`, { headers: { 'Authorization': `Bearer ${idTokenSend}` } })
       const data2 = await res2.json()
       setMessages(data2.messages ?? [])
       await chargerConversations(userEmail, hostId)

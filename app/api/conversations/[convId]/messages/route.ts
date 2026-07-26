@@ -1,13 +1,30 @@
 // app/api/conversations/[convId]/messages/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { adminDb } from '@/lib/firebase-admin'
+import { adminDb, adminAuth } from '@/lib/firebase-admin'
 
 // GET — récupérer les messages d'une conversation
 export async function GET(req: NextRequest, { params }: { params: { convId: string } }) {
   try {
+    const authHeader = req.headers.get('authorization') || ''
+    const idToken = authHeader.replace('Bearer ', '')
+    if (!idToken) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    const decoded = await adminAuth.verifyIdToken(idToken)
+
     const { convId } = params
-    const { searchParams } = new URL(req.url)
-    const role = searchParams.get('role')
+
+    const convDocCheck = await adminDb.collection('conversations').doc(convId).get()
+    if (!convDocCheck.exists) {
+      return NextResponse.json({ error: 'Conversation introuvable' }, { status: 404 })
+    }
+    const convCheck = convDocCheck.data()!
+    let role: string
+    if (decoded.uid === convCheck.hostId) {
+      role = 'hote'
+    } else if (decoded.email === convCheck.clientEmail) {
+      role = 'client'
+    } else {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+    }
 
     const snap = await adminDb.collection('conversations').doc(convId)
       .collection('messages').orderBy('createdAt', 'asc').get()
@@ -36,11 +53,16 @@ export async function GET(req: NextRequest, { params }: { params: { convId: stri
 // POST — envoyer un message dans une conversation
 export async function POST(req: NextRequest, { params }: { params: { convId: string } }) {
   try {
-    const { convId } = params
-    const { texte, auteur, clientNom } = await req.json()
+    const authHeader = req.headers.get('authorization') || ''
+    const idToken = authHeader.replace('Bearer ', '')
+    if (!idToken) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    const decoded = await adminAuth.verifyIdToken(idToken)
 
-    if (!texte || !auteur) {
-      return NextResponse.json({ error: 'texte et auteur requis' }, { status: 400 })
+    const { convId } = params
+    const { texte, clientNom } = await req.json()
+
+    if (!texte) {
+      return NextResponse.json({ error: 'texte requis' }, { status: 400 })
     }
 
     // Vérifier restrictions coordonnées
@@ -58,6 +80,15 @@ export async function POST(req: NextRequest, { params }: { params: { convId: str
       return NextResponse.json({ error: 'Conversation introuvable' }, { status: 404 })
     }
     const conv = convDoc.data()!
+
+    let auteur: string
+    if (decoded.uid === conv.hostId) {
+      auteur = 'hote'
+    } else if (decoded.email === conv.clientEmail) {
+      auteur = 'client'
+    } else {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 })
+    }
 
     // Ajouter le message
     await adminDb.collection('conversations').doc(convId)
