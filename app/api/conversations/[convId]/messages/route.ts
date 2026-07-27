@@ -123,7 +123,7 @@ export async function POST(req: NextRequest, { params }: { params: { convId: str
       const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib.fr'
       await fetch(`${APP_URL}/api/push`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env.CRON_SECRET ?? '' },
         body: JSON.stringify({
           userEmail: conv.clientEmail,
           title: 'Nouveau message',
@@ -150,7 +150,7 @@ export async function POST(req: NextRequest, { params }: { params: { convId: str
       const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestilib.fr'
       await fetch(`${APP_URL}/api/push`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env.CRON_SECRET ?? '' },
         body: JSON.stringify({
           userEmail: hostPrivate.email,
           title: 'Nouveau message',

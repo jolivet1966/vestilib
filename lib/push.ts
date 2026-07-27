@@ -4,7 +4,7 @@ export async function sendPush(params: { userEmail?: string; userId?: string; ti
   try {
     await fetch(`${APP_URL}/api/push`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-internal-secret': process.env.CRON_SECRET ?? '' },
       body: JSON.stringify(params),
     })
   } catch (err: any) {

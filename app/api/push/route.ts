@@ -4,6 +4,11 @@ import { adminDb } from '@/lib/firebase-admin'
 
 export async function POST(req: NextRequest) {
   try {
+    const secret = req.headers.get('x-internal-secret')
+    if (secret !== process.env.CRON_SECRET) {
+      return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    }
+
     const { userId, userEmail, title, body, url } = await req.json()
 
     if (!title || (!userId && !userEmail)) {
