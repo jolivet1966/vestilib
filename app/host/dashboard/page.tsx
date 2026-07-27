@@ -210,8 +210,9 @@ export default function HostDashboardPage() {
     if (!hostId) return
     setSavingDispo(true); setDispoMsg('')
     try {
+      const idTokenDispo = await auth.currentUser?.getIdToken()
       const res = await fetch('/api/update-disponibilite', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idTokenDispo}` },
         body: JSON.stringify({ hostId, ouvert, datesFermeture }),
       })
       const data = await res.json()
