@@ -297,6 +297,7 @@ function HomeContent() {
         <div className="flex justify-center gap-6 mb-2">
           <Link href="/cgv" className="text-xs text-gray-400 hover:text-gray-600">CGV</Link>
           <Link href="/confidentialite" className="text-xs text-gray-400 hover:text-gray-600">Confidentialité</Link>
+          <Link href="/mentions-legales" className="text-xs text-gray-400 hover:text-gray-600">Mentions legales</Link>
         </div>
         <p className="text-gray-300 text-[10px]">© 2026 VESTILIB — Pose. Profite. Reviens.</p>
       </footer>
