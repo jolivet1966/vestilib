@@ -6,6 +6,15 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import NavBar from '@/app/components/NavBar'
 import InstallAppButton from '@/app/components/InstallAppButton'
 
+function SearchParamsHandler({ onCompteSupprime, onConnecte }: { onCompteSupprime: () => void; onConnecte: () => void }) {
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    if (searchParams.get('compte') === 'supprime') onCompteSupprime()
+    if (searchParams.get('connecte') === 'true') onConnecte()
+  }, [searchParams])
+  return null
+}
+
 function HomeContent() {
   const [splash, setSplash] = useState(true)
   const [fading, setFading] = useState(false)
@@ -15,11 +24,11 @@ function HomeContent() {
   const [isConnected, setIsConnected] = useState(false)
   const [showLaunchBanner, setShowLaunchBanner] = useState(true)
   const router = useRouter()
-  const searchParams = useSearchParams()
+  
 
   useEffect(() => {
-    if (searchParams.get('compte') === 'supprime') setCompteSuprime(true)
-    if (searchParams.get('connecte') === 'true') setConnecte(true)
+    
+    
     // bandeau toujours visible
     import('@/lib/firebase').then(({ auth }) => {
       import('firebase/auth').then(({ onAuthStateChanged }) => {
@@ -41,7 +50,7 @@ function HomeContent() {
   return (
     <div className={`min-h-screen bg-gray-50 font-sans overflow-x-hidden pb-24 md:pb-6 ${splash ? 'h-screen overflow-hidden' : ''}`}>
 
-      {/* SPLASH : calque plein écran, fond bleu dès le 1er affichage, fondu en sortie */}
+      <Suspense fallback={null}><SearchParamsHandler onCompteSupprime={() => setCompteSuprime(true)} onConnecte={() => setConnecte(true)} /></Suspense>{/* SPLASH : calque plein écran, fond bleu dès le 1er affichage, fondu en sortie */}
       {splash && (
         <div className={`fixed inset-0 z-[100] bg-[#272757] flex flex-col items-center justify-center overflow-hidden transition-opacity duration-500 ${fading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#F5C84A]/5 rounded-full -translate-y-20 translate-x-20" />
@@ -55,7 +64,7 @@ function HomeContent() {
                 <circle cx="22" cy="4" r="2" fill="#F5C84A"/>
               </svg>
             </div>
-            <div className="text-center" style={{ animation: 'vstFadeInText 0.5s ease-out 0.1s both' }}>
+            <div className="text-center">
               <p style={{ fontFamily: "'Archivo', sans-serif" }} className="text-[#F5C84A] font-bold text-5xl tracking-[0.3em] drop-shadow-lg">VESTILIB</p>
               <p className="text-white/50 text-sm tracking-[0.2em] mt-2 font-light">POSE · PROFITE · REVIENS</p>
             </div>
@@ -65,7 +74,7 @@ function HomeContent() {
           </div>
           <style>{`
             @keyframes vstLoadbar { 0% { width: 0% } 100% { width: 100% } }
-            @keyframes vstFadeInText { 0% { opacity: 0; transform: translateY(6px) } 100% { opacity: 1; transform: translateY(0) } }
+            
           `}</style>
         </div>
       )}
