@@ -7,7 +7,6 @@ import NavBar from '@/app/components/NavBar'
 import InstallAppButton from '@/app/components/InstallAppButton'
 
 function SearchParamsHandler({ onCompteSupprime, onConnecte }: { onCompteSupprime: () => void; onConnecte: () => void }) {
-  const searchParams = useSearchParams()
   useEffect(() => {
     if (searchParams.get('compte') === 'supprime') onCompteSupprime()
     if (searchParams.get('connecte') === 'true') onConnecte()
@@ -24,11 +23,9 @@ function HomeContent() {
   const [isConnected, setIsConnected] = useState(false)
   const [showLaunchBanner, setShowLaunchBanner] = useState(true)
   const router = useRouter()
-  
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    
-    
     // bandeau toujours visible
     import('@/lib/firebase').then(({ auth }) => {
       import('firebase/auth').then(({ onAuthStateChanged }) => {
@@ -50,31 +47,36 @@ function HomeContent() {
   return (
     <div className={`min-h-screen bg-gray-50 font-sans overflow-x-hidden pb-24 md:pb-6 ${splash ? 'h-screen overflow-hidden' : ''}`}>
 
-      <Suspense fallback={null}><SearchParamsHandler onCompteSupprime={() => setCompteSuprime(true)} onConnecte={() => setConnecte(true)} /></Suspense>{/* SPLASH : calque plein écran, fond bleu dès le 1er affichage, fondu en sortie */}
+      <Suspense fallback={null}>
+        <SearchParamsHandler onCompteSupprime={() => setCompteSuprime(true)} onConnecte={() => setConnecte(true)} />
+      </Suspense>
+
+      {/* SPLASH : même fond et même logo, au centre exact, que l'écran de lancement d'Android -> enchaînement continu */}
       {splash && (
-        <div className={`fixed inset-0 z-[100] bg-[#272757] flex flex-col items-center justify-center overflow-hidden transition-opacity duration-500 ${fading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <div className={`fixed inset-0 z-[100] bg-[#272757] overflow-hidden transition-opacity duration-500 ${fading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#F5C84A]/5 rounded-full -translate-y-20 translate-x-20" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#F5C84A]/5 rounded-full translate-y-24 -translate-x-24" />
-          <div className="relative z-10 flex flex-col items-center gap-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-[#F5C84A]/20 rounded-full blur-2xl scale-150" />
-              <svg width="120" height="120" viewBox="0 0 44 44" fill="none" className="relative z-10 drop-shadow-2xl">
-                <path d="M6 8 L22 36 L38 8" stroke="#F5C84A" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                <path d="M16 8 Q22 4 28 8" stroke="#F5C84A" strokeWidth="3" strokeLinecap="round" fill="none"/>
-                <circle cx="22" cy="4" r="2" fill="#F5C84A"/>
-              </svg>
-            </div>
-            <div className="text-center">
-              <p style={{ fontFamily: "'Archivo', sans-serif" }} className="text-[#F5C84A] font-bold text-5xl tracking-[0.3em] drop-shadow-lg">VESTILIB</p>
-              <p className="text-white/50 text-sm tracking-[0.2em] mt-2 font-light">POSE · PROFITE · REVIENS</p>
-            </div>
+
+          {/* Logo : centre exact de l'écran, il ne bouge jamais */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <svg width="120" height="120" viewBox="3 1.25 38 38" fill="none">
+              <path d="M6 8 L22 36 L38 8" stroke="#F5C84A" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+              <path d="M16 8 Q22 4 28 8" stroke="#F5C84A" strokeWidth="3" strokeLinecap="round" fill="none"/>
+              <circle cx="22" cy="4" r="2" fill="#F5C84A"/>
+            </svg>
+          </div>
+
+          {/* Titre, slogan et barre : sous le logo */}
+          <div className="absolute left-0 right-0 flex flex-col items-center" style={{ top: 'calc(50% + 84px)' }}>
+            <p style={{ fontFamily: "'Archivo', sans-serif" }} className="text-[#F5C84A] font-bold text-5xl tracking-[0.3em] pl-[0.3em]">VESTILIB</p>
+            <p className="text-white/50 text-sm tracking-[0.2em] mt-2 font-light">POSE · PROFITE · REVIENS</p>
             <div className="mt-8 w-48 h-0.5 bg-white/10 rounded-full overflow-hidden">
               <div className="h-full bg-[#F5C84A] rounded-full" style={{ animation: 'vstLoadbar 2.3s ease-in-out forwards' }} />
             </div>
           </div>
+
           <style>{`
             @keyframes vstLoadbar { 0% { width: 0% } 100% { width: 100% } }
-            
           `}</style>
         </div>
       )}
@@ -316,10 +318,5 @@ function HomeContent() {
 }
 
 export default function HomePage() {
-  // Fallback bleu = pas de page blanche/grise avant l'apparition du splash
-  return (
-    <Suspense fallback={<div className="fixed inset-0 bg-[#272757]" />}>
-      <HomeContent />
-    </Suspense>
-  )
+  return <HomeContent />
 }
