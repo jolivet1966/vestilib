@@ -7,6 +7,7 @@ import NavBar from '@/app/components/NavBar'
 import InstallAppButton from '@/app/components/InstallAppButton'
 
 function SearchParamsHandler({ onCompteSupprime, onConnecte }: { onCompteSupprime: () => void; onConnecte: () => void }) {
+  const searchParams = useSearchParams()
   useEffect(() => {
     if (searchParams.get('compte') === 'supprime') onCompteSupprime()
     if (searchParams.get('connecte') === 'true') onConnecte()
@@ -23,7 +24,6 @@ function HomeContent() {
   const [isConnected, setIsConnected] = useState(false)
   const [showLaunchBanner, setShowLaunchBanner] = useState(true)
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   useEffect(() => {
     // bandeau toujours visible
