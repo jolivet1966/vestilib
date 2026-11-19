@@ -32,8 +32,8 @@ function HomeContent() {
         onAuthStateChanged(auth, user => setIsConnected(!!user))
       })
     })
-    const t1 = setTimeout(() => setFading(true), 2200)   // début du fondu
-    const t2 = setTimeout(() => setSplash(false), 2700)  // retrait du calque
+    const t1 = setTimeout(() => setFading(true), 1300)   // début du fondu
+    const t2 = setTimeout(() => setSplash(false), 1800)  // retrait du calque
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
 
@@ -71,7 +71,7 @@ function HomeContent() {
             <p style={{ fontFamily: "'Archivo', sans-serif" }} className="text-[#F5C84A] font-bold text-5xl tracking-[0.3em] pl-[0.3em]">VESTILIB</p>
             <p className="text-white/50 text-sm tracking-[0.2em] mt-2 font-light">POSE · PROFITE · REVIENS</p>
             <div className="mt-8 w-48 h-0.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-[#F5C84A] rounded-full" style={{ animation: 'vstLoadbar 2.3s ease-in-out forwards' }} />
+              <div className="h-full bg-[#F5C84A] rounded-full" style={{ animation: 'vstLoadbar 1.4s ease-in-out forwards' }} />
             </div>
           </div>
 
