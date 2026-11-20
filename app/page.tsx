@@ -58,7 +58,7 @@ function HomeContent() {
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#F5C84A]/5 rounded-full translate-y-24 -translate-x-24" />
 
           {/* Logo : centre exact de l'écran, il ne bouge jamais */}
-          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ top: 'calc(50% + 9px)' }}>
+          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ top: '50%' }}>
             <svg width="141" height="141" viewBox="3 1.25 38 38" fill="none">
               <path d="M6 8 L22 36 L38 8" stroke="#F5C84A" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
               <path d="M16 8 Q22 4 28 8" stroke="#F5C84A" strokeWidth="3" strokeLinecap="round" fill="none"/>
@@ -67,7 +67,7 @@ function HomeContent() {
           </div>
 
           {/* Titre, slogan et barre : sous le logo */}
-          <div className="absolute left-0 right-0 flex flex-col items-center" style={{ top: 'calc(50% + 104px)' }}>
+          <div className="absolute left-0 right-0 flex flex-col items-center" style={{ top: 'calc(50% + 95px)' }}>
             <p style={{ fontFamily: "'Archivo', sans-serif" }} className="text-[#F5C84A] font-bold text-5xl tracking-[0.3em] pl-[0.3em]">VESTILIB</p>
             <p className="text-white/50 text-sm tracking-[0.2em] mt-2 font-light">POSE · PROFITE · REVIENS</p>
             <div className="mt-8 w-48 h-0.5 bg-white/10 rounded-full overflow-hidden">
