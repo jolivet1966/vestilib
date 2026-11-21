@@ -51,14 +51,14 @@ function HomeContent() {
         <SearchParamsHandler onCompteSupprime={() => setCompteSuprime(true)} onConnecte={() => setConnecte(true)} />
       </Suspense>
 
-      {/* SPLASH : même fond et même logo, au centre exact, que l'écran de lancement d'Android -> enchaînement continu */}
+      {/* SPLASH : même fond et même logo que le 2e écran d'Android (logo décalé de 9 px vers le bas) -> enchaînement continu */}
       {splash && (
         <div className={`fixed inset-0 z-[100] bg-[#272757] overflow-hidden transition-opacity duration-500 ${fading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#F5C84A]/5 rounded-full -translate-y-20 translate-x-20" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#F5C84A]/5 rounded-full translate-y-24 -translate-x-24" />
 
-          {/* Logo : centre exact de l'écran, il ne bouge jamais */}
-          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ top: '50%' }}>
+          {/* Logo : centre de l'écran + 9 px vers le bas (aligné sur le 2e écran d'Android), il ne bouge jamais */}
+          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ top: 'calc(50% + 9px)' }}>
             <svg width="141" height="141" viewBox="3 1.25 38 38" fill="none">
               <path d="M6 8 L22 36 L38 8" stroke="#F5C84A" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
               <path d="M16 8 Q22 4 28 8" stroke="#F5C84A" strokeWidth="3" strokeLinecap="round" fill="none"/>
@@ -66,8 +66,8 @@ function HomeContent() {
             </svg>
           </div>
 
-          {/* Titre, slogan et barre : sous le logo */}
-          <div className="absolute left-0 right-0 flex flex-col items-center" style={{ top: 'calc(50% + 95px)' }}>
+          {/* Titre, slogan et barre : sous le logo (95 px + 9 px de décalage) */}
+          <div className="absolute left-0 right-0 flex flex-col items-center" style={{ top: 'calc(50% + 104px)' }}>
             <p style={{ fontFamily: "'Archivo', sans-serif" }} className="text-[#F5C84A] font-bold text-5xl tracking-[0.3em] pl-[0.3em]">VESTILIB</p>
             <p className="text-white/50 text-sm tracking-[0.2em] mt-2 font-light">POSE · PROFITE · REVIENS</p>
             <div className="mt-8 w-48 h-0.5 bg-white/10 rounded-full overflow-hidden">
@@ -284,10 +284,7 @@ function HomeContent() {
           {[
             { icon: '🎒', titre: 'Tout type d\'affaires', desc: 'Casque, sac, vélo, équipement sportif' },
             { icon: '⚡', titre: 'Ultra rapide', desc: 'Réservation confirmée en 30 secondes' },
-            { icon: '🤝', titre: 'Hôtes vérifiés', desc: 'Identité validée via Stripe Connect' },
-            { icon: '🔒', titre: 'Paiement sécurisé', desc: '100% protégé, remboursement garanti' },
-            { icon: '💰', titre: 'Revenus garantis pour les hôtes', desc: 'Un complément de revenu simple et sécurisé' },
-            { icon: '🛍️', titre: 'Nouvelle clientèle pour les commerçants', desc: 'Attirez de nouveaux visiteurs dans votre commerce' },
+            { icon: '🤝', titre: 'Nouvelle clientèle pour les commerçants', desc: 'Attirez de nouveaux visiteurs dans votre commerce' },
           ].map((a, i) => (
             <div key={i} className="flex items-center gap-4 bg-white border border-gray-100 rounded-2xl px-4 py-3.5 shadow-sm">
               <div className="w-10 h-10 bg-[#272757] rounded-xl flex items-center justify-center flex-shrink-0 text-lg">
